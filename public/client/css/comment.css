@@ -1,0 +1,82 @@
+.review-section, .comment-section {
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    background: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.comment-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.comment-section {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+.comment-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.comment-section li {
+    padding: 15px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.comment-author-info {
+    display: flex;
+    flex-direction: column; /* Đặt ngày nằm dưới tên */
+    gap: 3px;
+}
+
+.comment-author {
+    font-size: 18px;
+    font-weight: 700;
+    color: #444;
+}
+
+.comment-date {
+    font-size: 14px;
+    color: #888;
+    margin-top: 2px;
+}
+
+.comment-content {
+    margin-top: 8px;
+    line-height: 1.6;
+}
+
+.comment-content p {
+    margin: 4px 0;
+}
+
+.comment-section .stars {
+    color: #f39c12;
+    margin-left: 5px;
+}
+
+.rating {
+    font-size: 24px;
+    color: #ccc;
+    cursor: pointer;
+}
+
+.rating .star:hover,
+.rating .star.active {
+    color: #f39c12;
+}

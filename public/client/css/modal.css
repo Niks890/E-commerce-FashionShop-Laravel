@@ -1,0 +1,61 @@
+.modal-search {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #ffffff;
+    justify-content: center;
+    display: none;
+    z-index: 10000;
+}
+
+.modal-search.open {
+    display: flex;
+}
+
+.modal-container-search {
+    background-color: #ffffff;
+    width: 60%;
+    border-radius: 10px;
+    max-width: calc(100% - 32px);
+    min-height: 200px;
+    position: relative;
+    animation: modalFadeIn ease 0.5s;
+}
+
+.modal-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+    padding: 5px;
+    font-size: 1.15rem;
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.modal-close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    position: relative;
+    padding: 16px;
+}
+
+.search-modal-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-140px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

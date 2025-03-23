@@ -1,0 +1,139 @@
+.input-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.input-group input {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+/* Modal Hủy Đơn Hàng */
+.cancel-order-modal .modal-dialog {
+    position: relative;
+    margin: auto;
+    top: 20%;
+    transform: translateY(-50%);
+    max-width: 300px;
+}
+
+.cancel-order-modal .modal-content {
+    border-radius: 8px;
+    width: 100%;
+}
+
+.cancel-order-modal .modal-header {
+    background-color: #dc3545;
+    color: white;
+}
+
+.cancel-order-modal .modal-body {
+    padding: 1rem;
+}
+
+.cancel-order-modal .modal-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.cancel-order-modal .btn-close {
+    color: white;
+}
+
+.cancel-order-modal .btn-secondary,
+.cancel-order-modal .btn-danger {
+    margin-left: 0.5rem;
+}
+
+.action-buttons a,
+.action-buttons button {
+    margin: 0 5px;
+}
+
+.toast-success {
+    background-color: #6dff8f;
+}
+
+.toast-error {
+    background-color: #dc3545;
+}
+
+/* Sidebar */
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -600px;
+    width: 600px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
+    transition: 0.3s;
+    z-index: 1000000;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-header {
+    padding: 10px;
+    background-color: #28a745;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sidebar-header h5 {
+    margin: 0;
+}
+
+.sidebar-header .btn-close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 20px;
+}
+
+.sidebar-body {
+    padding: 15px;
+    overflow-y: auto;
+    max-height: calc(100vh - 60px);
+}
+
+.product-item {
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.product-image {
+    width: 170px;
+    height: 270px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.star-rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: start;
+    gap: 5px;
+}
+
+.star-rating input {
+    display: none;
+}
+
+.star-rating label {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.star-rating input:checked~label,
+.star-rating label:hover,
+.star-rating label:hover~label {
+    color: gold;
+}

@@ -1,0 +1,50 @@
+body {
+    background-color: #c9d6ff;
+    background: linear-gradient(to right, #e2e2e2, #c9d6ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.card {
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+    background: #fff;
+    padding: 20px;
+}
+
+.card h2 {
+    color: #512da8;
+    font-weight: bold;
+}
+
+.user-info {
+    font-size: 16px;
+    color: #333;
+    margin: 10px 0;
+}
+
+.success-icon {
+    font-size: 50px;
+    color: #28a745;
+    margin-bottom: 10px;
+}
+
+.btn-primary {
+    background: #8e24aa;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #6a1b9a;
+}

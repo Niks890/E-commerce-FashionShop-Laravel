@@ -1,0 +1,19 @@
+/* Toast message khi thêm phần mềm thành công hay thất bại*/
+.move-from-top {
+    position: fixed;
+    top: 0;
+    right: calc(50% - 150px);
+    z-index: 99999;
+    animation: moveFromTop 0.5s forwards;
+}
+
+@keyframes moveFromTop {
+    from {
+        transform: translateY(0%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0%);
+        opacity: 1;
+    }
+}
