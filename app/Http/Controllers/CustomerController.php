@@ -201,39 +201,36 @@ class CustomerController extends Controller
 
 
     public function cancelOrder(Request $request, $id)
-{
-    try {
-        DB::beginTransaction();
+    {
+        try {
+            DB::beginTransaction();
 
-        $order = Order::findOrFail($id);
-        $order->status = 'Đã huỷ đơn hàng';
-        $order->reason = $request->reason;
-        $order->save();
+            $order = Order::findOrFail($id);
+            $order->status = 'Đã huỷ đơn hàng';
+            $order->reason = $request->reason;
+            $order->save();
 
-        // Lấy danh sách chi tiết đơn hàng
-        $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+            // Lấy danh sách chi tiết đơn hàng
+            $orderDetails = OrderDetail::where('order_id', $order->id)->get();
 
-        // Cộng ngược lại số lượng vào kho
-        foreach ($orderDetails as $detail) {
-            $variant = ProductVariant::where('product_id', $detail->product_id)
-                ->where('id', $detail->product_variant_id)
-                ->lockForUpdate()
-                ->first();
+            // Cộng ngược lại số lượng vào kho
+            foreach ($orderDetails as $detail) {
+                $variant = ProductVariant::where('product_id', $detail->product_id)
+                    ->where('id', $detail->product_variant_id)
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($variant) {
-                $variant->stock += $detail->quantity;
-                $variant->save();
+                if ($variant) {
+                    $variant->stock += $detail->quantity;
+                    $variant->save();
+                }
             }
+
+            DB::commit();
+            return response()->json(['message' => 'Hủy đơn hàng thành công!']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
         }
-
-        DB::commit();
-        return response()->json(['message' => 'Hủy đơn hàng thành công!']);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
     }
-}
-
-
-
 }
