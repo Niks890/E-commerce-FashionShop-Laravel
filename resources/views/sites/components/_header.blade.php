@@ -13,14 +13,13 @@
 @endphp
 
 @if (Session::has('success'))
-<div class="shadow-lg p-2 move-from-top login-success-notify"
-    style="width: 16rem; position: fixed; text-align: center; border-radius: 8px; 
+    <div class="shadow-lg p-2 move-from-top login-success-notify"
+        style="width: 16rem; position: fixed; text-align: center; border-radius: 8px; 
     background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; 
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 0; z-index: 99999;
     top: 0; left: 40%; opacity: 0.9;">
-    <i
-        class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('success') }}
-</div>
+        <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('success') }}
+    </div>
 @endif
 
 
@@ -57,7 +56,7 @@
     </div>
     <div id="mobile-menu-wrap"></div>
     <div class="offcanvas__text">
-        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 30 ngày</p>
+        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 7 ngày</p>
     </div>
 </div>
 <!-- Offcanvas Menu End -->
@@ -71,7 +70,7 @@
             <div class="row">
                 <div class="col-lg-6 col-md-7">
                     <div class="header__top__left">
-                        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 30 ngày</p>
+                        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 7 ngày</p>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-5">
@@ -129,9 +128,9 @@
             <div class="col-lg-3 col-md-3">
                 <div class="header__logo">
                     <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
-                        <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/TST_Shop.webp') }}"
+                        <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                             alt="Logo" width="35">
-                        TST Fashion Shop
+                        VMT Fashion Shop
                     </a>
                 </div>
             </div>

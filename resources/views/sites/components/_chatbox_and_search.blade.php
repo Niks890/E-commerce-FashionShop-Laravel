@@ -1,4 +1,3 @@
-
 <div class="bg-light d-flex align-items-center justify-content-center">
     <!-- Chatbox Icon -->
     <div class="position-fixed bottom-0 end-0 m-3" id="chatbox-icon">
@@ -49,7 +48,8 @@
             <div class="form-group position-relative d-flex align-items-center">
                 <input type="text" name="q" id="search-box" class="form-control rounded-pill px-4 py-2"
                     placeholder="Nhập từ khóa bạn muốn tìm...">
-                <button type="button" class="position-absolute btn btn-success rounded-pill ms-2 px-3" onclick="submitSearch()" style="top: 0; right: 0;">
+                <button type="button" class="position-absolute btn btn-success rounded-pill ms-2 px-3"
+                    onclick="submitSearch()" style="top: 0; right: 0;">
                     <i class="fa fa-fw fa-search text-white"></i>
                 </button>
             </div>
@@ -69,6 +69,115 @@
 
 @include('sites.components.css.search-and-chatbot-css')
 @section('js')
+    {{-- <script>
+        $(document).ready(function() {
+            const chatboxIcon = $("#chatbox-icon");
+            const chatboxModal = $("#chatbox-modal");
+            const chatboxMessages = $("#chatbox-messages");
+            const chatboxInput = $("#chatbox-input");
+            const chatboxSend = $("#chatbox-send");
+
+            // Mở modal khi click vào icon chatbot
+            chatboxIcon.on("click", function() {
+                chatboxModal.modal("show");
+            });
+
+            // Đóng modal khi click vào nút đóng
+            $('.btn-close-chatbot').on("click", function() {
+                chatboxModal.modal("hide");
+            });
+
+            // Gửi tin nhắn khi nhấn nút gửi
+            chatboxSend.on("click", function() {
+                sendMessage();
+            });
+
+            // Gửi tin nhắn khi nhấn Enter
+            chatboxInput.on("keypress", function(event) {
+                if (event.which === 13) {
+                    sendMessage();
+                }
+            });
+
+            // Hàm cuộn xuống cuối tin nhắn
+            function scrollToBottom() {
+                setTimeout(() => {
+                    chatboxMessages.scrollTop(chatboxMessages[0].scrollHeight);
+                }, 100); // Chờ 100ms để tin nhắn render xong
+            }
+
+            // Gửi tin nhắn của người dùng
+            function sendMessage() {
+                let message = chatboxInput.val().trim();
+                if (message === "") return;
+
+                chatboxMessages.append(`
+            <div class="d-flex justify-content-end align-items-end gap-2 ms-auto">
+                <div class="bg-primary text-white p-2 rounded">
+                    <p class="mb-0">${message}</p>
+                </div>
+            </div>
+        `);
+
+                chatboxInput.val("");
+                scrollToBottom();
+
+                // Hiển thị "Đang nhập..."
+                let typingIndicator = appendTypingIndicator();
+
+                $.post("/chatbot", {
+                    message: message,
+                    _token: "{{ csrf_token() }}"
+                }, function(response) {
+                    removeTypingIndicator(typingIndicator);
+                    showTypingEffect(response.response);
+                });
+            }
+
+            // Hiển thị hiệu ứng gõ chữ khi chatbot phản hồi
+            function showTypingEffect(message) {
+                let chatbotReply = $(`
+            <div class="d-flex align-items-start gap-2 mb-3">
+                <img class="rounded-circle mt-2" src="{{ asset('client/img/chatbot/bot.avif') }}" width="30">
+                <div class="bg-light p-2 rounded typing-effect"><p class="mb-0"></p></div>
+            </div>
+        `);
+                chatboxMessages.append(chatbotReply);
+
+                let textElement = chatbotReply.find("p");
+                let index = 0;
+
+                function typeCharacter() {
+                    if (index < message.length) {
+                        textElement.append(message[index]);
+                        index++;
+                        setTimeout(typeCharacter, 50); // Tốc độ gõ chữ (50ms mỗi ký tự)
+                    }
+                }
+
+                typeCharacter();
+                scrollToBottom();
+            }
+
+            // Thêm hiệu ứng "Đang nhập..."
+            function appendTypingIndicator() {
+                let typingIndicator = $(`
+            <div class="d-flex align-items-start gap-2 mb-3 typing-indicator">
+                <img class="rounded-circle mt-2" src="{{ asset('client/img/chatbot/bot.avif') }}" width="30">
+                <div class="bg-light p-2 rounded"><em>Đang nhập...</em></div>
+            </div>
+        `);
+                chatboxMessages.append(typingIndicator);
+                scrollToBottom();
+                return typingIndicator;
+            }
+
+            // Xóa hiệu ứng "Đang nhập..."
+            function removeTypingIndicator(typingIndicator) {
+                typingIndicator.remove();
+            }
+        });
+    </script> --}}
     <script>
         $(document).ready(function() {
             const chatboxIcon = $("#chatbox-icon");
@@ -201,12 +310,12 @@
         //     if (history.length > 0) {
         //         history.forEach(function(item, index) {
         //             let listItem = `
-        //                 <li class="d-flex justify-content-between align-items-center">
-        //                     <span>
-        //                         <i class="fas fa-clock text-secondary me-2"></i> ${item}
-        //                     </span>
-        //                 </li>
-        //             `;
+    //                 <li class="d-flex justify-content-between align-items-center">
+    //                     <span>
+    //                         <i class="fas fa-clock text-secondary me-2"></i> ${item}
+    //                     </span>
+    //                 </li>
+    //             `;
         //             historyList.append(listItem);
         //         });
         //     } else {
@@ -228,7 +337,7 @@
             if (data.length > 0) {
                 data.forEach(function(item) {
                     let price = Intl.NumberFormat('vi-VN').format(item.price);
-                    if(item.discount_id != null){
+                    if (item.discount_id != null) {
                         price = item.price - (item.price * item.discount.percent_discount);
                     }
                     let listItem = `

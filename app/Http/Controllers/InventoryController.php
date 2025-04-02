@@ -72,6 +72,7 @@ class InventoryController extends Controller
         $inventory->staff_id = $data['id'];
         //Xử lý chuỗi {size}-{số lượng}
         $size_and_quantitys = explode(',', $request->formatted_sizes);
+        // XL-10,L-20
         // dd($size_and_quantitys);
         $totalQuantity = 0;
         $sizes = "";
@@ -80,10 +81,12 @@ class InventoryController extends Controller
             $item = explode('-', $size_and_quantity);
             list($key, $value) = $item;
             $size_assoc[$key] = (int)$value;
+            //XL => 10, L => 20
             $sizes .= $item[0] . ",";
             $totalQuantity += $item[1];
         }
         $sizes = rtrim($sizes, ',');
+        // XL,L
         // dd($sizes, $totalQuantity, $size_assoc);
         $inventory->total = $totalQuantity * $data['price'];
         $inventory->save();
@@ -158,13 +161,15 @@ class InventoryController extends Controller
         //
     }
 
-    public function add_extra() {
+    public function add_extra()
+    {
         $cats = Category::all();
         $providers = Provider::all();
         return view('admin.inventory.add-extra', compact('cats', 'providers'));
     }
 
-    public function post_add_extra(Request $request) {
+    public function post_add_extra(Request $request)
+    {
         $data = $request->validate([
             'id' => 'required',
             'product_name' => 'min:3|max:150',
@@ -191,6 +196,7 @@ class InventoryController extends Controller
         $inventory->staff_id = $data['id'];
 
         // Xử lý chuỗi formatted_sizes -> Tạo mảng size và số lượng
+        // formatted_size = XL-1,L-2
         $size_and_quantitys = explode(',', $request->formatted_sizes);
         $totalQuantity = 0;
         $size_assoc = [];
@@ -198,6 +204,7 @@ class InventoryController extends Controller
         foreach ($size_and_quantitys as $size_and_quantity) {
             $item = explode('-', $size_and_quantity);
             list($size, $quantity) = $item;
+            // tạo mảng assoc XL->1, L->2
             $size_assoc[$size] = (int)$quantity;
             $totalQuantity += (int)$quantity;
         }
@@ -211,6 +218,7 @@ class InventoryController extends Controller
             $newStock = $size_assoc[$size] ?? 0;
             $updatedStocks[$size] = $existingStock + $newStock;
         }
+        // dd($request->variant, $size_assoc, $allSizes, $updatedStocks);
 
         // Xử lý cập nhật hoặc thêm mới vào bảng product_variants
         $color = $data['color'];
@@ -248,13 +256,12 @@ class InventoryController extends Controller
         $inventoryDetail->quantity = $totalQuantity;
         // Thêm thông tin size kèm màu
         $inventoryDetail->size = preg_replace('/([^,]+)/', '$1-' . $color, $request->formatted_sizes);
-                                //VD: Có 2 chuỗi "XS-3" và "Vàng" -> "XS-3-Vàng"
+        //VD: Có 2 chuỗi "XS-3" và "Vàng" -> "XS-3-Vàng"
         $inventoryDetail->save();
 
         return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công!");
     }
 
 
-    public function search(Request $request) {
-    }
+    public function search(Request $request) {}
 }

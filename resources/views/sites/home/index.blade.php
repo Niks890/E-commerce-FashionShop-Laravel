@@ -1,11 +1,6 @@
 {{-- @php
    dd($productRecentInfo);
 @endphp --}}
-
-
-
-
-
 @extends('sites.master')
 @section('title', 'Trang chủ')
 @section('content')
@@ -23,7 +18,7 @@
     <!-- Hero Section Begin -->
     <section class="hero">
         <div class="hero__slider owl-carousel">
-            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-1.jpg') }}">
+            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-2.jpg') }}">
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
@@ -45,7 +40,7 @@
                     </div>
                 </div>
             </div>
-            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-2.jpg') }}">
+            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-1.jpg') }}">
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
@@ -78,10 +73,10 @@
                 <div class="col-lg-7 offset-lg-4">
                     <div class="banner__item">
                         <div class="banner__item__pic">
-                            <img src="{{ asset('client/img/banner/banner-1.jpg') }}" alt="">
+                            <img src="{{ asset('client/img/banner/banner-3.jpg') }}" alt="">
                         </div>
                         <div class="banner__item__text">
-                            <h2>Clothing Collections 2030</h2>
+                            <h2>Clothing Collections 2025</h2>
                             <a href="#">Shop now</a>
                         </div>
                     </div>
@@ -100,10 +95,10 @@
                 <div class="col-lg-7">
                     <div class="banner__item banner__item--last">
                         <div class="banner__item__pic">
-                            <img src="{{ asset('client/img/banner/banner-3.jpg') }}" alt="">
+                            <img src="{{ asset('client/img/banner/banner-1.jpg') }}" alt="">
                         </div>
                         <div class="banner__item__text">
-                            <h2>Shoes Spring 2030</h2>
+                            <h2>Shoes Spring 2025</h2>
                             <a href="#">Shop now</a>
                         </div>
                     </div>
@@ -157,7 +152,7 @@
                                     <ul class="product__hover">
                                         <li>
                                             <a href="{{ url('add-to-wishlist/' . $itemRecent->id) }}"
-                                                class="add-to-wishlist">
+                                                class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
                                                 <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
                                             </a>
                                         </li>
@@ -292,7 +287,7 @@
                                                         <span class="label name-discount" >${product.discount.name}</span>
                                                         <ul class="product__hover">
                                                           <li>
-                                                                <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist">
+                                                                <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
                                                                     <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
                                                                 </a>
                                                         </li>
@@ -418,7 +413,7 @@
                                                     <span class="label name-discount-section" >${nameDiscount}</span>
                                                     <ul class="product__hover">
                                                       <li>
-                                                            <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist">
+                                                            <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
                                                                 <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
                                                             </a>
                                                     </li>

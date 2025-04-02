@@ -35,10 +35,13 @@ class GoogleAuthController extends Controller
 
             // Đăng nhập user
             Auth::guard('customer')->login($user);
+            // dd($user);
 
             // Chuyển hướng về trang trước đó hoặc trang chủ
             return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
         } catch (\Exception $e) {
+            // return redirect()->intended('/')->with('success', 'Đăng nhập thành công!');
+            // dd($e->getMessage()); // Xem lỗi chi tiết
             return redirect('/user/login')->with('error', 'Đăng nhập Google thất bại!');
         }
     }

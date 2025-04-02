@@ -26,7 +26,7 @@
 
             // Tạo icon tùy chỉnh cho marker
             var customIcon = L.icon({
-                iconUrl: "{{ asset('assets/img/TSTShop/TST_Shop.webp') }}", // Đường dẫn icon
+                iconUrl: "{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}", // Đường dẫn icon
                 iconSize: [50, 50], // Kích thước icon
                 iconAnchor: [25, 50], // Điểm neo icon
                 popupAnchor: [0, -50] // Điểm neo popup
@@ -66,7 +66,8 @@
                         <div class="section-title">
                             <span>Thông Tin Liên Hệ</span>
                             <h2>Liên Hệ Với Chúng Tôi</h2>
-                            <p>Chúng tôi luôn chú trọng đến từng chi tiết để mang đến cho khách hàng trải nghiệm dịch vụ tốt nhất.</p>
+                            <p>Chúng tôi luôn chú trọng đến từng chi tiết để mang đến cho khách hàng trải nghiệm dịch vụ tốt
+                                nhất.</p>
                         </div>
                         <ul>
                             <li>

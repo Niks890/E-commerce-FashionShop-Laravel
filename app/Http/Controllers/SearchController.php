@@ -62,7 +62,7 @@ class SearchController extends Controller
         $suggestedProducts = Product::with('Discount', 'ProductVariants')->where(function ($query) use ($history) {
             foreach ($history as $term) {
                 $query->orWhere('product_name', 'LIKE', "%{$term}%")
-                ->orWhere('tags', 'LIKE', "%{$term}%");
+                    ->orWhere('tags', 'LIKE', "%{$term}%");
             }
         })
             ->orderByRaw("

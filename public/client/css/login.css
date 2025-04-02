@@ -1,4 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
+
 * {
     margin: 0;
     padding: 0;
@@ -127,6 +128,7 @@ body {
 }
 
 @keyframes move {
+
     0%,
     49.99% {
         opacity: 0;
@@ -177,8 +179,8 @@ body {
     height: 100%;
     /* background: linear-gradient(to right, #5c6bc0, #512da8);
      */
-     /* background: linear-gradient(to right, #ab47bc, #7b1fa2); */
-     background: linear-gradient(to right, #8e24aa, #d81b60);
+    /* background: linear-gradient(to right, #ab47bc, #7b1fa2); */
+    background: linear-gradient(to right, #8e24aa, #d81b60);
 
     color: #fff;
     position: relative;

@@ -4,7 +4,7 @@
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
             <a href="{{ route('admin.dashboard') }}" class="logo">
-                <img src="assets/img/TSTShop/TST_Shop.webp" width="50px" alt="navbar brand"
+                <img src="assets/img/TSTShop/LogoTSTFashionShop.webp" width="50px" alt="navbar brand"
                     class="navbar-brand rounded-circle mt-4" height="50" />
                 <h3 class="text-white mt-4 ms-2">TST Shop</h3>
             </a>
@@ -27,7 +27,7 @@
             <ul class="nav nav-secondary">
                 <li class="nav-item">
                     <a>
-                        <p>Dashboard</p>
+                        <p>Trang Quản Trị</p>
                     </a>
                 </li>
                 @can('salers')

@@ -1,6 +1,12 @@
 {{-- @php
     dd(Session::get('auth'));
 @endphp --}}
+
+{{-- @php
+    if (Session::has('error')) {
+        dd(Session::get('error'));
+    }
+@endphp --}}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -89,7 +95,7 @@
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("DOMContentLoaded", function() {
             const container = document.getElementById('container');
             const registerBtn = document.getElementById('register');
             const loginBtn = document.getElementById('login');
