@@ -14,6 +14,7 @@
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.19",
         "laravel/tinker": "^2.8",
+        "predis/predis": "^3.0",
         "thiagoprz/eloquent-composite-key": "^1.0"
     },
     "require-dev": {

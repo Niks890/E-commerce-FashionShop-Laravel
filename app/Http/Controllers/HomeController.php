@@ -14,7 +14,7 @@ class HomeController extends Controller
 {
     public function home()
     {
-        if (Session::has('success_payment')) { 
+        if (Session::has('success_payment')) {
             Session::forget('success_payment');
         }
 
@@ -104,10 +104,10 @@ class HomeController extends Controller
         $blogDetail = Blog::where('slug', $slug)->with('staff')->firstOrFail();
         $previousBlog = Blog::where('id', '<', $blogDetail->id)->orderBy('id', 'desc')->first();
         $nextBlog = Blog::where('id', '>', $blogDetail->id)->orderBy('id', 'asc')->first();
-    
+
         return view('sites.pages.blogDetail', compact('blogDetail', 'previousBlog', 'nextBlog'));
     }
-    
+
 
     public function shoppingCart()
     {

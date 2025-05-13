@@ -1,12 +1,3 @@
-{{-- @php
-    dd(Session::get('auth'));
-@endphp --}}
-
-{{-- @php
-    if (Session::has('error')) {
-        dd(Session::get('error'));
-    }
-@endphp --}}
 <!DOCTYPE html>
 <html lang="en">
 

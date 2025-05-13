@@ -25,8 +25,11 @@ use App\Http\Controllers\WishListProductController;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Staff;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -70,17 +73,17 @@ Route::group(['prefix' => '/'], function () {
     // Route::get('/contact-success', [ContactController::class, 'contactSuccess'])->name('contact.contactSuccess');
     // Route::get('/test-mail', function () {
     //     $data = ['name' => 'Test User', 'email' => 'minhminh@gmail.com', 'message' => 'This is a test message'];
-    
+
     //     Mail::raw("Tên người gửi: {$data['name']}\nĐịa chỉ Email: {$data['email']}\nNội dung: {$data['message']}", function($message) use ($data) {
     //         $message->from('raucuquasachnhom@gmail.com', $data['name'])
     //                 ->to('raucuquasachnhom@gmail.com', 'TST Fashion Shop')
     //                 ->subject('Test Email');
     //     });
-    
+
     //     return 'Gửi email thành công!';
     // });
-    
-    
+
+
     Route::post('/contact/send', [ContactController::class, 'sendContact'])->name('contact.send');
     Route::get('/blog', [HomeController::class, 'blog'])->name('sites.blog');
     Route::get('/product/{slug}', [HomeController::class, 'productDetail'])->name('sites.productDetail');
@@ -119,7 +122,7 @@ Route::group(['prefix' => '/'], function () {
         ]
     );
 
-    
+
 });
 
 // Xử lý cart
@@ -194,3 +197,56 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
         Route::get('/profit', [RevenueController::class, 'profitYear'])->name('admin.profitYear');
     });
 });
+
+
+//CHATBOT REDIS TEST
+Route::get('/chatbot-redis', function () {
+    return view('sites.chatbotRedis.chatbot');
+});
+
+
+// routes/web.php
+Route::post('/chat/send', function (Request $request) {
+    $userId = 'user_123'; // tuỳ hệ thống, bạn có thể lấy từ Auth::id()
+    $prompt = $request->input('message');
+
+    // Lấy context từ Redis nếu có
+    $contextJson = Redis::get("chat_context:$userId");
+    $context = $contextJson ? json_decode($contextJson) : null;
+
+    // Gửi tới OLLama
+    $payload = [
+        'model' => 'llama3.2:latest',
+        'prompt' => $prompt,
+        'stream' => false
+    ];
+
+    if ($context) {
+        $payload['context'] = $context;
+    }
+
+    $response = Http::post('http://localhost:11434/api/generate', $payload);
+
+    if (!$response->successful()) {
+        return response()->json(['error' => 'Failed to connect to OLLama.'], 500);
+    }
+
+    $data = $response->json();
+
+    // Lưu context mới nếu có
+    if (!empty($data['context'])) {
+        Redis::set("chat_context:$userId", json_encode($data['context']));
+    }
+
+    // Giả sử bạn muốn trả về ảnh từ URL trong response nếu có
+    $imageUrl = null;
+    if (preg_match('/image-url-pattern/', $data['response'])) {  // Nếu có URL ảnh trong phản hồi
+        $imageUrl = 'https://example.com/path/to/image.jpg';  // Cập nhật URL ảnh thực tế từ phản hồi
+    }
+
+    return response()->json([
+        'reply' => $data['response'] ?? '[Không có phản hồi từ AI]',
+        'imageUrl' => $imageUrl // Trả về URL ảnh nếu có
+    ]);
+});
+
