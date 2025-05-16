@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ChatBotApiController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerController;
@@ -187,8 +188,6 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/profile', [StaffController::class, 'profile'])->name('staff.profile');
     Route::get('/order-approval', [OrderController::class, 'orderApproval'])->name('order.approval');
     Route::get('/order_success', [OrderController::class, 'orderSuccess'])->name('order.orderSuccess');
-
-
     // Thong ke doanh thu va loi nhuan
     Route::group(['prefix' => '/revenue'], function () {
         Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay');
@@ -200,53 +199,6 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 
 
 //CHATBOT REDIS TEST
-Route::get('/chatbot-redis', function () {
-    return view('sites.chatbotRedis.chatbot');
-});
-
-
-// routes/web.php
-Route::post('/chat/send', function (Request $request) {
-    $userId = 'user_123'; // tuỳ hệ thống, bạn có thể lấy từ Auth::id()
-    $prompt = $request->input('message');
-
-    // Lấy context từ Redis nếu có
-    $contextJson = Redis::get("chat_context:$userId");
-    $context = $contextJson ? json_decode($contextJson) : null;
-
-    // Gửi tới OLLama
-    $payload = [
-        'model' => 'llama3.2:latest',
-        'prompt' => $prompt,
-        'stream' => false
-    ];
-
-    if ($context) {
-        $payload['context'] = $context;
-    }
-
-    $response = Http::post('http://localhost:11434/api/generate', $payload);
-
-    if (!$response->successful()) {
-        return response()->json(['error' => 'Failed to connect to OLLama.'], 500);
-    }
-
-    $data = $response->json();
-
-    // Lưu context mới nếu có
-    if (!empty($data['context'])) {
-        Redis::set("chat_context:$userId", json_encode($data['context']));
-    }
-
-    // Giả sử bạn muốn trả về ảnh từ URL trong response nếu có
-    $imageUrl = null;
-    if (preg_match('/image-url-pattern/', $data['response'])) {  // Nếu có URL ảnh trong phản hồi
-        $imageUrl = 'https://example.com/path/to/image.jpg';  // Cập nhật URL ảnh thực tế từ phản hồi
-    }
-
-    return response()->json([
-        'reply' => $data['response'] ?? '[Không có phản hồi từ AI]',
-        'imageUrl' => $imageUrl // Trả về URL ảnh nếu có
-    ]);
-});
+Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
+Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
 

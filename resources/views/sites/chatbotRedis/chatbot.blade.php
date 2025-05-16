@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    {{-- <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script> --}}
+
     <title>Chatbot Tư Vấn</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
@@ -82,6 +84,29 @@
             border-radius: 8px;
             margin-top: 5px;
         }
+
+        .typing {
+            display: inline-block;
+            font-style: italic;
+            color: #888;
+        }
+
+        .typing::after {
+            content: '...';
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 1;
+            }
+        }
     </style>
 </head>
 
@@ -110,7 +135,6 @@
                 message.textContent = '';
                 typeText(message, text);
             } else {
-                // Nếu là URL ảnh thì hiển thị ảnh
                 if (isImageUrl(text)) {
                     const img = document.createElement('img');
                     img.src = text;
@@ -139,12 +163,57 @@
                 /cloudinary\.com\/.+/i.test(url);
         }
 
+
+        function addTypingIndicator() {
+            const container = document.createElement('div');
+            container.className = 'bot';
+            container.id = 'typing-indicator';
+
+            const message = document.createElement('div');
+            message.className = 'message typing';
+            message.textContent = 'Đang phản hồi';
+
+            container.appendChild(message);
+            chatBox.appendChild(container);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // function addTypingIndicator() {
+        //     const container = document.createElement('div');
+        //     container.className = 'bot';
+        //     container.id = 'typing-indicator';
+
+        //     const message = document.createElement('div');
+        //     message.className = 'message';
+
+        //     const lottie = document.createElement('lottie-player');
+        //     lottie.src = 'https://assets5.lottiefiles.com/packages/lf20_usmfx6bp.json'; // animation kiểu đang gõ
+        //     lottie.background = 'transparent';
+        //     lottie.speed = 1;
+        //     lottie.style.width = '50px';
+        //     lottie.loop = true;
+        //     lottie.autoplay = true;
+
+        //     message.appendChild(lottie);
+        //     container.appendChild(message);
+        //     chatBox.appendChild(container);
+        //     chatBox.scrollTop = chatBox.scrollHeight;
+        // }
+
+
+        function removeTypingIndicator() {
+            const typing = document.getElementById('typing-indicator');
+            if (typing) typing.remove();
+        }
+
         function sendMessage() {
             const message = msgInput.value.trim();
             if (!message) return;
 
             addMessage(message, 'user');
             msgInput.value = '';
+
+            addTypingIndicator();
 
             fetch('/chat/send', {
                     method: 'POST',
@@ -158,9 +227,11 @@
                 })
                 .then(res => res.json())
                 .then(data => {
+                    removeTypingIndicator();
+
                     if (data.reply) {
                         addMessage(data.reply, 'bot', true);
-
+                        // Nếu có ảnh kèm theo (nếu bạn cần):
                         // if (data.images && Array.isArray(data.images)) {
                         //     data.images.forEach(url => {
                         //         addMessage(url, 'bot');
@@ -171,6 +242,7 @@
                     }
                 })
                 .catch(err => {
+                    removeTypingIndicator();
                     console.error(err);
                     addMessage('[Lỗi kết nối tới server]', 'bot');
                 });
