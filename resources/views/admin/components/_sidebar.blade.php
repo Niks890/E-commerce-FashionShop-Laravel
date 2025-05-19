@@ -6,7 +6,7 @@
             <a href="{{ route('admin.dashboard') }}" class="logo">
                 <img src="assets/img/TSTShop/LogoTSTFashionShop.webp" width="50px" alt="navbar brand"
                     class="navbar-brand rounded-circle mt-4" height="50" />
-                <h3 class="text-white mt-4 ms-2">TST Shop</h3>
+                <h4 class="text-white mt-4 ms-2">TFashionShop</h4>
             </a>
             <div class="nav-toggle">
                 <button class="btn btn-toggle toggle-sidebar">
@@ -66,8 +66,13 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a href="{{route('admin.revenueProductBestSeller')}}">
+                                        <span class="sub-item">Thống kê sản phẩm bán chạy theo ngày</span>
+                                    </a>
+                                </li>
+                                  <li>
                                     <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê thông tin về sản phẩm</span>
+                                        <span class="sub-item">Thống kê sản phẩm bán chạy theo tháng & năm</span>
                                     </a>
                                 </li>
                             </ul>
@@ -286,7 +291,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);">
+                                    <a href="{{route('admin.profitYear')}}">
                                         <span class="sub-item">Thống kê lợi nhuận theo tháng và năm</span>
                                     </a>
                                 </li>

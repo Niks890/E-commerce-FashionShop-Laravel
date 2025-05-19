@@ -22,6 +22,7 @@ use App\Http\Controllers\OllamaController;
 use App\Http\Controllers\ProductRecordRecentyController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\RevenueController;
+use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\WishListProductController;
 use App\Models\Customer;
 use App\Models\Order;
@@ -193,9 +194,12 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
         Route::get('/month', [RevenueController::class, 'revenueMonth'])->name('admin.revenueMonth')->middleware('can:managers');
         Route::get('/revenue-month/export-pdf', [RevenueController::class, 'exportPdfMonth'])->name('admin.revenueMonth.exportPdf')->middleware('can:managers');
         Route::get('/revenue-month/export-excel', [RevenueController::class, 'exportExcelMonth'])->name('admin.revenueMonth.exportExcel')->middleware('can:managers');
-
         Route::get('/year', [RevenueController::class, 'revenueYear'])->name('admin.revenueYear');
         Route::get('/profit', [RevenueController::class, 'profitYear'])->name('admin.profitYear');
+
+        Route::get('/revenue-best-seller-product', [RevenueProductController::class, 'revenueProductBestSeller'])->name('admin.revenueProductBestSeller')->middleware('can:managers');
+        Route::get('/revenue-best-seller-product/export-pdf', [RevenueProductController::class, 'exportPdf'])->name('admin.revenueProductBestSeller.exportPdf')->middleware('can:managers');
+        Route::get('/revenue-best-seller-product/export-excel', [RevenueProductController::class, 'exportExcel'])->name('admin.revenueProductBestSeller.exportExcel')->middleware('can:managers');
     });
 });
 

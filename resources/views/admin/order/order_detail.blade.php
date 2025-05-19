@@ -83,7 +83,7 @@
                     </tr>
                     @endforeach
                 </tbody>
-               
+
             </table>
         </div>
 
@@ -92,6 +92,7 @@
             <div class="col-md-12">
                 <div class="border p-3 rounded shadow-sm d-flex justify-content-between align-items-center">
                     <p><strong>Tạm Tính: </strong>{{number_format($totalPriceCart, 0, ',', '.')}} đ</p>
+                    <p><strong>Thuế VAT: </strong>{{number_format($vatPrice, 0, ',', '.')}} đ</p>
                     <p><strong>Phí Vận Chuyển: </strong>{{number_format($ship, 0, ',', '.')}} đ</p>
                     <p><strong>Chiết Khấu: </strong>{{$items->code*100}} %</p>
                     <p class="fs-5"><strong class="text-danger">Tổng Giá Trị Đơn Hàng: </strong>{{number_format($items->total, 0, ',', '.')}}đ</p>

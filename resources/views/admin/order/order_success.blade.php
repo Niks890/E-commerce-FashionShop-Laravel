@@ -41,7 +41,7 @@
                             <td>{{ $model->customer_name }}</td>
                             <td>{{ $model->address }}</td>
                             <td>{{ $model->phone }}</td>
-                            <td>{{ $model->total }}</td>
+                            <td>{{ number_format($model->total, 0, ',', '.') }} đ</td>
                             <td  class="text-success font-weight-bold">{{ $model->status }}</td>
                             <td>{{ $model->created_at }}</td>
                             <td>

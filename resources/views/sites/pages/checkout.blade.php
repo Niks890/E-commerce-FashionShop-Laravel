@@ -67,10 +67,10 @@
                             </div>
                             <div class="checkout__input__checkbox">
                                 <a href="{{ route('admin.login') }}">Tạo tài khoản mua hàng?</a>
-                                <p>Tạo tài khoản ngay để nhận những ưu đãi khi mua hàng tại TST Shop!</p>
+                                <p>Tạo tài khoản ngay để nhận những ưu đãi khi mua hàng tại TFashionShop!</p>
                             </div>
                             <div class="mt-3">
-                                <strong>Ưu đãi khi mua hàng tại TST Shop: </strong>
+                                <strong>Ưu đãi khi mua hàng tại TFashionShop: </strong>
                                 <p>Miễn phí giao hàng áp dụng cho đơn hàng giao tận nơi từ 500K và tất cả các đơn nhận tại
                                     cửa hàng.</p>
                             </div>

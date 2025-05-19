@@ -3,11 +3,11 @@
 @section('title', 'Trang Quản trị')
 
 @section('content')
-    @if (Session::has('success'))
+    {{-- @if (Session::has('success'))
         <div class="shadow-lg p-2 move-from-top js-div-dissappear" style="width: 18rem; display:flex; text-align:center">
             <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('success') }}
         </div>
-    @endif
+    @endif --}}
 
     <div class="row">
         {{-- Card số liệu với tooltip --}}
@@ -258,7 +258,7 @@
         aria-atomic="true">
         <div class="d-flex">
             <div class="toast-body">
-                Thành công!
+                Đăng Nhập Thành công!
             </div>
             <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
                 aria-label="Close"></button>

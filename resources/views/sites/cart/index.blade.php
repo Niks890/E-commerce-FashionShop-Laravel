@@ -1,5 +1,5 @@
 {{--
-1. còn vấn đề lỗi khi thêm số lượng từ product_detail qua cart nó cứ cộng số lượng vô tư 
+1. còn vấn đề lỗi khi thêm số lượng từ product_detail qua cart nó cứ cộng số lượng vô tư
 2. Chỗ cart icon bị vấn đề là nếu chỉ còn 1 sản phẩm còn hàng vd 5 thì dù click 6 lần vẫn đc :))))
 --}}
 
@@ -175,11 +175,11 @@
                             <li>Phí Ship:<span>{{ number_format($ship, 0, ',', '.') . ' đ' }}</span></li>
                             <li>Thành tiền:<span>{{ number_format($total, 0, ',', '.') . ' đ' }}</span></li>
                         </ul>
-     
+
                         <a href="{{ route('sites.checkout') }}" id="checkout-form" class="primary-btn">Thanh Toán</a>
                     </div>
                     <div class="mt-3">
-                        <strong>Ưu đãi khi mua hàng tại TST Shop: </strong>
+                        <strong>Ưu đãi khi mua hàng tại TFashionShop: </strong>
                         <p>Miễn phí giao hàng áp dụng cho đơn hàng giao tận nơi từ 500K và tất cả các đơn nhận tại cửa hàng.
                         </p>
                     </div>
@@ -464,7 +464,7 @@
             $(".product-checkbox").change(function() {
                 if (!$(this).prop("checked")) {
                     $("#check-all").prop("checked", false); // Vô hiệu hoá 1 hoặc tất cả checkbox
-                } 
+                }
                 // else {
                 //     $("#check-all").prop("checked", true); // chọn tất cả nếu tất cả checkbox đc chọn
                 // }
