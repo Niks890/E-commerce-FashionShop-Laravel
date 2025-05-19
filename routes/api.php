@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\DialogflowWebhookController;
+use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -65,3 +66,5 @@ Route::delete('/clear-search-history', [SearchController::class, 'clearSearchHis
 Route::get('blog_detail/{id}', [ApiController::class, 'blogDetail'])->name('api.blogDetail');
 
 Route::get('rate-order/{id}', [ApiController::class, 'rateOrder'])->name('api.rateOrder');
+
+Route::get('/revenue-stats', [RevenueController::class, 'revenueMonthApi'])->name('api.revenueMonthApi');

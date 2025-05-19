@@ -11,20 +11,34 @@ class AdminController extends Controller
 {
     public  function dashboard()
     {
+        $revenueByMonth = [
+            'Jan' => 5000000,
+            'Feb' => 7000000,
+            'Mar' => 6000000,
+            'Apr' => 8000000,
+            'May' => 7500000,
+            'Jun' => 9000000,
+            'Jul' => 6500000,
+            'Aug' => 8500000,
+            'Sep' => 7000000,
+            'Oct' => 9500000,
+            'Nov' => 10000000,
+            'Dec' => 11000000,
+        ];
 
         $staffQuantity = DB::table('staff')->count();
         $customerQuantity = DB::table('customers')->count();
         $productQuantity = DB::table('products')->count();
         $orderQuantity = DB::table('orders')->where('status', 'Chờ xử lý')->count();
 
-        $revenueMonth = collect(DB::select("SELECT YEAR(created_at) AS namtao, MONTH(created_at) AS thangtao, SUM(total) AS tongtien 
-                                            FROM orders 
-                                            WHERE status = 'Đã thanh toán' 
+        $revenueMonth = collect(DB::select("SELECT YEAR(created_at) AS namtao, MONTH(created_at) AS thangtao, SUM(total) AS tongtien
+                                            FROM orders
+                                            WHERE status = 'Đã thanh toán'
                                             GROUP BY namtao, thangtao"))
-                                                ->where('namtao', now()->year)
-                                                ->where('thangtao', now()->month)
-                                                ->first();
-        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueMonth'));
+            ->where('namtao', now()->year)
+            ->where('thangtao', now()->month)
+            ->first();
+        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueMonth', 'revenueByMonth'));
     }
 
     public function login()

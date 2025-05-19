@@ -60,7 +60,6 @@ Route::group(['prefix' => '/'], function () {
         Route::get('/profile', [CustomerController::class, 'profile'])->name('user.profile')->middleware('auth:customer');
         Route::put('/profile/{customer}/update', [CustomerController::class, 'update_profile'])->name('user.update_profile');
         Route::post('/check-login', [CustomerController::class, 'checkLogin'])->name('user.checkLogin');
-
     });
 
     Route::get('/shop', [HomeController::class, 'shop'])->name('sites.shop');
@@ -122,8 +121,6 @@ Route::group(['prefix' => '/'], function () {
             'comments' => RateController::class,
         ]
     );
-
-
 });
 
 // Xử lý cart
@@ -190,15 +187,18 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/order_success', [OrderController::class, 'orderSuccess'])->name('order.orderSuccess');
     // Thong ke doanh thu va loi nhuan
     Route::group(['prefix' => '/revenue'], function () {
-        Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay');
-        Route::get('/month', [RevenueController::class, 'revenueMonth'])->name('admin.revenueMonth');
+        Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay')->middleware('can:managers');
+        Route::get('/revenue-day/export-pdf', [RevenueController::class, 'exportPdf'])->name('admin.revenueDay.exportPdf')->middleware('can:managers');
+        Route::get('/revenue-day/export-excel', [RevenueController::class, 'exportExcel'])->name('admin.revenueDay.exportExcel')->middleware('can:managers');
+        Route::get('/month', [RevenueController::class, 'revenueMonth'])->name('admin.revenueMonth')->middleware('can:managers');
+        Route::get('/revenue-month/export-pdf', [RevenueController::class, 'exportPdfMonth'])->name('admin.revenueMonth.exportPdf')->middleware('can:managers');
+        Route::get('/revenue-month/export-excel', [RevenueController::class, 'exportExcelMonth'])->name('admin.revenueMonth.exportExcel')->middleware('can:managers');
+
         Route::get('/year', [RevenueController::class, 'revenueYear'])->name('admin.revenueYear');
         Route::get('/profit', [RevenueController::class, 'profitYear'])->name('admin.profitYear');
     });
 });
 
-
 //CHATBOT REDIS TEST
 Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
-
