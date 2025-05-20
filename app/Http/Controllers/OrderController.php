@@ -206,7 +206,7 @@ class OrderController extends Controller
 
     // Pessimistic Lock (Khóa bi quan) là kiểu khóa mà khi một bản ghi đang được truy cập (đọc/ghi), nó sẽ bị khóa lại để ngăn chặn các giao dịch khác đọc hoặc sửa đổi.
     // Trong Laravel, ->lockForUpdate() sẽ khóa bản ghi được chọn cho đến khi transaction kết thúc. Điều này đảm bảo không có giao dịch nào khác có thể thay đổi dữ liệu trong khi nó đang được xử lý.
-    // Xử lý lưu đơn hàng (bằng transaction và khoá Pessimistic Lock) 
+    // Xử lý lưu đơn hàng (bằng transaction và khoá Pessimistic Lock)
     public function store(Request $request)
     {
         $data = $request->validate([
@@ -373,7 +373,7 @@ class OrderController extends Controller
         // dd($order);
         $order->status = "Đã xử lý";
         $order->save();
-        return redirect()->route('order.index')->with('success', "Duyệt đơn hàng thành công!");
+        return redirect()->route('order.approval')->with('success', "Duyệt đơn hàng thành công!");
     }
 
 

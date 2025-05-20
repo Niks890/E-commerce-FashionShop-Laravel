@@ -3,7 +3,7 @@
 // Setting Color
 
 $(window).resize(function() {
-	$(window).width(); 
+	$(window).width();
 });
 
 getCheckmark();
@@ -72,9 +72,9 @@ $('.changeBackgroundColor').on('click', function(){
 function customCheckColor(){
 	var logoHeader = $('.logo-header').attr('data-background-color');
 	if (logoHeader !== "white") {
-		$('.logo-header .navbar-brand').attr('src', '../assets/img/kaiadmin/logo_light.svg');
+		$('.logo-header .navbar-brand').attr('src', '../assets/img/TSTShop/LogoTSTFashionShop.webp');
 	} else {
-		$('.logo-header .navbar-brand').attr('src', '../assets/img/kaiadmin/logo_dark.svg');
+		$('.logo-header .navbar-brand').attr('src', '../assets/img/TSTShop/LogoTSTFashionShop.webp');
 	}
 }
 

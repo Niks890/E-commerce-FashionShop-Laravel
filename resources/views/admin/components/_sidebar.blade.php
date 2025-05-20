@@ -66,12 +66,12 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{route('admin.revenueProductBestSeller')}}">
+                                    <a href="{{ route('admin.revenueProductBestSeller') }}">
                                         <span class="sub-item">Thống kê sản phẩm bán chạy theo ngày</span>
                                     </a>
                                 </li>
-                                  <li>
-                                    <a href="javascript:void(0);">
+                                <li>
+                                    <a href="{{ route('admin.revenueProductBestSellerMonthYear') }}">
                                         <span class="sub-item">Thống kê sản phẩm bán chạy theo tháng & năm</span>
                                     </a>
                                 </li>
@@ -110,27 +110,6 @@
                         </div>
                     </li>
                     <li class="nav-item">
-                        <a data-bs-toggle="collapse" href="#base999">
-                            <i class="fas fa-layer-group"></i>
-                            <p>Quản lý giao hàng</p>
-                            <span class="caret"></span>
-                        </a>
-                        <div class="collapse" id="base999">
-                            <ul class="nav nav-collapse">
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Đơn hàng đang giao</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ route('category.create') }}">
-                                        <span class="sub-item">Quản lý nhân viên giao hàng</span>
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base3">
                             <i class="fas fa-percentage"></i>
                             <p>Quản lý Khuyến mãi</p>
@@ -146,6 +125,29 @@
                                 <li>
                                     <a href="javascript:void(0);">
                                         <span class="sub-item">Thống kê thống tin về khuyến mái</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                @endcan
+                @can('delivery workers')
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#base999">
+                            <i class="fas fa-layer-group"></i>
+                            <p>Quản lý giao hàng</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="base999">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Đơn hàng đang giao</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Quản lý trạng thái đơn hàng</span>
                                     </a>
                                 </li>
                             </ul>
@@ -179,12 +181,17 @@
                             <ul class="nav nav-collapse">
                                 <li>
                                     <a href="{{ route('inventory.index') }}">
-                                        <span class="sub-item">Quản lý Phiếu nhập hàng</span>
+                                        <span class="sub-item">Quản lý nhập hàng</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('admin.revenueInventory') }}">
+                                        <span class="sub-item">Quản lý tồn kho hiện tại</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a href="javascript:void(0);">
-                                        <span class="sub-item">Quản lý tồn kho</span>
+                                        <span class="sub-item">Thống kê tồn kho</span>
                                     </a>
                                 </li>
                                 <li>
@@ -255,6 +262,27 @@
                             </ul>
                         </div>
                     </li>
+                      <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#base66666">
+                            <i class="fas fa-users"></i>
+                            <p>Quản lý Khách Hàng</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="base66666">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Thống kê lượng mua của khách hàng</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Top khách hàng mua nhiều</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base9">
                             <i class="fas fa-chart-line"></i>
@@ -291,7 +319,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="{{route('admin.profitYear')}}">
+                                    <a href="{{ route('admin.profitYear') }}">
                                         <span class="sub-item">Thống kê lợi nhuận theo tháng và năm</span>
                                     </a>
                                 </li>

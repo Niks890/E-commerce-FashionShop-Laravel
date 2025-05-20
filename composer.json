@@ -35,7 +35,8 @@
             "Database\\Seeders\\": "database/seeders/"
         },
         "files": [
-            "app/Helpers/ColorHelper.php"
+            "app/Helpers/ColorHelper.php",
+            "app/Helpers/PaginatorHelper.php"
         ]
     },
     "autoload-dev": {

@@ -29,7 +29,7 @@ class AuthServiceProvider extends ServiceProvider
         // Gate::define('customers', function () {
         //     return Auth::guard('customer')->check();
         // });
-        
+
 
         Gate::define('managers', function(User $user) {
             return in_array('admin', $user->roles()) || in_array('manage', $user->roles()) ? true : false;
@@ -41,6 +41,10 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('warehouse workers', function(User $user) {
             return in_array('admin', $user->roles()) || in_array('manage', $user->roles()) || in_array('inventory', $user->roles()) ? true : false;
+        });
+
+         Gate::define('delivery workers', function(User $user) {
+            return in_array('admin', $user->roles()) || in_array('manage', $user->roles()) || in_array('inventory', $user->roles()) || in_array('delivery', $user->roles()) ? true : false;
         });
     }
 }

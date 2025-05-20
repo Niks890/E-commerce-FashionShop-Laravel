@@ -111,27 +111,25 @@
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
     <script>
-        $(document).ready(function() {
-            fetchInventories(1);
-        });
+       $(document).ready(function() {
+    fetchInventories(1);
+});
 
-        function fetchInventories(page) {
-            $.ajax({
-                url: `http://127.0.0.1:8000/api/inventory?page=${page}`,
-                type: "GET",
-                dataType: "json",
-                success: function(response) {
-                    console.log(response); // Kiểm tra JSON trả về trong Console
+function fetchInventories(page) {
+    $.ajax({
+        url: `http://127.0.0.1:8000/api/inventory?page=${page}`,
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            if (response.status_code === 200) {
+                let data = response.data;
+                let tbody = $("table tbody");
+                tbody.empty();
 
-                    if (response.status_code === 200) {
-                        let data = response.data;
-                        let tbody = $("table tbody");
-                        tbody.empty();
-
-                        $.each(data, function(index, inventory) {
-                            $.each(inventory.detail, function(i, dl) {
-                                let totalMoney = dl.price * dl.quantity;
-                                let row = `
+                $.each(data, function(index, inventory) {
+                    $.each(inventory.detail, function(i, dl) {
+                        let totalMoney = dl.price * dl.quantity;
+                        let row = `
                             <tr>
                                 <td>${inventory.id}</td>
                                 <td>${dl.product.name}</td>
@@ -151,36 +149,77 @@
                                 </td>
                             </tr>
                         `;
-                                tbody.append(row);
-                            });
-                        });
+                        tbody.append(row);
+                    });
+                });
 
-                        // Gọi hàm render phân trang
-                        renderPagination(response.pagination);
-                    } else {
-                        console.error("Lỗi API:", response.message);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error("Lỗi khi lấy dữ liệu:", xhr.responseText);
-                }
-            });
+                renderPagination(response.pagination);
+            } else {
+                console.error("Lỗi API:", response.message);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Lỗi khi lấy dữ liệu:", xhr.responseText);
         }
+    });
+}
 
-        function renderPagination(pagination) {
-            let paginationDiv = $("#pagination");
-            paginationDiv.empty();
+function renderPagination(pagination) {
+    let paginationDiv = $("#pagination");
+    paginationDiv.empty();
 
-            let prevDisabled = pagination.prev_page_url ? "" : "disabled";
-            let nextDisabled = pagination.next_page_url ? "" : "disabled";
+    const current = pagination.current_page;
+    const last = pagination.last_page;
 
-            let paginationHtml =
-                `
-                <button class="btn btn-primary btn-sm mx-1" ${prevDisabled} onclick="fetchInventories(${pagination.current_page - 1})" style="font-size: 20px"><</button>
-                <span class="align-self-center">Trang ${pagination.current_page} / ${pagination.last_page}</span>
-                <button class="btn btn-primary btn-sm mx-1" ${nextDisabled} onclick="fetchInventories(${pagination.current_page + 1})" style="font-size: 20px">></button>`;
-            paginationDiv.append(paginationHtml);
+    // Helper: tạo nút trang
+    function createPageButton(page, text = null, disabled = false, active = false) {
+        let btnClass = "btn btn-primary btn-sm mx-1";
+        if (disabled) btnClass += " disabled";
+        if (active) btnClass += " active";
+
+        let displayText = text || page;
+
+        if (disabled) {
+            return `<button class="${btnClass}" disabled>${displayText}</button>`;
+        } else {
+            return `<button class="${btnClass}" onclick="fetchInventories(${page})">${displayText}</button>`;
         }
+    }
+
+    // Nút prev
+    paginationDiv.append(createPageButton(current - 1, "<", current <= 1));
+
+    // Hiển thị khoảng trang xung quanh current
+    let delta = 2; // số trang bên trái và phải của current hiển thị
+
+    let rangeStart = Math.max(1, current - delta);
+    let rangeEnd = Math.min(last, current + delta);
+
+    // Nếu cách trang đầu nhiều thì hiển thị nút 1 + ...
+    if (rangeStart > 1) {
+        paginationDiv.append(createPageButton(1));
+        if (rangeStart > 2) {
+            paginationDiv.append('<span class="mx-1 align-self-center">...</span>');
+        }
+    }
+
+    // Các trang trong khoảng
+    for (let i = rangeStart; i <= rangeEnd; i++) {
+        paginationDiv.append(createPageButton(i, null, false, i === current));
+    }
+
+    // Nếu cách trang cuối nhiều thì hiển thị ... + nút last
+    if (rangeEnd < last) {
+        if (rangeEnd < last - 1) {
+            paginationDiv.append('<span class="mx-1 align-self-center">...</span>');
+        }
+        paginationDiv.append(createPageButton(last));
+    }
+
+    // Nút next
+    paginationDiv.append(createPageButton(current + 1, ">", current >= last));
+}
+
     </script>
 
 

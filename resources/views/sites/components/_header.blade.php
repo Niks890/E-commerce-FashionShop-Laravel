@@ -14,8 +14,8 @@
 
 @if (Session::has('success'))
     <div class="shadow-lg p-2 move-from-top login-success-notify"
-        style="width: 16rem; position: fixed; text-align: center; border-radius: 8px; 
-    background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; 
+        style="width: 16rem; position: fixed; text-align: center; border-radius: 8px;
+    background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); margin: 0; z-index: 99999;
     top: 0; left: 40%; opacity: 0.9;">
         <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('success') }}
@@ -29,7 +29,7 @@
     <div class="offcanvas__option">
         <div class="offcanvas__links">
             <a href="{{ route('user.login') }}">Đăng nhập</a>
-            <a href="#">Hỏi Đáp</a>
+            <a href="javascript:void(0);">Hỏi Đáp</a>
         </div>
         <div class="offcanvas__top__hover">
             <span>Ngôn ngữ<i class="arrow_carrot-down"></i></span>
@@ -40,7 +40,7 @@
         </div>
     </div>
     <div class="offcanvas__nav__option">
-        <a href="#" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a>
+        <a href="javascript:void(0);" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a>
         <a href="{{ route('sites.wishlist') }}" style="position: relative; display: inline-block;">
             <img src="{{ asset('client/img/icon/heart.png') }}" width="20" alt="">
             <span class="wishlist-quantity-header"

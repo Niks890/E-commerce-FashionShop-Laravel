@@ -41,7 +41,7 @@ class StaffController extends Controller
             'sex' => 'required',
             'username' => 'required|unique:staff,username',
             'password' => 'required',
-            'position' => ['required', Rule::in(['Quản lý', 'Nhân viên bán hàng', 'Nhân viên kho'])],
+            'position' => ['required', Rule::in(['Quản lý', 'Nhân viên bán hàng', 'Nhân viên kho', 'Nhân viên giao hàng'])],
             'status' => 'required',
         ];
 
@@ -84,7 +84,10 @@ class StaffController extends Controller
             $user->roles = 'sale';
         } else if ($data['position'] === 'Nhân viên kho') {
             $user->roles = 'inventory';
-        } else {
+        } else if ($data['position'] === 'Nhân viên giao hàng') {
+            $user->roles = 'delivery';
+        }
+        else {
             $user->roles = '';
         }
         $user->remember_token = Str::random(10);
@@ -139,7 +142,10 @@ class StaffController extends Controller
             $user->roles = 'sale';
         } else if ($data['position'] === 'Nhân viên kho') {
             $user->roles = 'inventory';
-        } else {
+        }else if ($data['position'] === 'Nhân viên giao hàng') {
+            $user->roles = 'delivery';
+        }
+        else {
             $user->roles = '';
         }
         $user->save();

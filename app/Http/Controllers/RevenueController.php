@@ -318,4 +318,8 @@ public function exportExcelMonth(Request $request)
 
         return view('admin.revenuestatistics.profit.index', compact('nam', 'loiNhuan'));
     }
+
+
+
+
 }

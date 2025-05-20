@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Exports;
 
 use Illuminate\Support\Collection;
@@ -27,10 +28,14 @@ class ProductBestSellerDayExcel implements FromCollection, WithHeadings, WithSty
         // Dòng tiêu đề khoảng thời gian (dòng 1)
         $rows->push([
             'Thống kê sản phẩm bán chạy từ '
-            . \Carbon\Carbon::parse($this->from)->format('d/m/Y')
-            . ' đến '
-            . \Carbon\Carbon::parse($this->to)->format('d/m/Y'),
-            '', '', '', '', ''
+                . \Carbon\Carbon::parse($this->from)->format('d/m/Y')
+                . ' đến '
+                . \Carbon\Carbon::parse($this->to)->format('d/m/Y'),
+            '',
+            '',
+            '',
+            '',
+            ''
         ]);
 
         // Dòng trống để tách tiêu đề với header (dòng 2)
@@ -43,7 +48,9 @@ class ProductBestSellerDayExcel implements FromCollection, WithHeadings, WithSty
                 $item['product_name'],
                 $item['total_sold'],
                 $item['total_revenue'],
-                '', '', ''
+                '',
+                '',
+                ''
             ]);
 
             // Nếu có chi tiết size/màu
@@ -53,7 +60,9 @@ class ProductBestSellerDayExcel implements FromCollection, WithHeadings, WithSty
 
                 foreach ($item['variants'] as $variant) {
                     $rows->push([
-                        '', '', '',
+                        '',
+                        '',
+                        '',
                         $variant['color'],
                         $variant['size'],
                         $variant['quantity']

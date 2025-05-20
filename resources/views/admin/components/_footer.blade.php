@@ -3,21 +3,21 @@
         <nav class="pull-left">
             <ul class="nav">
                 <li class="nav-item">
-                    <a class="nav-link" href="http://www.themekita.com">
-                        TST Fashion Shop
+                    <a class="nav-link" href="{{ route('sites.home') }}">
+                        TFashionShop
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"> Giúp đỡ </a>
+                    <a class="nav-link" href="javascript:void(0);"> Giúp đỡ </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#"> Giấy phép </a>
+                    <a class="nav-link" href="javascript:void(0);"> Giấy phép </a>
                 </li>
             </ul>
         </nav>
         <div class="copyright">
             2025, made with <i class="fa fa-heart heart text-danger"></i> by
-            <a href="http://www.tstfashionshop.com">TST Fashion Shop</a>
+            <a href="{{ route('sites.home') }}">TFashionShop</a>
         </div>
     </div>
 </footer>

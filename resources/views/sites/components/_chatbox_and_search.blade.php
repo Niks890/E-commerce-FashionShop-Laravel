@@ -427,7 +427,7 @@
                                     <ul class="product__hover">
                                         <li><a href="{{ url('add-to-wishlist') }}/${item.id}"><img src="{{ asset('client/img/icon/heart.png') }}"
                                             alt=""></a></li>
-                                            <li><a href="#"><img src="{{ asset('client/img/icon/compare.png') }}"
+                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
                                                 alt=""><span>Compare</span></a></li>
                                                 <li><a href="{{ url('product') }}/${item.slug}">
                                                     <img src="{{ asset('client/img/icon/search.png') }}"

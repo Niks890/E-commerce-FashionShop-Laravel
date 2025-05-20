@@ -186,18 +186,7 @@ class CustomerController extends Controller
 
 
 
-    // public function cancelOrder(Request $request, $id)
-    // {
-    //     try {
-    //         $order = Order::findOrFail($id);
-    //         $order->status = 'Đã huỷ đơn hàng';
-    //         $order->reason = $request->reason;
-    //         $order->save();
-    //         return response()->json(['message' => 'Hủy đơn hàng thành công!']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
-    //     }
-    // }
+
 
 
     public function cancelOrder(Request $request, $id)

@@ -142,6 +142,7 @@
                 <tr>
                     <th>#</th>
                     <th>Sản phẩm</th>
+                    <th>Hình Ảnh</th>
                     <th>Size & Màu</th>
                     <th>Số lượng</th>
                     <th>Đơn giá</th>
@@ -169,6 +170,7 @@
                     <tr>
                         <td>{{ $i++ }}</td>
                         <td>{{ $item->product_name . ' - #' . $item->product_id }}</td>
+                        <td><img src="{{ $item->image }}" width="50" class="rounded"></td>
                         <td>{{ $item->size . ' - ' . $item->color }}</td>
                         <td>{{ $item->quantity }}</td>
                         <td>{{ number_format($item->price, 0, ',', '.') }} đ</td>

@@ -3,7 +3,7 @@
         <!-- Logo Header -->
         <div class="logo-header" data-background-color="dark">
             <a href="index.html" class="logo">
-                <img src="assets/img/kaiadmin/logo_light.svg" alt="navbar brand" class="navbar-brand"
+                <img src="assets/img/TSTShop/LogoTSTFashionShop.webp" alt="thương hiệu navbar" class="navbar-brand"
                     height="20" />
             </a>
             <div class="nav-toggle">
@@ -25,20 +25,20 @@
         <div class="container-fluid">
             <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
                 <li class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none">
-                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"
+                    <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);"
                         role="button" aria-expanded="false" aria-haspopup="true">
                         <i class="fa fa-search"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-search animated fadeIn">
                         <form class="navbar-left navbar-form nav-search">
                             <div class="input-group">
-                                <input type="text" placeholder="Search ..." class="form-control" />
+                                <input type="text" placeholder="Tìm kiếm ..." class="form-control" />
                             </div>
                         </form>
                     </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link dropdown-toggle" href="#" id="messageDropdown"
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0);" id="messageDropdown"
                         role="button" data-bs-toggle="dropdown" aria-haspopup="true"
                         aria-expanded="false">
                         <i class="fa fa-envelope"></i>
@@ -47,67 +47,67 @@
                         aria-labelledby="messageDropdown">
                         <li>
                             <div class="dropdown-title d-flex justify-content-between align-items-center">
-                                Messages
-                                <a href="#" class="small">Mark all as read</a>
+                                Tin nhắn
+                                <a href="javascript:void(0);" class="small">Đánh dấu đã đọc tất cả</a>
                             </div>
                         </li>
                         <li>
                             <div class="message-notif-scroll scrollbar-outer">
                                 <div class="notif-center">
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="assets/img/jm_denis.jpg" alt="Img Profile" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jimmy Denis</span>
-                                            <span class="block"> How are you ? </span>
-                                            <span class="time">5 minutes ago</span>
+                                            <span class="block"> Bạn khỏe không? </span>
+                                            <span class="time">5 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="assets/img/chadengle.jpg" alt="Img Profile" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Chad</span>
-                                            <span class="block"> Ok, Thanks ! </span>
-                                            <span class="time">12 minutes ago</span>
+                                            <span class="block"> Ok, Cảm ơn! </span>
+                                            <span class="time">12 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="assets/img/mlane.jpg" alt="Img Profile" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jhon Doe</span>
                                             <span class="block">
-                                                Ready for the meeting today...
+                                                Sẵn sàng cho cuộc họp hôm nay...
                                             </span>
-                                            <span class="time">12 minutes ago</span>
+                                            <span class="time">12 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="assets/img/talha.jpg" alt="Img Profile" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Talha</span>
-                                            <span class="block"> Hi, Apa Kabar ? </span>
-                                            <span class="time">17 minutes ago</span>
+                                            <span class="block"> Chào bạn, bạn khỏe không? </span>
+                                            <span class="time">17 phút trước</span>
                                         </div>
                                     </a>
                                 </div>
                             </div>
                         </li>
                         <li>
-                            <a class="see-all" href="javascript:void(0);">See all messages<i
+                            <a class="see-all" href="javascript:void(0);">Xem tất cả tin nhắn<i
                                     class="fa fa-angle-right"></i>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button"
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0);" id="notifDropdown" role="button"
                         data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-bell"></i>
                         <span class="notification">4</span>
@@ -115,120 +115,120 @@
                     <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown">
                         <li>
                             <div class="dropdown-title">
-                                You have 4 new notification
+                                Bạn có 4 thông báo mới
                             </div>
                         </li>
                         <li>
                             <div class="notif-scroll scrollbar-outer">
                                 <div class="notif-center">
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-icon notif-primary">
                                             <i class="fa fa-user-plus"></i>
                                         </div>
                                         <div class="notif-content">
-                                            <span class="block"> New user registered </span>
-                                            <span class="time">5 minutes ago</span>
+                                            <span class="block"> Người dùng mới đăng ký </span>
+                                            <span class="time">5 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-icon notif-success">
                                             <i class="fa fa-comment"></i>
                                         </div>
                                         <div class="notif-content">
                                             <span class="block">
-                                                Rahmad commented on Admin
+                                                Rahmad đã bình luận trên Admin
                                             </span>
-                                            <span class="time">12 minutes ago</span>
+                                            <span class="time">12 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="assets/img/profile2.jpg" alt="Img Profile" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="block">
-                                                Reza send messages to you
+                                                Reza đã gửi tin nhắn cho bạn
                                             </span>
-                                            <span class="time">12 minutes ago</span>
+                                            <span class="time">12 phút trước</span>
                                         </div>
                                     </a>
-                                    <a href="#">
+                                    <a href="javascript:void(0);">
                                         <div class="notif-icon notif-danger">
                                             <i class="fa fa-heart"></i>
                                         </div>
                                         <div class="notif-content">
-                                            <span class="block"> Farrah liked Admin </span>
-                                            <span class="time">17 minutes ago</span>
+                                            <span class="block"> Farrah đã thích Admin </span>
+                                            <span class="time">17 phút trước</span>
                                         </div>
                                     </a>
                                 </div>
                             </div>
                         </li>
                         <li>
-                            <a class="see-all" href="javascript:void(0);">See all notifications<i
+                            <a class="see-all" href="javascript:void(0);">Xem tất cả thông báo<i
                                     class="fa fa-angle-right"></i>
                             </a>
                         </li>
                     </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link" data-bs-toggle="dropdown" href="#" aria-expanded="false">
+                    <a class="nav-link" data-bs-toggle="dropdown" href="javascript:void(0);" aria-expanded="false">
                         <i class="fas fa-layer-group"></i>
                     </a>
                     <div class="dropdown-menu quick-actions animated fadeIn">
                         <div class="quick-actions-header">
-                            <span class="title mb-1">Quick Actions</span>
-                            <span class="subtitle op-7">Shortcuts</span>
+                            <span class="title mb-1">Hành động nhanh</span>
+                            <span class="subtitle op-7">Phím tắt</span>
                         </div>
                         <div class="quick-actions-scroll scrollbar-outer">
                             <div class="quick-actions-items">
                                 <div class="row m-0">
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-danger rounded-circle">
                                                 <i class="far fa-calendar-alt"></i>
                                             </div>
-                                            <span class="text">Calendar</span>
+                                            <span class="text">Lịch</span>
                                         </div>
                                     </a>
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-warning rounded-circle">
                                                 <i class="fas fa-map"></i>
                                             </div>
-                                            <span class="text">Maps</span>
+                                            <span class="text">Bản đồ</span>
                                         </div>
                                     </a>
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-info rounded-circle">
                                                 <i class="fas fa-file-excel"></i>
                                             </div>
-                                            <span class="text">Reports</span>
+                                            <span class="text">Báo cáo</span>
                                         </div>
                                     </a>
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-success rounded-circle">
                                                 <i class="fas fa-envelope"></i>
                                             </div>
-                                            <span class="text">Emails</span>
+                                            <span class="text">Email</span>
                                         </div>
                                     </a>
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-primary rounded-circle">
                                                 <i class="fas fa-file-invoice-dollar"></i>
                                             </div>
-                                            <span class="text">Invoice</span>
+                                            <span class="text">Hóa đơn</span>
                                         </div>
                                     </a>
-                                    <a class="col-6 col-md-4 p-0" href="#">
+                                    <a class="col-6 col-md-4 p-0" href="javascript:void(0);">
                                         <div class="quick-actions-item">
                                             <div class="avatar-item bg-secondary rounded-circle">
                                                 <i class="fas fa-credit-card"></i>
                                             </div>
-                                            <span class="text">Payments</span>
+                                            <span class="text">Thanh toán</span>
                                         </div>
                                     </a>
                                 </div>
@@ -238,14 +238,13 @@
                 </li>
 
                 <li class="nav-item topbar-user dropdown hidden-caret">
-                    <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#"
+                    <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="javascript:void(0);"
                         aria-expanded="false">
                         <div class="avatar-sm">
-                            <img src="assets/img/profile.jpg" alt="..."
-                                class="avatar-img rounded-circle" />
+                            <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle" />
                         </div>
                         <span class="profile-username">
-                            <span class="op-7">Hi,</span>
+                            <span class="op-7">Xin chào,</span>
                             <span class="fw-bold">{{ auth()->user()->name }}</span>
                         </span>
                     </a>
@@ -254,26 +253,25 @@
                             <li>
                                 <div class="user-box">
                                     <div class="avatar-lg">
-                                        <img src="assets/img/profile.jpg" alt="image profile"
+                                        <img src="assets/img/profile.jpg" alt="ảnh đại diện"
                                             class="avatar-img rounded" />
                                     </div>
                                     <div class="u-text">
                                         <h4>{{ auth()->user()->name }}</h4>
                                         <p class="text-muted">{{ auth()->user()->email }}</p>
                                         <a href="{{ route('staff.profile') }}"
-                                            class="btn btn-xs btn-secondary btn-sm">View Profile</a>
+                                            class="btn btn-xs btn-secondary btn-sm">Xem hồ sơ</a>
                                     </div>
                                 </div>
                             </li>
                             <li>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">My Profile</a>
-                                <a class="dropdown-item" href="#">My Balance</a>
-                                <a class="dropdown-item" href="#">Inbox</a>
+                                <a class="dropdown-item" href="{{ route('staff.profile') }}">Hồ sơ của tôi</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Hộp thư đến</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="#">Account Setting</a>
+                                <a class="dropdown-item" href="javascript:void(0);">Cài đặt tài khoản</a>
                                 <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="{{ route('admin.logout') }}">Logout</a>
+                                <a class="dropdown-item" href="{{ route('admin.logout') }}">Đăng xuất</a>
                             </li>
                         </div>
                     </ul>

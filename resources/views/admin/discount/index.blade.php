@@ -36,98 +36,86 @@
                     </div>
                 </form>
             </div>
-            <table class="table mt-3">
-                <thead>
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
                     <tr>
-                        <th scope="col">ID</th>
-                        <th scope="col">Tên chương trình</th>
-                        <th scope="col">Phần trăm khuyến mãi</th>
-                        <th scope="col">Ngày bắt đầu</th>
-                        <th scope="col">Ngày kết thúc</th>
-                        <th scope="col" class="text-center">Hành động</th>
+                        <th>ID</th>
+                        <th>Tên chương trình</th>
+                        <th>% KM</th>
+                        <th>Bắt đầu</th>
+                        <th>Kết thúc</th>
+                        <th class="text-center">Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach ($data as $model)
                         <tr>
                             <td>{{ $model->id }}</td>
-                            <td>{{ $model->name }}</td>
-                            <td>{{ round($model->percent_discount, 2) * 100 }}%</td>
-                            <td>{{ $model->start_date->format('d/m/Y H:i:s') }}</td>
-                            <td>{{ $model->end_date->format('d/m/Y H:i:s') }}</td>
+                            <td class="fw-semibold">{{ $model->name }}</td>
+                            <td><span class="badge bg-success">{{ round($model->percent_discount, 2) * 100 }}%</span></td>
+                            <td>{{ $model->start_date->format('d/m/Y H:i') }}</td>
+                            <td>{{ $model->end_date->format('d/m/Y H:i') }}</td>
                             <td class="text-center">
-                                <form method="post" action="{{ route('discount.destroy', $model->id) }}">
-                                    @csrf @method('DELETE')
-                                    <a class="btn btn-sm btn-secondary btn-detail" href=""><i
-                                            class="fa fa-edit pe-2"></i>Chi
-                                        tiết</a>
-                                    <a class="btn btn-sm btn-primary btn-edit" href=""><i
-                                            class="fa fa-edit pe-2"></i>Sửa</a>
-                                    <button class="btn btn-sm btn-danger"
-                                        onclick="return confirm('Bạn có chắc muốn xóa không?')">
-                                        <i class="fa fa-trash pe-2"></i>
-                                        Xóa
-                                    </button>
-                                </form>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-info btn-detail"><i class="fas fa-eye"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-primary btn-edit"><i
+                                            class="fas fa-edit"></i></a>
+                                    <form method="POST" action="{{ route('discount.destroy', $model->id) }}"
+                                        onsubmit="return confirm('Xóa?')">
+                                        @csrf @method('DELETE')
+                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
+
         </div>
     </div>
     <div class="d-flex justify-content-center mt-3">
         {{ $data->links() }}
     </div>
 
-    <!--Modal Thêm khuyến mãi-->
-    <form id="modal-discount" class="modal modal-add js-modal" method="POST" action="{{ route('discount.store') }}">
-        @csrf
-        <input type="hidden" name="_method" value="POST">
-        <div class="modal-container-add js-modal-container p-3">
-            <div class="modal-close js-modal-close">
-                <i class="fas fa-times"></i>
-            </div>
-            <div class="modal-header d-flex align-item-center justify-content-center fw-bold" style="font-size: 1.5rem">
-                Thêm Chương trình Khuyến mãi
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="name">Tên Chương trình Khuyến mãi:</label>
-                    <input type="text" name="name" id="name" class="form-control" placeholder="">
-                    @error('name')
-                        <small class="text-danger error_validate">{{ $message }}</small>
-                    @enderror
+
+
+    <!-- Modal Thêm/Sửa -->
+    <div class="modal fade" id="discountModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <form id="discountForm" class="modal-content" method="POST" action="">
+                @csrf
+                <input type="hidden" name="_method" value="POST">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="discountModalLabel">Thêm Khuyến mãi</h5>
+                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="form-group">
-                    <label for="percent_discount">Phần trăm khuyến mãi:</label>
-                    <input type="text" name="percent_discount" id="percent_discount" class="form-control" placeholder="">
-                    @error('percent_discount')
-                        <small class="text-danger error_validate">{{ $message }}</small>
-                    @enderror
-                </div>
-                <div class="row p-3">
-                    <div class="col-6 form-group">
-                        <i class="far fa-calendar pe-2"></i><label for="start_date">Ngày bắt đầu:</label>
-                        <input type="datetime-local" name="start_date" id="start_date" class="form-control" placeholder="">
-                        @error('start_date')
-                            <small class="text-danger error_validate">{{ $message }}</small>
-                        @enderror
+                <div class="modal-body row g-3 px-4">
+                    <div class="col-12">
+                        <label for="name" class="form-label">Tên chương trình</label>
+                        <input type="text" name="name" id="name" class="form-control">
                     </div>
-                    <div class="col-6 form-group">
-                        <i class="far fa-calendar pe-2"></i><label for="end_date">Ngày kết thúc:</label>
-                        <input type="datetime-local" name="end_date" id="end_date" class="form-control" placeholder="">
-                        @error('end_date')
-                            <small class="text-danger error_validate">{{ $message }}</small>
-                        @enderror
+                    <div class="col-12">
+                        <label for="percent_discount" class="form-label">Phần trăm khuyến mãi</label>
+                        <input type="text" name="percent_discount" id="percent_discount" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="start_date" class="form-label">Ngày bắt đầu</label>
+                        <input type="datetime-local" name="start_date" id="start_date" class="form-control">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="end_date" class="form-label">Ngày kết thúc</label>
+                        <input type="datetime-local" name="end_date" id="end_date" class="form-control">
                     </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <input type="submit" class="btn btn-primary me-3 my-2" name="" value="Lưu thông tin" />
-            </div>
+                <div class="modal-footer px-4 py-3">
+                    <button type="submit" class="btn btn-success">Lưu</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
+
     <!--Modal Thêm khuyến mãi-->
 
     <!-- Modal Xem chi tiết -->
@@ -226,39 +214,44 @@
 
     <script>
         $(document).ready(function() {
+            const discountModal = new bootstrap.Modal(document.getElementById('discountModal'));
+
+            $('.btn-create').click(function() {
+                $('#discountForm').attr('action', "{{ route('discount.store') }}");
+                $('#discountForm input[name=_method]').val('POST');
+                $('#discountModalLabel').text('Thêm Khuyến mãi');
+                $('#discountForm')[0].reset();
+                discountModal.show();
+            });
+
             $('.btn-edit').click(function(e) {
                 e.preventDefault();
-                let modalEdit = $('#modal-discount');
-                modalEdit.addClass('open');
-                $('.modal-header').text("Sửa thông tin khuyến mãi");
-                let row = $(this).closest("tr");
-                let promoId = row.find("td:first").text().trim();
-                let actionUpdate = "{{ route('discount.update', ':id') }}".replace(':id', promoId);
-                $("input[name='_method']").val("PUT");
-                // console.log(actionUpdate);
-                modalEdit.attr('action', actionUpdate);
+                const row = $(this).closest("tr");
+                const promoId = row.find("td:first").text().trim();
+                const updateUrl = "{{ route('discount.update', ':id') }}".replace(':id', promoId);
+
+                $('#discountForm').attr('action', updateUrl);
+                $('#discountForm input[name=_method]').val('PUT');
+                $('#discountModalLabel').text('Sửa Khuyến mãi');
+
                 $.ajax({
-                    url: `http://127.0.0.1:8000/api/discount/${promoId}`,
+                    url: `/api/discount/${promoId}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
-                        if (response.status_code === 200) {
-                            let promo = response.data;
-                            $('#name').val(promo.name); //val->input, select,...
-                            $('#percent_discount').val(promo.percent_discount);
-                            $('#start_date').val(new Date(promo.start_date).toISOString().slice(
-                                0, 16)); //yyyy-mm-dd hh-mm-ss
-                            $('#end_date').val(new Date(promo.end_date).toISOString().slice(0,
-                                16));
-                        } else {
-                            alert('Dữ liệu không tìm thấy!');
-                        }
+                        const promo = response.data;
+                        $('#name').val(promo.name);
+                        $('#percent_discount').val(promo.percent_discount * 100);
+                        $('#start_date').val(new Date(promo.start_date).toISOString().slice(0,
+                            16));
+                        $('#end_date').val(new Date(promo.end_date).toISOString().slice(0, 16));
+                        discountModal.show();
                     },
                     error: function() {
-                        alert('Đã có lỗi xảy ra.');
+                        alert('Lỗi lấy dữ liệu khuyến mãi!');
                     }
                 });
-            })
+            });
         });
     </script>
 @endsection

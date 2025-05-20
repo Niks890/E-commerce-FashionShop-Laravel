@@ -1,7 +1,7 @@
 @php
     // Session::forget('product_recent');
     // dd(Session::get('product_recent'));
-    
+
     // Xử lý tính tổng số lượng sản phẩm trong giỏ hàng
     $totalProduct = 0;
     if (Session::has('cart')) {
@@ -203,7 +203,7 @@
                                 <div class="product__details__btns__option">
                                     <a href="{{ route('sites.addToWishList', $productDetail->id) }}"><i
                                             class="fa fa-heart"></i>Thêm vào yêu thích</a>
-                                    <a href="#"><i class="fa fa-exchange"></i>So sánh giá</a>
+                                    <a href="javascript:void(0);"><i class="fa fa-exchange"></i>So sánh giá</a>
                                 </div>
                                 <div class="product__details__last__option">
                                     <h5><span>Các phương thức thanh toán:</span></h5>
@@ -324,7 +324,7 @@
         <script>
             document.querySelectorAll('.color-choice-item').forEach(item => {
                 item.addEventListener('change', async (e) => {
-                    // Xóa viền tất cả label 
+                    // Xóa viền tất cả label
                     document.querySelectorAll('.color-box').forEach(label => label.style.border = 'none');
 
                     // Thêm viền xanh cho label được chọn

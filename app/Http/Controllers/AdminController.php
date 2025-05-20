@@ -11,34 +11,56 @@ class AdminController extends Controller
 {
     public  function dashboard()
     {
-        $revenueByMonth = [
-            'Jan' => 5000000,
-            'Feb' => 7000000,
-            'Mar' => 6000000,
-            'Apr' => 8000000,
-            'May' => 7500000,
-            'Jun' => 9000000,
-            'Jul' => 6500000,
-            'Aug' => 8500000,
-            'Sep' => 7000000,
-            'Oct' => 9500000,
-            'Nov' => 10000000,
-            'Dec' => 11000000,
-        ];
+
+        $months = collect(range(1, 12))->map(function ($month) {
+            return DB::table(DB::raw("(SELECT $month as month) as m"));
+        })->reduce(function ($query, $builder) {
+            return $query ? $query->unionAll($builder) : $builder;
+        });
+
+        // Gói truy vấn subquery lại
+        $subquery = DB::query()->fromSub($months, 'months');
+
+        $results = DB::query()
+            ->fromSub($subquery, 'months')
+            ->leftJoin('orders as o', function ($join) {
+                $join->on(DB::raw('MONTH(o.created_at)'), '=', 'months.month')
+                    ->where(DB::raw('YEAR(o.created_at)'), '=', now()->year)
+                    ->where('o.status', '=', 'Đã thanh toán');
+            })
+            ->select(
+                'months.month',
+                DB::raw('COALESCE(SUM(o.total), 0) as revenue')
+            )
+            ->groupBy('months.month')
+            ->orderBy('months.month')
+            ->get();
+
+        $revenueByMonth = $results->mapWithKeys(function ($row) {
+            $monthName = date('M', mktime(0, 0, 0, $row->month, 1)); // 'Jan', 'Feb', ...
+            return [$monthName => (float) $row->revenue];
+        })->toArray();
+
+        $total = array_values($revenueByMonth); // mảng doanh thu thuần không chứa key
+
 
         $staffQuantity = DB::table('staff')->count();
         $customerQuantity = DB::table('customers')->count();
         $productQuantity = DB::table('products')->count();
         $orderQuantity = DB::table('orders')->where('status', 'Chờ xử lý')->count();
 
-        $revenueMonth = collect(DB::select("SELECT YEAR(created_at) AS namtao, MONTH(created_at) AS thangtao, SUM(total) AS tongtien
-                                            FROM orders
-                                            WHERE status = 'Đã thanh toán'
-                                            GROUP BY namtao, thangtao"))
-            ->where('namtao', now()->year)
-            ->where('thangtao', now()->month)
-            ->first();
-        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueMonth', 'revenueByMonth'));
+        $orderPending = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->whereIn('o.status', ['Chờ xử lý'])
+            ->orderBy('o.id', 'DESC')
+            ->select('o.*', 'c.name as customer_name')
+            ->paginate(5);
+
+        $productOutOfStock = DB::table('product_variants as pv')
+            ->join('products as p', 'pv.product_id', '=', 'p.id')
+            ->where('pv.stock', 0)
+            ->count();
+        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueByMonth', 'productOutOfStock', 'orderPending', 'total'));
     }
 
     public function login()

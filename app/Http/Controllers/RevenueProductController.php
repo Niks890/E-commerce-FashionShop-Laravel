@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Exports\ProductBestSellerDayExcel;
+use App\Exports\TopProductsExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -18,12 +19,12 @@ class RevenueProductController extends Controller
 
         $from = request('from');
         $to = request('to');
-            if (!$from) {
-        $from = Carbon::now()->subDays(7)->format('Y-m-d');
-    }
-    if (!$to) {
-        $to = Carbon::now()->format('Y-m-d');
-    }
+        if (!$from) {
+            $from = Carbon::now()->subDays(7)->format('Y-m-d');
+        }
+        if (!$to) {
+            $to = Carbon::now()->format('Y-m-d');
+        }
 
         $query = DB::table('order_details as od')
             ->join('orders as o', 'od.order_id', '=', 'o.id')
@@ -61,149 +62,270 @@ class RevenueProductController extends Controller
     }
 
 
-// private function getRevenueDataProductBestSeller($from, $to)
-// {
-//     $query = DB::table('order_details as od')
-//         ->join('orders as o', 'od.order_id', '=', 'o.id')
-//         ->join('products as p', 'od.product_id', '=', 'p.id')
-//         ->select(
-//             'p.product_name',
-//             DB::raw('SUM(od.quantity) as total_sold'),
-//             DB::raw('SUM(o.total) as total_revenue') // giả định total_price đã có VAT
-//         )
-//         ->where('o.status', 'Đã Thanh Toán');
 
-//     if ($from) {
-//         $query->whereDate('o.created_at', '>=', $from);
-//     }
+    private function getRevenueDataProductBestSeller($from, $to)
+    {
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'od.order_id', '=', 'o.id')
+            ->join('products as p', 'od.product_id', '=', 'p.id')
+            ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id') // nếu có bảng variant
+            ->select(
+                'p.id as product_id',
+                'p.product_name',
+                'pv.color',
+                'pv.size',
+                DB::raw('SUM(od.quantity) as variant_quantity'),
+                DB::raw('SUM(o.total) as total_revenue')
+            )
+            ->where('o.status', 'Đã Thanh Toán');
 
-//     if ($to) {
-//         $query->whereDate('o.created_at', '<=', $to);
-//     }
+        if ($from) {
+            $query->whereDate('o.created_at', '>=', $from);
+        }
 
-//     return $query
-//         ->groupBy('p.product_name')
-//         ->orderByDesc('total_sold')
-//         ->limit(10)
-//         ->get();
-// }
+        if ($to) {
+            $query->whereDate('o.created_at', '<=', $to);
+        }
 
-private function getRevenueDataProductBestSeller($from, $to)
-{
-    $query = DB::table('order_details as od')
-        ->join('orders as o', 'od.order_id', '=', 'o.id')
-        ->join('products as p', 'od.product_id', '=', 'p.id')
-        ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id') // nếu có bảng variant
-        ->select(
-            'p.id as product_id',
-            'p.product_name',
-            'pv.color',
-            'pv.size',
-            DB::raw('SUM(od.quantity) as variant_quantity'),
-            DB::raw('SUM(o.total) as total_revenue')
-        )
-        ->where('o.status', 'Đã Thanh Toán');
+        // Lấy chi tiết theo sản phẩm + color + size
+        $details = $query
+            ->groupBy('p.id', 'p.product_name', 'pv.color', 'pv.size')
+            ->get();
 
-    if ($from) {
-        $query->whereDate('o.created_at', '>=', $from);
+        // Gom nhóm để tính tổng theo sản phẩm
+        $grouped = $details->groupBy('product_name')->map(function ($items) {
+            return [
+                'product_name' => $items[0]->product_name,
+                'total_sold' => $items->sum('variant_quantity'),
+                'total_revenue' => $items->sum('total_revenue'),
+                'variants' => $items->map(function ($item) {
+                    return [
+                        'color' => $item->color,
+                        'size' => $item->size,
+                        'quantity' => $item->variant_quantity,
+                    ];
+                })
+            ];
+        });
+
+        // Trả về top 10
+        return $grouped->sortByDesc('total_sold')->take(10)->values();
     }
 
-    if ($to) {
-        $query->whereDate('o.created_at', '<=', $to);
+
+
+
+    public function exportPdf(Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        if (!$from || !$to) {
+            return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất PDF.');
+        }
+
+        $data = $this->getRevenueDataProductBestSeller($from, $to);
+
+        $pdf = Pdf::loadView('admin.export.pdf.bestseller.export-bestseller-pdf', [
+            'data' => $data,
+            'from' => $from,
+            'to' => $to
+        ]);
+
+        return $pdf->download('san_pham_ban_chay_' . now()->format('Ymd_His') . '.pdf');
     }
 
-    // Lấy chi tiết theo sản phẩm + color + size
-    $details = $query
-        ->groupBy('p.id', 'p.product_name', 'pv.color', 'pv.size')
-        ->get();
-
-    // Gom nhóm để tính tổng theo sản phẩm
-    $grouped = $details->groupBy('product_name')->map(function ($items) {
-        return [
-            'product_name' => $items[0]->product_name,
-            'total_sold' => $items->sum('variant_quantity'),
-            'total_revenue' => $items->sum('total_revenue'),
-            'variants' => $items->map(function ($item) {
-                return [
-                    'color' => $item->color,
-                    'size' => $item->size,
-                    'quantity' => $item->variant_quantity,
-                ];
-            })
-        ];
-    });
-
-    // Trả về top 10
-    return $grouped->sortByDesc('total_sold')->take(10)->values();
-}
 
 
+    public function exportExcel(Request $request)
+    {
+        $from = $request->input('from');
+        $to = $request->input('to');
 
+        if (!$from || !$to) {
+            return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất Excel.');
+        }
 
-public function exportPdf(Request $request)
-{
-    $from = $request->input('from');
-    $to = $request->input('to');
+        $data = collect($this->getRevenueDataProductBestSeller($from, $to));
 
-    if (!$from || !$to) {
-        return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất PDF.');
+        return Excel::download(new ProductBestSellerDayExcel($data, $from, $to), 'san_pham_ban_chay_' . now()->format('Ymd_His') . '.xlsx');
+    }
+    public function revenueProductBestSellerMonthYear()
+    {
+        return view('admin.product.revenue.bestseller.bestseller-month-year');
     }
 
-    $data = $this->getRevenueDataProductBestSeller($from, $to);
+    public function getProductVariantDetail($productId, Request $request)
+    {
+        dd($request->all(), $productId);
+        $from = $request->input('from');
+        $to = $request->input('to');
 
-    $pdf = Pdf::loadView('admin.export.pdf.bestseller.export-bestseller-pdf', [
-        'data' => $data,
-        'from' => $from,
-        'to' => $to
-    ]);
+        if (!$from || !$to) {
+            return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất Excel.');
+        }
 
-    return $pdf->download('san_pham_ban_chay_' . now()->format('Ymd_His') . '.pdf');
-}
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'od.order_id', '=', 'o.id')
+            ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id')
+            ->where('o.status', 'Đã Thanh Toán')
+            ->where('pv.product_id', $productId)
+            ->select('pv.color', 'pv.size', DB::raw('SUM(od.quantity) as total_sold'));
 
+        if ($from) {
+            $query->whereDate('o.created_at', '>=', $from);
+        }
 
+        if ($to) {
+            $query->whereDate('o.created_at', '<=', $to);
+        }
 
-  public function exportExcel(Request $request)
-{
-    $from = $request->input('from');
-    $to = $request->input('to');
+        $details = $query->groupBy('pv.color', 'pv.size')->get();
 
-    if (!$from || !$to) {
-        return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất Excel.');
+        return response()->json($details);
     }
 
-    $data = collect($this->getRevenueDataProductBestSeller($from, $to));
 
-    return Excel::download(new ProductBestSellerDayExcel($data, $from, $to), 'san_pham_ban_chay_' . now()->format('Ymd_His') . '.xlsx');
-}
 
-public function getProductVariantDetail($productId, Request $request)
-{
-    $from = $request->input('from');
-    $to = $request->input('to');
+    public function topProductSalesApi(Request $request)
+    {
+        $period = $request->input('period', 'year'); // month | quarter | year
+        $selectedYear = $request->input('year');
 
-    if (!$from || !$to) {
-        return redirect()->route('admin.revenueProductBestSeller')->with('error', 'Vui lòng chọn khoảng thời gian trước khi xuất Excel.');
+        $groupByRaw = match ($period) {
+            'month' => 'MONTH(o.created_at)',
+            'quarter' => 'QUARTER(o.created_at)',
+            default => 'YEAR(o.created_at)',
+        };
+
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'od.order_id', '=', 'o.id')
+            ->join('products as p', 'od.product_id', '=', 'p.id')
+            ->selectRaw("p.id as product_id, p.product_name, {$groupByRaw} as period, SUM(od.quantity) as total_sold, SUM(od.quantity * od.price) as total_revenue")
+            ->where('o.status', 'Đã thanh toán');
+
+        if ($selectedYear) {
+            $query->whereYear('o.created_at', $selectedYear);
+        }
+
+        $results = $query
+            ->groupBy('p.id', 'p.product_name', 'period')
+            ->orderBy('period')
+            ->orderByDesc('total_sold')
+            ->get();
+
+        // Tạo labels theo period (tháng, quý, năm)
+        $labels = [];
+        $totalQuantityByPeriod = [];
+        $totalRevenueByPeriod = [];
+
+        if ($period === 'month' && $selectedYear) {
+            for ($i = 1; $i <= 12; $i++) {
+                $labels[$i] = 'Tháng ' . $i;
+                $totalQuantityByPeriod[$i] = 0;
+                $totalRevenueByPeriod[$i] = 0;
+            }
+        } elseif ($period === 'quarter' && $selectedYear) {
+            for ($i = 1; $i <= 4; $i++) {
+                $labels[$i] = 'Quý ' . $i;
+                $totalQuantityByPeriod[$i] = 0;
+                $totalRevenueByPeriod[$i] = 0;
+            }
+        } else {
+            $uniquePeriods = $results->pluck('period')->unique()->sort()->values();
+            foreach ($uniquePeriods as $periodKey) {
+                $periodStr = (string)$periodKey;
+                $labels[$periodStr] = $periodStr;
+                $totalQuantityByPeriod[$periodStr] = 0;
+                $totalRevenueByPeriod[$periodStr] = 0;
+            }
+        }
+
+        // Tổng hợp dữ liệu để vẽ chart
+        foreach ($results as $row) {
+            $periodKey = (string)$row->period;
+            $totalQuantityByPeriod[$periodKey] += $row->total_sold;
+            $totalRevenueByPeriod[$periodKey] += $row->total_revenue;
+        }
+
+        $quantityValues = [];
+        $revenueValues = [];
+        $finalLabels = [];
+
+        foreach ($labels as $key => $label) {
+            $finalLabels[] = $label;
+            $quantityValues[] = (int)($totalQuantityByPeriod[$key] ?? 0);
+            $revenueValues[] = (float)($totalRevenueByPeriod[$key] ?? 0);
+        }
+
+        $detailData = [];
+        foreach ($results as $row) {
+            $detailData[$row->period][] = [
+                'product_id' => $row->product_id,
+                'product_name' => $row->product_name,
+                'total_sold' => $row->total_sold,
+                'total_revenue' => $row->total_revenue,
+            ];
+        }
+
+        return response()->json([
+            'labels' => $finalLabels,
+            'data' => [
+                'total_quantity' => $quantityValues,
+                'total_revenue' => $revenueValues,
+            ],
+            'detail' => $detailData,  // Dữ liệu chi tiết để bạn có thể hiển thị bảng bên dưới biểu đồ
+        ]);
     }
 
-    $query = DB::table('order_details as od')
-        ->join('orders as o', 'od.order_id', '=', 'o.id')
-        ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id')
-        ->where('o.status', 'Đã Thanh Toán')
-        ->where('pv.product_id', $productId)
-        ->select('pv.color', 'pv.size', DB::raw('SUM(od.quantity) as total_sold'));
 
-    if ($from) {
-        $query->whereDate('o.created_at', '>=', $from);
+
+    public function getProductVariantDetailMonthYear($productId, Request $request)
+    {
+        $period = $request->input('period'); // month, quarter, year
+        $value = $request->input('value'); // ví dụ 5 (tháng 5), hoặc 2025 (năm), hoặc 2 (quý 2)
+
+        if (!$period || !$value) {
+            return response()->json(['error' => 'Vui lòng chọn loại thống kê và giá trị tương ứng.'], 400);
+        }
+
+        // Tính from và to dựa theo period + value
+        switch ($period) {
+            case 'month':
+                $from = \Carbon\Carbon::createFromDate(null, $value, 1)->startOfMonth()->toDateString();
+                $to = \Carbon\Carbon::createFromDate(null, $value, 1)->endOfMonth()->toDateString();
+                break;
+            case 'quarter':
+                // Quý 1 = tháng 1-3, quý 2 = 4-6, ...
+                $year = $request->input('year') ?? date('Y');
+                $startMonth = ($value - 1) * 3 + 1;
+                $from = \Carbon\Carbon::createFromDate($year, $startMonth, 1)->startOfMonth()->toDateString();
+                $to = \Carbon\Carbon::createFromDate($year, $startMonth, 1)->addMonths(2)->endOfMonth()->toDateString();
+                break;
+            case 'year':
+                $year = $value;
+                $from = \Carbon\Carbon::createFromDate($year, 1, 1)->startOfYear()->toDateString();
+                $to = \Carbon\Carbon::createFromDate($year, 1, 1)->endOfYear()->toDateString();
+                break;
+            default:
+                return response()->json(['error' => 'Loại thống kê không hợp lệ.'], 400);
+        }
+
+        $query = DB::table('order_details as od')
+            ->join('orders as o', 'od.order_id', '=', 'o.id')
+            ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id')
+            ->where('o.status', 'Đã Thanh Toán')
+            ->where('pv.product_id', $productId)
+            ->whereDate('o.created_at', '>=', $from)
+            ->whereDate('o.created_at', '<=', $to)
+            ->select('pv.color', 'pv.size', DB::raw('SUM(od.quantity) as total_sold'))
+            ->groupBy('pv.color', 'pv.size')
+            ->get();
+
+        return response()->json($query);
     }
 
-    if ($to) {
-        $query->whereDate('o.created_at', '<=', $to);
-    }
 
-    $details = $query->groupBy('pv.color', 'pv.size')->get();
-
-    return response()->json($details);
-}
 
 
 }

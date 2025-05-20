@@ -1,45 +1,51 @@
 @can('salers')
-    @extends('admin.master')
-    @section('title', 'Thông tin Sản phẩm')
-    @section('content')
-        @if (Session::has('success'))
-            <div class="shadow-lg p-2 move-from-top js-div-dissappear" style="width: 26rem; display:flex; text-align:center">
-                <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('success') }}
-            </div>
-        @endif
-        <div class="card">
-            <div class="card-body">
-                <div class="card-sub">
-                    <form method="GET" class="form-inline row" action="{{ route('product.search') }}">
-                        @csrf
-                        <div
-                            class="col-9 navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <button type="submit" class="btn btn-search pe-1">
-                                        <i class="fa fa-search search-icon"></i>
-                                    </button>
-                                </div>
-                                <input name="query" type="text" placeholder="Nhập vào tên sản phẩm cần tìm..."
-                                    class="form-control" />
-                            </div>
-                        </div>
-                        {{-- <div class="col-3">
-                                <a href="{{ route('product.create') }}" class="btn btn-success"><i class="fa fa-plus"></i>Thêm mới</a>
-                            </div> --}}
-                    </form>
+@extends('admin.master')
+
+@section('title', 'Thông tin Sản phẩm')
+
+@section('content')
+    {{-- Flash Message --}}
+    @if (Session::has('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow js-div-dissappear position-fixed top-0 start-50 translate-middle-x mt-3 z-3 px-4 py-3 d-flex align-items-center"
+            role="alert" style="max-width: 400px;">
+            <i class="fas fa-check-circle me-2"></i>
+            <div>{{ Session::get('success') }}</div>
+        </div>
+    @endif
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            {{-- Search Bar --}}
+            <form method="GET" action="{{ route('product.search') }}" class="row g-2 mb-3">
+                @csrf
+                <div class="col-md-9 col-12">
+                    <div class="input-group">
+                        <input type="text" name="query" class="form-control" placeholder="Tìm tên sản phẩm...">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
                 </div>
-                <table class="table mt-3">
-                    <thead>
+                {{-- <div class="col-md-3 col-12 text-end">
+                    <a href="{{ route('product.create') }}" class="btn btn-success w-100">
+                        <i class="fa fa-plus"></i> Thêm mới
+                    </a>
+                </div> --}}
+            </form>
+
+            {{-- Table --}}
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Tên sản phẩm</th>
-                            <th scope="col">Danh mục</th>
-                            <th scope="col">Giá bán</th>
-                            <th scope="col">Trạng thái</th>
-                            <th scope="col">Ngày thêm</th>
-                            <th scope="col">Hình ảnh</th>
-                            <th scope="col" class="text-center">Hành động</th>
+                            <th>ID</th>
+                            <th>Tên</th>
+                            <th>Danh mục</th>
+                            <th>Giá</th>
+                            <th>Trạng thái</th>
+                            <th>Ngày thêm</th>
+                            <th>Ảnh</th>
+                            <th class="text-center">Hành động</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -49,19 +55,26 @@
                                 <td>{{ $model->product_name }}</td>
                                 <td>{{ $model->Category->category_name }}</td>
                                 <td>{{ number_format($model->price, 0, ',', '.') }} đ</td>
-                                <td>{{ $model->status == 0 ? 'Ẩn' : 'Hiển thị' }}</td>
-                                <td>{{ $model->created_at->format('d/m/Y') }}</td>
                                 <td>
-                                    <img src="uploads/{{ $model->image }}" alt="{{ $model->image }}" width="45">
+                                    <span class="badge bg-{{ $model->status == 1 ? 'success' : 'secondary' }}">
+                                        {{ $model->status == 1 ? 'Hiển thị' : 'Ẩn' }}
+                                    </span>
                                 </td>
-                                <td>
-                                    <form method="post" action="{{ route('product.destroy', $model->id) }}">
+                                <td>{{ $model->created_at->format('d/m/Y') }}</td>
+                                <td><img src="uploads/{{ $model->image }}" alt="" width="45" class="rounded"></td>
+                                <td class="text-center">
+                                    <form method="post" action="{{ route('product.destroy', $model->id) }}" class="d-inline">
                                         @csrf @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-secondary btn-detail">
-                                            <i class="fa fa-pen"></i> Xem chi tiết
+                                        <button type="button" class="btn btn-sm btn-info btn-detail" title="Xem chi tiết">
+                                            <i class="fa fa-eye"></i>
                                         </button>
-                                        <a href="{{ route('product.edit', $model->id) }}" class="btn btn-sm btn-primary"><i
-                                                class="fa fa-edit pe-2"></i>Sửa</a>
+                                        <a href="{{ route('product.edit', $model->id) }}"
+                                            class="btn btn-sm btn-primary" title="Sửa">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                            <i class="fa fa-trash"></i>
+                                        </button>
                                     </form>
                                 </td>
                             </tr>
@@ -69,11 +82,15 @@
                     </tbody>
                 </table>
             </div>
+
+            {{-- Pagination --}}
+            <div class="d-flex justify-content-center mt-3">
+                {{ $data->links() }}
+            </div>
         </div>
-        </hr>
-        <div class="d-flex justify-content-center mt-3">
-            {{ $data->links() }}
-        </div>
+    </div>
+
+
         <!-- Modal productDetail -->
         <div class="modal fade" id="productDetail" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
             <div class="modal-dialog modal-lg">
@@ -145,73 +162,61 @@
                 </div>
             </div>
         </div>
-    @endsection
-    @section('css')
-        <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
-    @endsection
 
-    @section('js')
-        @if (Session::has('success'))
-            <script src="{{ asset('assets/js/message.js') }}"></script>
-        @endif
+@endsection
 
-        <script>
-            @if ($errors->any())
-                $(document).ready(function() {
-                    $('#productDetail').addClass("open");
-                })
-            @endif
-        </script>
+@section('css')
+    <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}">
+@endsection
 
-        <script>
-            $(document).ready(function() {
-                $(".btn-detail").click(function(event) {
-                    event.preventDefault();
-                    let row = $(this).closest("tr");
-                    let productId = row.find("td:first").text().trim();
-                    $.ajax({
-                        url: `http://127.0.0.1:8000/api/product/${productId}`, //url, type, datatype, success,
-                        type: "GET",
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.status_code === 200) {
-                                let productInfo = response.data;
-                                // console.log(productInfo);
-                                $("#product-id").text(productInfo.id);
-                                $("#product-name").text(productInfo.name);
-                                $("#product-brand").text(productInfo.brand);
-                                $("#product-price").text(productInfo.price);
-                                $("#product-image").attr("src", `uploads/${productInfo.image}`);
-                                $("#product-description").text(productInfo.description);
-                                $("#category-name").text(productInfo.category.name);
-                                let color = [], size_and_stock = [];
-                                $.each(productInfo["product-variant"], function(i, variant) {
-                                    color.push(variant.color);
-                                    size_and_stock.push(`${variant.color}-${variant.size} (${variant.stock} cái)`);
-                                });
-                                // console.log(color, size_and_stock)
-                                $("#colors").text([...new Set(color)].join(', '));
-                                $("#sizes").text(size_and_stock.join(', '));
-                                $("#product-created").text(new Date(productInfo.created_at)
-                                    .toLocaleString(
-                                        'vi-VN'));
-                                $("#product-updated").text(new Date(productInfo.updated_at)
-                                    .toLocaleString('vi-VN'));
-                                $("#productDetail").modal("show");
-                            } else {
-                                alert("Không thể lấy dữ liệu chi tiết!");
-                            }
-                        },
-                        error: function() {
-                            alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+@section('js')
+    @if (Session::has('success'))
+        <script src="{{ asset('assets/js/message.js') }}"></script>
+    @endif
+
+    <script>
+        $(document).ready(function() {
+            $(".btn-detail").click(function(event) {
+                event.preventDefault();
+                let productId = $(this).closest("tr").find("td:first").text().trim();
+                $.ajax({
+                    url: `http://127.0.0.1:8000/api/product/${productId}`,
+                    type: "GET",
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.status_code === 200) {
+                            const p = response.data;
+                            $("#product-id").text(p.id);
+                            $("#product-name").text(p.name);
+                            $("#product-brand").text(p.brand);
+                            $("#product-price").text(p.price);
+                            $("#product-image").attr("src", `uploads/${p.image}`);
+                            $("#product-description").text(p.description);
+                            $("#category-name").text(p.category.name);
+
+                            let colors = [...new Set(p["product-variant"].map(v => v.color))];
+                            let sizes = p["product-variant"].map(v => `${v.color}-${v.size} (${v.stock} cái)`);
+
+                            $("#colors").text(colors.join(', '));
+                            $("#sizes").text(sizes.join(', '));
+                            $("#product-created").text(new Date(p.created_at).toLocaleString('vi-VN'));
+                            $("#product-updated").text(new Date(p.updated_at).toLocaleString('vi-VN'));
+
+                            $("#productDetail").modal("show");
+                        } else {
+                            alert("Không thể lấy dữ liệu chi tiết!");
                         }
-                    });
+                    },
+                    error: function() {
+                        alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+                    }
                 });
             });
-        </script>
-    @endsection
+        });
+    </script>
+@endsection
 @else
-{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+    {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan
 
 

@@ -45,7 +45,7 @@ class DiscountController extends Controller
         ]);
         $discount = new Discount();
         $discount->name = $data['name'];
-        $discount->percent_discount = $data['percent_discount'];
+        $discount->percent_discount = $data['percent_discount'] / 100;
         $discount->start_date = $data['start_date'];
         $discount->end_date = $data['end_date'];
         $discount->save();
@@ -87,7 +87,7 @@ class DiscountController extends Controller
             'end_date.required' => 'Vui lòng nhập ngày kết thúc cho chương trình.'
         ]);
         $discount->name = $data['name'];
-        $discount->percent_discount = $data['percent_discount'];
+        $discount->percent_discount = $data['percent_discount'] / 100;
         $discount->start_date = $data['start_date'];
         $discount->end_date = $data['end_date'];
         $discount->save();

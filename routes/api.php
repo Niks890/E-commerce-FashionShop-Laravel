@@ -69,5 +69,7 @@ Route::get('blog_detail/{id}', [ApiController::class, 'blogDetail'])->name('api.
 Route::get('rate-order/{id}', [ApiController::class, 'rateOrder'])->name('api.rateOrder');
 
 Route::get('/revenue-stats', [RevenueController::class, 'revenueMonthApi'])->name('api.revenueMonthApi');
-Route::get('/revenue-product-detail/{product_id}', [RevenueProductController::class, 'getProductVariantDetail'])
-    ->name('api.getProductVariantDetail');
+Route::get('/revenue-product-detail/{product_id}', [RevenueProductController::class, 'getProductVariantDetail'])->name('api.getProductVariantDetail');
+
+Route::get('/revenue-product-detail-month-year/{product_id}', [RevenueProductController::class, 'getProductVariantDetailMonthYear'])->name('api.getProductVariantDetailMonthYear');
+Route::get('/revenue-bestseller-product', [RevenueProductController::class, 'topProductSalesApi'])->name('api.topProductSalesApi');

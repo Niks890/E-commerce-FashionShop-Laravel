@@ -21,7 +21,7 @@
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
                     <h4 class="card-title mb-0 text-primary">
-                        <i class="fas fa-chart-line me-2"></i>Thống kê doanh thu theo ngày
+                        <i class="fas fa-chart-line me-2"></i>Thống kê sản phẩm bán chạy theo ngày
                     </h4>
                     @php
                         $from = request('from', $from);
@@ -66,7 +66,7 @@
 
     {{-- Bảng danh sách sản phẩm --}}
     <div class="card">
-        <div class="card-header bg-success text-white">Top 10 sản phẩm bán chạy</div>
+        <div class="card-header bg-success text-white">Top các sản phẩm bán chạy</div>
         <div class="card-body p-0">
             <table class="table table-striped table-hover mb-0">
                 <thead class="table-light">

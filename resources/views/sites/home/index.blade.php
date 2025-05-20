@@ -77,7 +77,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Clothing Collections 2025</h2>
-                            <a href="#">Shop now</a>
+                            <a href="javascript:void(0);">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -88,7 +88,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Accessories</h2>
-                            <a href="#">Shop now</a>
+                            <a href="javascript:void(0);">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -99,7 +99,7 @@
                         </div>
                         <div class="banner__item__text">
                             <h2>Shoes Spring 2025</h2>
-                            <a href="#">Shop now</a>
+                            <a href="javascript:void(0);">Shop now</a>
                         </div>
                     </div>
                 </div>
@@ -157,7 +157,7 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="#"><img src="{{ asset('client/img/icon/compare.png') }}"
+                                            <a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
                                                     alt="">
                                                 <span>Compare</span>
                                             </a>
@@ -292,7 +292,7 @@
                                                                 </a>
                                                         </li>
 
-                                                            <li><a href="#"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
+                                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
                                                             <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
                                                         </ul>
                                                  </div>
@@ -418,7 +418,7 @@
                                                             </a>
                                                     </li>
 
-                                                        <li><a href="#"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
+                                                        <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
                                                         <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
                                                     </ul>
                                              </div>
@@ -549,7 +549,7 @@
                                 <p>Seconds</p>
                             </div>
                         </div>
-                        <a href="#" class="primary-btn">Shop now</a>
+                        <a href="javascript:void(0);" class="primary-btn">Shop now</a>
                     </div>
                 </div>
             </div>

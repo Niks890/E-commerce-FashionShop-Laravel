@@ -69,7 +69,7 @@
                                             $tags = explode(',', $blogDetail->tags);
                                         @endphp
                                         @foreach ($tags as $tag)
-                                            <a href="#">#{{$tag}}</a>
+                                            <a href="javascript:void(0);">#{{$tag}}</a>
                                         @endforeach
                                     </div>
                                 </div>
@@ -84,7 +84,7 @@
                                             <h5>{{ $previousBlog->title }}</h5>
                                         </a>
                                     @else
-                                        <a href="#" class="blog__details__btns__item">
+                                        <a href="javascript:void(0);" class="blog__details__btns__item">
                                             <p><span class="arrow_left"></span>Không có bài viết trước đó</p>
                                             <h5></h5>
                                         </a>
@@ -97,7 +97,7 @@
                                             <h5>{{ $nextBlog->title }}</h5>
                                         </a>
                                     @else
-                                        <a href="#" class="blog__details__btns__item blog__details__btns__item--next">
+                                        <a href="javascript:void(0);" class="blog__details__btns__item blog__details__btns__item--next">
                                             <p>Không có bài viết tiếp theo<span class="arrow_right"></span></p>
                                             <h5></h5>
                                         </a>
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="blog__details__comment">
                             <h4>Để lại đánh giá</h4>
                             <form action="#">

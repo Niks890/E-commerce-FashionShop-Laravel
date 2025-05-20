@@ -12,6 +12,7 @@
     <div class="row">
         {{-- Card số liệu với tooltip --}}
         <div class="col-sm-6 col-md-4">
+            <a href="{{route('staff.index')}}">
             <div class="card card-stats card-round" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="Tổng số nhân viên hiện tại">
                 <div class="card-body">
@@ -30,6 +31,7 @@
                     </div>
                 </div>
             </div>
+            </a>
         </div>
         <div class="col-sm-6 col-md-4">
             <div class="card card-stats card-round" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -54,38 +56,35 @@
 
         {{-- Card doanh thu tháng với phần tăng trưởng --}}
         <div class="col-sm-6 col-md-4">
-            <div class="card card-stats card-round" data-bs-toggle="tooltip" data-bs-placement="top"
-                title="Doanh thu tháng này và tăng trưởng so với tháng trước">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-icon">
-                            <div class="icon-big text-center icon-success bubble-shadow-small">
-                                <i class="fas fa-luggage-cart"></i>
-                            </div>
-                        </div>
-                        <div class="col col-stats ms-3 ms-sm-0">
-                            <div class="numbers d-flex align-items-center gap-2">
-                                <div>
-                                    <p class="card-category mb-1">Doanh thu tháng này</p>
-                                    <h4 class="card-title">{{ number_format($revenueMonth->tongtien ?? 0, 0, ',', '.') }} đ
-                                    </h4>
+            <a href="{{ route('admin.revenueDay') }}" class="text-decoration-none">
+                <div class="card card-stats card-round" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Doanh thu tháng này và tăng trưởng so với tháng trước">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-icon">
+                                <div class="icon-big text-center icon-success bubble-shadow-small">
+                                    <i class="fas fa-luggage-cart"></i>
                                 </div>
-                                @if (isset($revenueGrowthPercent))
-                                    <div class="text-smaller d-flex align-items-center"
-                                        style="font-weight:600; color: {{ $revenueGrowthPercent >= 0 ? '#28a745' : '#dc3545' }}">
-                                        <i class="fas fa-arrow-{{ $revenueGrowthPercent >= 0 ? 'up' : 'down' }} me-1"></i>
-                                        {{ abs($revenueGrowthPercent) }}%
+                            </div>
+                            <div class="col col-stats ms-3 ms-sm-0">
+                                <div class="numbers d-flex align-items-center gap-2">
+                                    <div>
+                                        <p class="card-category mb-1">Doanh thu tháng này</p>
+                                        <h4 class="card-title text-primary">Đến xem ngay <i
+                                                class="fas fa-arrow-right ms-1"></i>
+                                        </h4>
                                     </div>
-                                @endif
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </a>
         </div>
 
         {{-- Đơn hàng chờ xử lý --}}
         <div class="col-sm-6 col-md-4">
+            <a href="{{ route('order.index') }}" class="text-decoration-none">
             <div class="card card-stats card-round" data-bs-toggle="tooltip" data-bs-placement="top"
                 title="Số đơn hàng đang chờ xử lý">
                 <div class="card-body">
@@ -104,11 +103,12 @@
                     </div>
                 </div>
             </div>
+            </a>
         </div>
 
         {{-- Sản phẩm bán chạy nhất --}}
         <div class="col-sm-6 col-md-4">
-            <a href="javascript:void(0);" class="text-decoration-none">
+            <a href="{{ route('admin.revenueProductBestSeller') }}" class="text-decoration-none">
                 <div class="card card-stats card-round hover-shadow" data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Xem danh sách sản phẩm bán chạy nhất">
                     <div class="card-body">
@@ -133,7 +133,7 @@
 
         {{-- Sản phẩm gần hết hàng --}}
         <div class="col-sm-6 col-md-4">
-            <a href="javascript:void(0);" class="text-decoration-none">
+            <a href="{{ route('admin.revenueInventory') }}" class="text-decoration-none">
                 <div class="card card-stats card-round hover-shadow" data-bs-toggle="tooltip" data-bs-placement="top"
                     title="Xem danh sách sản phẩm gần hết hàng">
                     <div class="card-body">
@@ -161,11 +161,12 @@
     <div class="card mt-3 border-warning shadow-sm">
         <div class="card-body bg-warning bg-opacity-25 d-flex justify-content-between align-items-center flex-wrap">
             <div>
-                <strong>Cảnh báo:</strong> Có <b>5 sản phẩm</b> đang trong tình trạng tồn kho thấp. Vui lòng kiểm tra và bổ
+                <strong>Cảnh báo:</strong> Có <b>{{ $productOutOfStock ?? 0 }} sản phẩm</b> đang trong tình trạng tồn kho
+                thấp. Vui lòng kiểm tra và bổ
                 sung hàng kịp thời.
             </div>
-            <a href="javascript:void(0);" class="btn btn-warning btn-sm text-white shadow-sm" data-bs-toggle="tooltip"
-                title="Đi tới trang quản lý tồn kho">
+            <a href="{{ route('admin.revenueInventory') }}" class="btn btn-danger btn-sm text-white shadow-sm"
+                data-bs-toggle="tooltip" title="Đi tới trang quản lý tồn kho">
                 Quản lý tồn kho <i class="fas fa-arrow-right ms-1"></i>
             </a>
         </div>
@@ -175,7 +176,7 @@
     <div class="card mt-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5>Đơn hàng mới nhất</h5>
-            <a href="javascript:void(0);" class="btn btn-primary btn-sm">Xem tất cả đơn hàng</a>
+            <a href="{{ route('order.index') }}" class="btn btn-primary btn-sm">Xem tất cả đơn hàng</a>
         </div>
         <div class="card-body p-0">
             <table class="table table-striped mb-0">
@@ -186,65 +187,70 @@
                         <th>Ngày đặt</th>
                         <th>Trạng thái</th>
                         <th>Tổng tiền</th>
+                        <th>Hành động</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {{-- Dữ liệu giả để demo, bạn có thể thay bằng dữ liệu thật --}}
-                    <tr>
-                        <td>DH001</td>
-                        <td>Nguyễn Văn A</td>
-                        <td>15/05/2025</td>
-                        <td><span class="badge bg-info text-white">Đang xử lý</span></td>
-                        <td>1.500.000 đ</td>
-                    </tr>
-                    <tr>
-                        <td>DH002</td>
-                        <td>Trần Thị B</td>
-                        <td>14/05/2025</td>
-                        <td><span class="badge bg-success">Đã giao</span></td>
-                        <td>850.000 đ</td>
-                    </tr>
-                    <tr>
-                        <td>DH003</td>
-                        <td>Phạm Văn C</td>
-                        <td>14/05/2025</td>
-                        <td><span class="badge bg-danger">Hủy</span></td>
-                        <td>0 đ</td>
-                    </tr>
-                    <tr>
-                        <td>DH004</td>
-                        <td>Vũ Thị D</td>
-                        <td>13/05/2025</td>
-                        <td><span class="badge bg-warning text-dark">Đang giao</span></td>
-                        <td>2.200.000 đ</td>
-                    </tr>
-                    <tr>
-                        <td>DH005</td>
-                        <td>Hoàng Văn E</td>
-                        <td>12/05/2025</td>
-                        <td><span class="badge bg-success">Đã giao</span></td>
-                        <td>1.200.000 đ</td>
-                    </tr>
+                    @forelse ($orderPending as $item)
+                        <tr>
+                            <td>{{ $item->id }}</td>
+                            <td>{{ $item->customer_name }}</td>
+                            <td>{{ $item->created_at }}</td>
+                            <td><span class="badge bg-info text-white">{{ $item->status }}</span></td>
+                            <td>{{ number_format($item->total) }} đ</td>
+                            <td><a class="btn btn-primary" href="{{route('order.index')}}">Đến xử lý</a></td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">
+                                Chưa có đơn hàng nào
+                            </td>
+                        </tr>
+                    @endforelse
                 </tbody>
             </table>
+            {{-- Phân trang --}}
+            <div class="d-flex justify-content-center">
+                {{ $orderPending->links() }}
+            </div>
         </div>
     </div>
+
 
     {{-- Biểu đồ doanh thu theo tháng --}}
     <div class="row mt-4">
         <div class="col-12">
             <div class="card card-round">
                 <div class="mt-3 text-end">
-                    <a href="javascript:void(0);" class="btn btn-primary">
+                    <a href="{{ route('admin.revenueMonth') }}" class="btn btn-primary">
                         Xem chi tiết doanh thu
                         <i class="fas fa-arrow-right ms-1"></i>
                     </a>
                 </div>
                 <div class="card-body">
-                    <h5 class="card-title">Doanh thu hôm nay</h5>
+                    <h5 class="card-title">Doanh thu các tháng thuộc năm {{ now()->year }}</h5>
                     <canvas id="revenueChart" height="100"></canvas>
 
-                    {{-- Nút xem chi tiết --}}
+                    <div class="stats-summary">
+                        <div class="summary-item">
+                            <div class="summary-value" id="totalRevenue">
+                                {{ number_format(array_sum($total ?? []), 0, ',', '.') ?? '0' }} VNĐ</div>
+                            <div class="summary-label">Tổng doanh thu</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="avgRevenue">
+                                {{ number_format(count($total ?? []) > 0 ? array_sum($total) / count($total) : 0, 0, ',', '.') ?? '0' }}
+                                VNĐ
+                            </div>
+                            <div class="summary-label">Doanh thu trung bình</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-value" id="maxRevenue">
+                                {{ number_format(count($total ?? []) > 0 ? max($total) : 0, 0, ',', '.') ?? '0' }} VNĐ
+                            </div>
+                            <div class="summary-label">Doanh thu cao nhất</div>
+                        </div>
+                    </div>
 
                 </div>
             </div>
@@ -264,6 +270,38 @@
                 aria-label="Close"></button>
         </div>
     </div>
+@endsection
+
+@section('css')
+<style>
+   .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .summary-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0ea5e9;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-label {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+</style>
+
+
 @endsection
 
 @section('js')
@@ -317,6 +355,9 @@
                     }
                 }
             }
+
+                // Cập nhật tổng hợp
+
         });
 
 
