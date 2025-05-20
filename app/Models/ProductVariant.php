@@ -24,4 +24,8 @@ class ProductVariant extends Model
     public function Product() {
         return $this->belongsTo(Product::class);
     }
+
+    public function ImageVariants() {
+        return $this->hasMany(ImageVariant::class);
+    }
 }

@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('inventories', function (Blueprint $table) {
             $table->increments('id');
             $table->decimal('total', 10,2)->nullable();
+            $table->decimal('vat', 10,2)->nullable();
             $table->unsignedInteger('provider_id');
             $table->unsignedInteger('staff_id');
             $table->foreign('provider_id')->references('id')->on('providers');

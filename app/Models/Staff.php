@@ -36,4 +36,8 @@ class Staff extends Authenticatable
     public function blogs() {
         return $this->hasMany(Blog::class);
     }
+
+    public function orders() {
+        return $this->hasMany(Order::class);
+    }
 }

@@ -73,10 +73,6 @@
                                            title="Xóa khỏi wishlist">
                                            <i class="bi bi-heartbreak-fill"></i> Xóa
                                         </a>
-                                        <a href="{{ url('product/'.$item->slug) }}"
-                                           class="btn btn-primary btn-sm px-3">
-                                           <i class="bi bi-cart-plus"></i> Thêm vào giỏ
-                                        </a>
                                     </div>
                                 </div>
                             </div>

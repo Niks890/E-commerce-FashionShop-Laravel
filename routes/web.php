@@ -6,6 +6,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatBotApiController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CloudinaryUploadController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
@@ -15,7 +16,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\StaffController;
-use App\Http\Controllers\DialogflowController;
+// use App\Http\Controllers\DialogflowController;
 use App\Http\Controllers\FacebookAuthController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OllamaController;
@@ -208,3 +209,4 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 //CHATBOT REDIS TEST
 Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
+// Route::get('/cloudinary', [CloudinaryUploadController::class, 'showForm'])->name('cloudinary.showForm');

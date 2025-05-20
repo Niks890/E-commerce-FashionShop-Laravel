@@ -301,7 +301,6 @@
         }
 </style>
 
-
 @endsection
 
 @section('js')

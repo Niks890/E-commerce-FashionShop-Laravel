@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\CloudinaryUploadController;
 use App\Http\Controllers\DialogflowWebhookController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueProductController;
@@ -73,3 +74,6 @@ Route::get('/revenue-product-detail/{product_id}', [RevenueProductController::cl
 
 Route::get('/revenue-product-detail-month-year/{product_id}', [RevenueProductController::class, 'getProductVariantDetailMonthYear'])->name('api.getProductVariantDetailMonthYear');
 Route::get('/revenue-bestseller-product', [RevenueProductController::class, 'topProductSalesApi'])->name('api.topProductSalesApi');
+
+
+Route::post('/upload', [CloudinaryUploadController::class, 'upload'])->name('api.upload');
