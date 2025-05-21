@@ -22,7 +22,7 @@
             <div class="col-lg-4 col-md-6 col-sm-6">
                 <a href="{{ route('sites.blogDetail', $model->slug) }}">
                 <div class="blog__item">
-                    <div class="blog__item__pic set-bg" data-setbg="{{ asset('uploads/'.$model->image) }}"></div>
+                    <div class="blog__item__pic set-bg" data-setbg="{{ $model->image }}"></div>
                     <div class="blog__item__text">
                         <span><img src="{{ asset('client/img/icon/calendar.png') }}" alt="">{{$model->created_at}}</span>
                         <h5>{{$model->title}}</h5>

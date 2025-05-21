@@ -11,16 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('vouche_usages', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('product_id');
-            $table->unsignedInteger('customer_id');
+            $table->unsignedInteger('voucher_id');
             $table->unsignedInteger('order_id');
-            $table->text('content');
-            $table->integer('start');
-            $table->foreign('product_id')->references('id')->on('products');
+            $table->unsignedInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
+            $table->foreign('voucher_id')->references('id')->on('vouchers');
             $table->foreign('order_id')->references('id')->on('orders');
+            $table->dateTime('used_at')->nullable();
             $table->timestamps();
         });
     }
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('commments');
+        Schema::dropIfExists('vouche_usages');
     }
 };

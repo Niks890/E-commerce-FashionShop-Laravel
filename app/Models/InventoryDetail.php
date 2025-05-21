@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Model;
 class InventoryDetail extends Model
 {
     use HasFactory, HasCompositeKey;
-    protected $primaryKey = ['product_id', 'inventory_id'];
+    protected $primaryKey = ['product_id', 'inventory_id', 'product_variant_id'];
     protected $fillable = [
         'product_id',
         'inventory_id',
+        'product_variant_id',
         'quantity',
         'price',
         'size'
@@ -26,4 +27,10 @@ class InventoryDetail extends Model
     public function Inventory() {
         return $this->belongsTo(Inventory::class);
     }
+
+    public function ProductVariant() {
+        return $this->belongsTo(ProductVariant::class);
+    }
+
+
 }

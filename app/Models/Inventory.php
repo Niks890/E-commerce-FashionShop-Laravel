@@ -12,7 +12,8 @@ class Inventory extends Model
     protected $fillable = [
         'total',
         'provider_id',
-        'staff_id'
+        'staff_id',
+        'vat'
     ];
 
     //1 PhieuNhap cho 1 NCC

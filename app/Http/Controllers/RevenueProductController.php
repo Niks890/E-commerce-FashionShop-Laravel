@@ -157,7 +157,7 @@ class RevenueProductController extends Controller
 
     public function getProductVariantDetail($productId, Request $request)
     {
-        dd($request->all(), $productId);
+        // dd($request->all(), $productId);
         $from = $request->input('from');
         $to = $request->input('to');
 

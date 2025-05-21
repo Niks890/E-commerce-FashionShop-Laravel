@@ -56,7 +56,7 @@
                                 <div class="notif-center">
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jimmy Denis</span>
@@ -66,7 +66,7 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Chad</span>
@@ -76,7 +76,7 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jhon Doe</span>
@@ -88,7 +88,7 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Talha</span>
@@ -143,7 +143,7 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/file_hwwqtl" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="block">

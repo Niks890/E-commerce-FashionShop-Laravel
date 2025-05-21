@@ -11,17 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('comments', function (Blueprint $table) {
+        Schema::create('product_discounts', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('product_id');
-            $table->unsignedInteger('customer_id');
-            $table->unsignedInteger('order_id');
-            $table->text('content');
-            $table->integer('start');
             $table->foreign('product_id')->references('id')->on('products');
-            $table->foreign('customer_id')->references('id')->on('customers');
-            $table->foreign('order_id')->references('id')->on('orders');
+            $table->unsignedInteger('discount_id');
+            $table->foreign('discount_id')->references('id')->on('products');
             $table->timestamps();
+            $table->unique(['product_id', 'discount_id']);
         });
     }
 
@@ -30,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('commments');
+        Schema::dropIfExists('product_discounts');
     }
 };

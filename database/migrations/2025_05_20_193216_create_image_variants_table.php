@@ -14,7 +14,8 @@ return new class extends Migration
         Schema::create('image_variants', function (Blueprint $table) {
             $table->increments('id');
             $table->string('url');
-            $table->foreignId('product_id')->references('id')->on('products');
+            $table->unsignedInteger('product_variant_id');
+            $table->foreign('product_variant_id')->references('id')->on('product_variants');
             $table->timestamps();
         });
     }

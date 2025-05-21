@@ -112,7 +112,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base3">
                             <i class="fas fa-percentage"></i>
-                            <p>Quản lý Khuyến mãi</p>
+                            <p>Quản lý Khuyến mãi/ Voucher</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base3">

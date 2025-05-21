@@ -22,8 +22,10 @@ return new class extends Migration
                 'Đã bị huỷ'
             ]);
             $table->text('note')->nullable();
-            $table->foreignId('updated_by')->references('id')->on('staff')->nullable();
-            $table->foreignId('order_id')->references('id')->on('orders');
+            $table->unsignedInteger('updated_by')->nullable();
+            $table->unsignedInteger('order_id')->nullable();
+            $table->foreign('updated_by')->references('id')->on('staff');
+            $table->foreign('order_id')->references('id')->on('orders');
             $table->timestamps();
         });
     }

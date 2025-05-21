@@ -14,12 +14,14 @@ return new class extends Migration
         Schema::create('inventory_details', function (Blueprint $table) {
             $table->unsignedInteger('product_id');
             $table->unsignedInteger('inventory_id');
+            $table->unsignedInteger('product_variant_id');
             $table->unsignedInteger('quantity')->default(1);
             $table->decimal('price', 10,2);
             $table->string('size', 30)->nullable();
+            $table->foreign('product_variant_id')->references('id')->on('product_variants');
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('inventory_id')->references('id')->on('inventories');
-            $table->primary(['product_id', 'inventory_id']);
+            $table->primary(['product_id', 'inventory_id', 'product_variant_id']);
             $table->timestamps();
         });
     }

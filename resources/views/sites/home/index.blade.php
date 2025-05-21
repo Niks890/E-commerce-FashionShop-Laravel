@@ -605,7 +605,7 @@
                 @foreach ($data as $model)
                     <div class="col-lg-4 col-md-6 col-sm-6">
                         <div class="blog__item">
-                            <div class="blog__item__pic set-bg" data-setbg="{{ asset('uploads/' . $model->image) }}">
+                            <div class="blog__item__pic set-bg" data-setbg="{{$model->image}}">
                             </div>
                             <div class="blog__item__text">
                                 <span><img src="{{ asset('client/img/icon/calendar.png') }}"

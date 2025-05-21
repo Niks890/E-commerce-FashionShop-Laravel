@@ -26,7 +26,7 @@
             <div class="row d-flex justify-content-center">
                 <div class="col-lg-12">
                     <div class="blog__details__pic">
-                        <img src="{{ asset('uploads/'.$blogDetail->image) }}" alt="">
+                        <img src="{{ $blogDetail->image }}" alt="">
                     </div>
                 </div>
                 <div class="col-lg-8">
