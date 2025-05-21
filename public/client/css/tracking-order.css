@@ -1,0 +1,272 @@
+.card {
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.08) !important;
+    }
+
+    .card-header {
+        background: linear-gradient(45deg, #1a73e8, #2196f3);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    h6 {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+
+    /* Tracking Steps Styles */
+    .tracking-step {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        margin: 3rem 0;
+    }
+
+    .tracking-step::before {
+        content: "";
+        position: absolute;
+        top: 20px;
+        left: 10%;
+        width: 80%;
+        height: 4px;
+        background: #e9ecef;
+        z-index: 0;
+    }
+
+    .step {
+        position: relative;
+        text-align: center;
+        width: 25%;
+        z-index: 1;
+    }
+
+    .step .circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        font-size: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.4s ease;
+    }
+
+    .step.active .circle {
+        background-color: #2196f3;
+        transform: scale(1.1);
+        box-shadow: 0 6px 12px rgba(33, 150, 243, 0.3);
+    }
+
+    .step.completed .circle {
+        background-color: #28a745;
+    }
+
+    .step .label {
+        margin-top: 12px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .step .time {
+        margin-top: 5px;
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+
+    .step.active .label {
+        color: #2196f3;
+        font-weight: 700;
+    }
+
+    .step.completed .label {
+        color: #28a745;
+    }
+
+    /* Badge Styles */
+    .badge {
+        padding: 0.5em 0.75em;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .bg-info {
+        background-color: #0dcaf0 !important;
+    }
+
+    .bg-success {
+        background-color: #28a745 !important;
+    }
+
+    /* Shipper Styles */
+    .shipper-avatar img {
+        object-fit: cover;
+        border: 2px solid #fff;
+    }
+
+    .shipper-info {
+        transition: all 0.3s ease;
+    }
+
+    .shipper-info:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 0.5rem 1.25rem;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+        background-color: #1a73e8;
+        border-color: #1a73e8;
+    }
+
+    .btn-primary:hover {
+        background-color: #1565c0;
+        border-color: #1565c0;
+        box-shadow: 0 4px 8px rgba(26, 115, 232, 0.25);
+    }
+
+    .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-outline-secondary:hover {
+        background-color: #6c757d;
+        color: #fff;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 767.98px) {
+        .tracking-step::before {
+            left: 5%;
+            width: 90%;
+        }
+
+        .step .label {
+            font-size: 0.75rem;
+        }
+
+        .step .time {
+            font-size: 0.7rem;
+        }
+    }
+
+    /* Cải thiện khoảng cách giữa label và nội dung */
+    .order-info .d-flex,
+    .customer-info .d-flex,
+    .shipper-info .d-flex {
+        gap: 8px;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .order-info,
+    .customer-info,
+    .shipper-info {
+        background-color: #fff !important;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+
+    .order-info:hover,
+    .customer-info:hover,
+    .shipper-info:hover {
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    /* Avatar nhân viên đẹp hơn */
+    .shipper-avatar img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #fff;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Badge nổi bật hơn */
+    .badge.bg-success {
+        background-color: #43a047 !important;
+        font-size: 0.75rem;
+    }
+
+    /* Button hover đẹp hơn */
+    .btn-outline-primary:hover {
+        background-color: #1a73e8;
+        color: #fff;
+        border-color: #1a73e8;
+        box-shadow: 0 4px 10px rgba(26, 115, 232, 0.25);
+    }
+
+    .btn-outline-success:hover {
+        background-color: #28a745;
+        color: #fff;
+        border-color: #28a745;
+        box-shadow: 0 4px 10px rgba(40, 167, 69, 0.25);
+    }
+
+    /* Tracking step thêm hiệu ứng động */
+    .tracking-step .circle {
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .tracking-step .circle::after {
+        content: "";
+        position: absolute;
+        width: 60px;
+        height: 60px;
+        background: rgba(33, 150, 243, 0.1);
+        border-radius: 50%;
+        top: -6px;
+        left: -6px;
+        z-index: -1;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .step.active .circle::after {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+
+    .step.completed .circle::after {
+        background: rgba(40, 167, 69, 0.1);
+        opacity: 1;
+    }
+
+    /* Responsive cải tiến */
+    @media (max-width: 576px) {
+        .tracking-step {
+            flex-direction: column;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .tracking-step::before {
+            display: none;
+        }
+
+        .step {
+            width: 100%;
+        }
+
+        .d-flex.justify-content-between {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }

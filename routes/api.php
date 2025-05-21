@@ -2,11 +2,10 @@
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\CloudinaryUploadController;
-use App\Http\Controllers\DialogflowWebhookController;
+use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\SearchController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -77,3 +76,9 @@ Route::get('/revenue-bestseller-product', [RevenueProductController::class, 'top
 
 
 Route::post('/upload', [CloudinaryUploadController::class, 'upload'])->name('api.upload');
+Route::get('/recommend/user/{userId}', [RecommendationController::class, 'userBased']);
+Route::get('/recommend-ibcf/user/{userId}', [RecommendationController::class, 'itemCFRecommend']);
+
+
+Route::get('/recommendations/user-cosine/{userId}', [RecommendationController::class, 'userBasedCosine']);
+Route::get('/recommendations/item-cosine/{userId}', [RecommendationController::class, 'itemBasedCosine']);

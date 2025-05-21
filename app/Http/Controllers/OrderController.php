@@ -377,6 +377,11 @@ class OrderController extends Controller
     }
 
 
+    public function orderTracking() {
+        return view('sites.ordertracking.order_tracking');
+    }
+
+
 
     /**
      * Show the form for creating a new resource.

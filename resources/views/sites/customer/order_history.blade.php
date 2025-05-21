@@ -56,7 +56,7 @@
                                 <span id="status{{ $item->id }}" class="badge bg-warning">{{ $item->status }}</span>
                             </td>
                             <td>{{ $item->created_at }}</td>
-                            <td class="text-center" id="action{{ $item->id }}">
+                            {{-- <td class="text-center" id="action{{ $item->id }}">
                                 <div class="d-flex justify-content-center action-buttons">
                                     <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
                                         class="btn btn-sm btn-secondary">
@@ -74,7 +74,31 @@
                                         </button>
                                     @endif
                                 </div>
+                            </td> --}}
+                            <td class="text-center" id="action{{ $item->id }}">
+                                <div class="d-flex justify-content-center action-buttons">
+                                    <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
+                                        class="btn btn-sm btn-secondary">
+                                        <i class="fa fa-eye"></i> Xem
+                                    </a>
+
+                                    <a href="{{route('order.orderTracking')}}" class="btn btn-sm btn-info ms-2">
+                                        <i class="fa fa-truck"></i>
+                                    </a>
+                                    @if ($item->status === 'Chờ xử lý')
+                                        <button type="button" class="btn btn-sm btn-danger ms-2"
+                                            onclick="openCancelModal({{ $item->id }})">
+                                            <i class="fa fa-times"></i> Hủy
+                                        </button>
+                                    @elseif ($item->status === 'Đã thanh toán')
+                                        <button type="button" class="btn btn-sm btn-success ms-2"
+                                            onclick="openSidebar({{ $item->id }})">
+                                            <i class="fa fa-comments"></i>
+                                        </button>
+                                    @endif
+                                </div>
                             </td>
+
 
                         </tr>
                     @endforeach
@@ -103,29 +127,6 @@
         <div class="sidebar-body">
             <!-- Danh sách sản phẩm -->
             <div class="product-list">
-                {{-- <div class="product-item d-flex align-items-center mb-3">
-                    <img src="{{ asset('client/img/product/product-1.jpg') }}"  alt="Sản phẩm" class="product-image">
-                    <div class="product-info w-100" style="margin-left: 20px">
-                        <h6 class="product-name-comment">Tên sản phẩm 1</h6>
-                        <p class="product-size-comment mt-2"><span>Màu Sắc: </span>1</p>
-                        <p class="product-color-comment"><span>Size: </span>Đỏ</p>
-                        <div class="star-rating">
-                            <input type="radio" id="star5-1" name="rating1" value="5"><label
-                                for="star5-1">★</label>
-                            <input type="radio" id="star4-1" name="rating1" value="4"><label
-                                for="star4-1">★</label>
-                            <input type="radio" id="star3-1" name="rating1" value="3"><label
-                                for="star3-1">★</label>
-                            <input type="radio" id="star2-1" name="rating1" value="2"><label
-                                for="star2-1">★</label>
-                            <input type="radio" id="star1-1" name="rating1" value="1"><label
-                                for="star1-1">★</label>
-                        </div>
-                        <textarea class="form-control mt-2" rows="2" placeholder="Viết nhận xét..." id="comment1"></textarea>
-                        <button type="button" class="btn btn-success mt-2 w-100" onclick="submitRating(1)">Gửi đánh
-                            giá</button>
-                    </div>
-                </div> --}}
             </div>
         </div>
     </div>
@@ -227,35 +228,35 @@
             });
         });
     </script>
-<script>
-    function closeSidebar() {
-        document.getElementById("ratingSidebar").classList.remove("active");
-    }
+    <script>
+        function closeSidebar() {
+            document.getElementById("ratingSidebar").classList.remove("active");
+        }
 
-    function openSidebar(orderId) {
-        orderIdComment = orderId;
-        document.getElementById("ratingSidebar").classList.add("active");
+        function openSidebar(orderId) {
+            orderIdComment = orderId;
+            document.getElementById("ratingSidebar").classList.add("active");
 
-        fetch(`http://127.0.0.1:8000/api/rate-order/${orderIdComment}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status_code === 200 && data.data) {
-                    let ratings = data.data;
-                    console.log(ratings);
+            fetch(`http://127.0.0.1:8000/api/rate-order/${orderIdComment}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status_code === 200 && data.data) {
+                        let ratings = data.data;
+                        console.log(ratings);
 
-                    // Lấy danh sách sản phẩm
-                    const productList = document.querySelector(".product-list");
-                    productList.innerHTML = "";
+                        // Lấy danh sách sản phẩm
+                        const productList = document.querySelector(".product-list");
+                        productList.innerHTML = "";
 
-                    // Duyệt qua từng sản phẩm và thêm HTML vào
-                    ratings.forEach((rating) => {
-                        const productItem = document.createElement("div");
-                        productItem.classList.add("product-item", "d-flex", "align-items-start", "mb-3");
+                        // Duyệt qua từng sản phẩm và thêm HTML vào
+                        ratings.forEach((rating) => {
+                            const productItem = document.createElement("div");
+                            productItem.classList.add("product-item", "d-flex", "align-items-start", "mb-3");
 
-                        let ratingForm = '';
-                        if (rating.content != null && rating.star != null) {
-                            // Nếu đã đánh giá thì hiển thị thông tin thay vì form
-                            ratingForm = `
+                            let ratingForm = '';
+                            if (rating.content != null && rating.star != null) {
+                                // Nếu đã đánh giá thì hiển thị thông tin thay vì form
+                                ratingForm = `
                                 <hr>
                                 <div class="review-item border-bottom pb-2 mb-2">
                                     <h6>Khách hàng: ${rating.customer_name}</h6>
@@ -267,9 +268,9 @@
                                     <p>Nội dung: ${rating.content}</p>
                                 </div>
                             `;
-                        } else {
-                            // Nếu chưa đánh giá thì hiển thị form đánh giá
-                            ratingForm = `
+                            } else {
+                                // Nếu chưa đánh giá thì hiển thị form đánh giá
+                                ratingForm = `
                                 <form action="{{ route('comments.store') }}" class="ratingForm" method="POST">
                                     @csrf
                                     <div class="star-rating d-flex gap-1 mb-2">
@@ -285,9 +286,9 @@
                                     <input type="submit" class="btn btn-success w-100" value="Gửi đánh giá">
                                 </form>
                             `;
-                        }
+                            }
 
-                        const productContent = `
+                            const productContent = `
                             <div class="d-flex w-100 p-2 rounded shadow-sm align-items-center" style="background-color: #f8f9fa; gap: 20px;">
                                 <div class="image-wrapper" style="flex-shrink: 0;">
                                     <img src="uploads/${rating.image}" alt="Sản phẩm" class="product-image">
@@ -300,31 +301,32 @@
                                 </div>
                             </div>
                         `;
-                        productItem.innerHTML = productContent;
-                        productList.appendChild(productItem);
+                            productItem.innerHTML = productContent;
+                            productList.appendChild(productItem);
 
-                        // Gắn sự kiện submit cho từng form mới được tạo
-                        const form = productItem.querySelector('.ratingForm');
-                        if (form) {
-                            form.addEventListener('submit', function(event) {
-                                event.preventDefault();
-                                let formData = new FormData(form);
+                            // Gắn sự kiện submit cho từng form mới được tạo
+                            const form = productItem.querySelector('.ratingForm');
+                            if (form) {
+                                form.addEventListener('submit', function(event) {
+                                    event.preventDefault();
+                                    let formData = new FormData(form);
 
-                                fetch(form.action, {
-                                        method: 'POST',
-                                        body: formData,
-                                        headers: {
-                                            'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
-                                        }
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        console.log("Dữ liệu nhận từ server:", data);
-                                        if (data.success) {
-                                            alert("Cảm ơn bạn đã đánh giá!");
+                                    fetch(form.action, {
+                                            method: 'POST',
+                                            body: formData,
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector(
+                                                    'input[name="_token"]').value
+                                            }
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            console.log("Dữ liệu nhận từ server:", data);
+                                            if (data.success) {
+                                                alert("Cảm ơn bạn đã đánh giá!");
 
-                                            // Tạo nội dung đánh giá thay thế form
-                                            let newReview = `
+                                                // Tạo nội dung đánh giá thay thế form
+                                                let newReview = `
                                                 <div class="review-item border-bottom pb-2 mb-2">
                                                     <h6>${data.review.user_name}</h6>
                                                     <div class="text-warning">${"★".repeat(data.review.star)}${"☆".repeat(5 - data.review.star)}</div>
@@ -333,25 +335,26 @@
                                                 </div>
                                             `;
 
-                                            // Thay thế form đánh giá bằng nội dung đánh giá mới
-                                            form.parentElement.innerHTML = newReview;
-                                            form.reset();
-                                        } else {
-                                            alert("Lỗi: " + (data.message || "Đánh giá không thành công!"));
-                                        }
-                                    })
-                                    .catch(error => {
-                                        console.error('Lỗi:', error);
-                                        alert("Lỗi kết nối, vui lòng thử lại!");
-                                    });
-                            });
-                        }
+                                                // Thay thế form đánh giá bằng nội dung đánh giá mới
+                                                form.parentElement.innerHTML = newReview;
+                                                form.reset();
+                                            } else {
+                                                alert("Lỗi: " + (data.message ||
+                                                    "Đánh giá không thành công!"));
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.error('Lỗi:', error);
+                                            alert("Lỗi kết nối, vui lòng thử lại!");
+                                        });
+                                });
+                            }
 
-                    });
-                }
-            })
-            .catch(error => console.error("Lỗi khi lấy đánh giá:", error));
-    }
-</script>
+                        });
+                    }
+                })
+                .catch(error => console.error("Lỗi khi lấy đánh giá:", error));
+        }
+    </script>
 
 @endsection

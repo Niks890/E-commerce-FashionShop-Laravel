@@ -6,7 +6,6 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatBotApiController;
 use App\Http\Controllers\CheckoutController;
-use App\Http\Controllers\CloudinaryUploadController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
@@ -16,26 +15,15 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProviderController;
 use App\Http\Controllers\StaffController;
-// use App\Http\Controllers\DialogflowController;
-use App\Http\Controllers\FacebookAuthController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\OllamaController;
-use App\Http\Controllers\ProductRecordRecentyController;
 use App\Http\Controllers\RateController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueInventoryController;
 use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\WishListProductController;
-use App\Models\Customer;
-use App\Models\Order;
-use App\Models\Staff;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -108,9 +96,9 @@ Route::group(['prefix' => '/'], function () {
     Route::put('/cancel-order{id}', [CustomerController::class, 'cancelOrder'])->name('sites.cancelOrder')->middleware('customer');
     // Xuất hoá đơn PDF
     Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice');
-
+    Route::get('/order-tracking/{id?}', [OrderController::class, 'orderTracking'])->name('order.orderTracking');
     // Xử lý thanh toán
-    Route::get('/checkout', [HomeController::class, 'checkout'])->name('sites.checkout')->middleware('customer');
+    // Route::get('/checkout', [HomeController::class, 'checkout'])->name('sites.checkout')->middleware('auth:customer');
     Route::post('/payment', [CheckoutController::class, 'checkout'])->name('payment.checkout');
     Route::get('/payment/success', [HomeController::class, 'successPayment'])->name('sites.success.payment')->middleware('customer');
     // Routes xử lý callback từ các cổng thanh toán
@@ -134,7 +122,7 @@ Route::group(['prefix' => '/cart'], function () {
     Route::get('/update/{id}/{quantity?}', [CartController::class, 'update'])->name('sites.update');
     Route::get('/remove/{key}', [CartController::class, 'remove'])->name('sites.remove'); // xoá theo key (example: 1-XS-Đen) chứ ko theo id nữa
     Route::get('/clear', [CartController::class, 'clear'])->name('sites.clear');
-    Route::get('/checkout', [CartController::class, 'checkout'])->name('sites.checkout');
+    Route::get('/checkout', [CartController::class, 'checkout'])->name('sites.checkout')->middleware('auth:customer');
     Route::post('/update-cart-session', [CartController::class, 'updateCartSession'])->name('sites.updateCartSession');
     // Xử lý cập nhật sản phẩm đc chọn trong giỏ hàng
     Route::post('/update-check-status', [CartController::class, 'updateCheckStatus'])->name('sites.updateCheckStatus');
