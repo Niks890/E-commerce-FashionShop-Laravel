@@ -17,15 +17,7 @@ use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
-    public function apiStatus($data, $status_code, $total = 0, $message = null)
-    {
-        return response()->json([
-            'data' => $data,
-            'status_code' => $status_code,
-            'total' => $total,
-            'message' => $message
-        ]);
-    }
+
 
     public function staff($id)
     {
@@ -79,8 +71,8 @@ class ApiController extends Controller
             'InventoryDetails.Product.Category',
             'InventoryDetails.Product.ProductVariants'
         ])
-        ->orderBy('id', 'DESC')
-        ->paginate(10);
+            ->orderBy('id', 'DESC')
+            ->paginate(10);
 
         return response()->json([
             'status_code' => 200,
@@ -177,14 +169,15 @@ class ApiController extends Controller
     public function productVariantSizes(Request $request)
     {
         $productVariants = ProductVariant::where('color', $request->color)
-                                         ->where('product_id', $request->product_id)->get();
+            ->where('product_id', $request->product_id)->get();
         return $this->apiStatus($productVariants, 200, $productVariants->count(), 'ok');
     }
 
-    public function getSeletedProductVariant(Request $request){
+    public function getSeletedProductVariant(Request $request)
+    {
         $productVariants = ProductVariant::where('color', $request->color)
-                                         ->where('product_id', $request->product_id)
-                                         ->where('size', $request->size)->first();
+            ->where('product_id', $request->product_id)
+            ->where('size', $request->size)->first();
         return $this->apiStatus($productVariants, 200, 1, 'ok');
     }
 
@@ -194,6 +187,23 @@ class ApiController extends Controller
         $products = Product::with('Discount', 'ProductVariants')->orderBy('id', 'ASC')->get();
         return $this->apiStatus($products, 200, $products->count(), 'ok');
     }
+
+    // public function getProductsClient()
+    // {
+    //     $products = Product::with('Discount', 'ProductVariants')
+    //         ->orderBy('id', 'ASC')
+    //         ->paginate(10); // mỗi trang 10 sản phẩm, bạn tùy chỉnh số này
+
+    //     // Bạn có thể trả về cả dữ liệu phân trang đầy đủ để frontend biết tổng số trang, trang hiện tại, ...
+    //     return response()->json([
+    //         'status' => 'success',
+    //         'data' => $products->items(),
+    //         'current_page' => $products->currentPage(),
+    //         'last_page' => $products->lastPage(),
+    //         'per_page' => $products->perPage(),
+    //         'total' => $products->total(),
+    //     ], 200);
+    // }
 
 
     public function product($id)
@@ -232,13 +242,15 @@ class ApiController extends Controller
     // }
 
 
-    public function getProductDiscount() {
-        $products = Product::with('Discount', 'ProductVariants')->whereNotNull('discount_id')->get();
+    public function getProductDiscount()
+    {
+        $products = Product::with('Discount', 'ProductVariants')->whereNotNull('discount_id')->paginate(5);
         $productResource = ProductResource::collection($products);
         return $this->apiStatus($productResource, 200, 1, 'ok');
     }
 
-    public function blogDetail($id) {
+    public function blogDetail($id)
+    {
         $blog = Blog::with('staff')->find($id);
         if ($blog) {
             return $this->apiStatus($blog, 200, 1, 'ok');
@@ -246,38 +258,34 @@ class ApiController extends Controller
         return $this->apiStatus(null, 404, 0, 'Data not found.');
     }
 
-    public function rateOrder($id) {
+    public function rateOrder($id)
+    {
         $orderDetail = DB::table('orders as o')
-        ->join('customers as c', 'o.customer_id', '=', 'c.id')
-        ->join('order_details as od', 'o.id', '=', 'od.order_id')
-        ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
-        ->join('products as p', 'p.id', '=', 'pv.product_id')
-        ->leftJoin('comments as r', function($join) {
-            $join->on('r.product_id', '=', 'p.id')
-                 ->on('r.customer_id', '=', 'c.id')
-                 ->on('r.order_id', '=', 'o.id'); // Thêm điều kiện order_id vào on
-        })
-        ->where('o.id', $id)
-        ->select(
-            'o.id as order_id', 
-            'r.*', 
-            'c.name as customer_name', 
-            'p.product_name as product_name', 
-            'p.id as product_id', 
-            'p.image', 
-            'pv.size', 
-            'pv.color'
-        )
-        ->distinct()
-        ->get();
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->join('order_details as od', 'o.id', '=', 'od.order_id')
+            ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->leftJoin('comments as r', function ($join) {
+                $join->on('r.product_id', '=', 'p.id')
+                    ->on('r.customer_id', '=', 'c.id')
+                    ->on('r.order_id', '=', 'o.id'); // Thêm điều kiện order_id vào on
+            })
+            ->where('o.id', $id)
+            ->select(
+                'o.id as order_id',
+                'r.*',
+                'c.name as customer_name',
+                'p.product_name as product_name',
+                'p.id as product_id',
+                'p.image',
+                'pv.size',
+                'pv.color'
+            )
+            ->distinct()
+            ->get();
         if ($orderDetail) {
             return $this->apiStatus($orderDetail, 200, 1, 'ok');
         }
         return $this->apiStatus(null, 404, 0, 'Data not found.');
     }
-    
-    
-    
-    
-
 }

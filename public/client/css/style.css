@@ -1,10 +1,5 @@
 /******************************************************************
-  Template Name: Male Fashion
-  Description: Male Fashion - ecommerce teplate
-  Author: Colorib
-  Author URI: https://www.colorib.com/
-  Version: 1.0
-  Created: Colorib
+
 ******************************************************************/
 
 /*------------------------------------------------------------------
@@ -34,7 +29,7 @@ html,
 body {
 	height: 100%;
 	/* fix cái bị che */
-	padding-top: 72px; 
+	padding-top: 72px;
 	font-family: "Nunito Sans", sans-serif;
 	-webkit-font-smoothing: antialiased;
 }
@@ -3496,7 +3491,7 @@ ol {
 		background: rgba(0, 0, 0, 0.7);
 		content: "";
 		/* ĐỘ SÂU HƠN CÁI HEADER 100 > 99 */
-		z-index: 100; 
+		z-index: 100;
 		-webkit-transition: all, 0.5s;
 		-o-transition: all, 0.5s;
 		transition: all, 0.5s;
@@ -3504,7 +3499,7 @@ ol {
 	}
 	.offcanvas-menu-overlay.active {
 		visibility: visible;
-	
+
 	}
 	.offcanvas-menu-wrapper {
 		position: fixed;

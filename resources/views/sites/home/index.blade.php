@@ -1,6 +1,7 @@
-{{-- @php
-   dd($productRecentInfo);
-@endphp --}}
+@php
+    $userId = auth()->guard('customer')->user()->id ?? 0;
+    // dd($userId);
+@endphp
 @extends('sites.master')
 @section('title', 'Trang chủ')
 @section('content')
@@ -76,8 +77,8 @@
                             <img src="{{ asset('client/img/banner/banner-3.jpg') }}" alt="">
                         </div>
                         <div class="banner__item__text">
-                            <h2>Clothing Collections 2025</h2>
-                            <a href="javascript:void(0);">Shop now</a>
+                            <h2>Bộ sưu tập mùa hè 2025</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
                         </div>
                     </div>
                 </div>
@@ -87,8 +88,8 @@
                             <img src="{{ asset('client/img/banner/banner-2.jpg') }}" alt="">
                         </div>
                         <div class="banner__item__text">
-                            <h2>Accessories</h2>
-                            <a href="javascript:void(0);">Shop now</a>
+                            <h2>Liên Kết</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
                         </div>
                     </div>
                 </div>
@@ -98,8 +99,8 @@
                             <img src="{{ asset('client/img/banner/banner-1.jpg') }}" alt="">
                         </div>
                         <div class="banner__item__text">
-                            <h2>Shoes Spring 2025</h2>
-                            <a href="javascript:void(0);">Shop now</a>
+                            <h2>Bộ sưu tập Thu Đông</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
                         </div>
                     </div>
                 </div>
@@ -121,7 +122,7 @@
                 </div>
 
 
-                <div class="row product__filter" id="product-recently-container">
+                <div class="row product__filter_productRecentInfo" id="product-recently-container">
                     @foreach ($productRecentInfo as $itemRecent)
                         @php
                             // Xử lý khuyến mãi
@@ -157,8 +158,8 @@
                                             </a>
                                         </li>
                                         <li>
-                                            <a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
-                                                    alt="">
+                                            <a href="javascript:void(0);"><img
+                                                    src="{{ asset('client/img/icon/compare.png') }}" alt="">
                                                 <span>Compare</span>
                                             </a>
                                         </li>
@@ -210,14 +211,139 @@
             </div>
         </section>
     @endif
-
-
     <!-- Product Section Recently End -->
 
 
 
+    <!-- Product RecommendationProduct For UserBase Content Filtering Section Begin -->
+    @if ($userId != 0)
+    <section class="product spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="filter__controls">
+                        <li>Sản phẩm có thể bạn sẽ thích</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row product__filter-ubcf" id="product-ubcf-container">
+                <script>
+                    let userIdCurrent = @json($userId);
+                    async function fetchProductUBCF() {
+                        try {
+
+                            let response = await fetch(`http://127.0.0.1:8000/api/recommend/user/${userIdCurrent}`);
+                            let data = await response.json();
+                            let products = data.data;
+                            // console.log(products);
+
+                            let container = document.querySelector('#product-ubcf-container');
+                            container.innerHTML = "";
+                            let nameDiscount = "";
+                            products.forEach((product, index) => {
+                                let finalPrice;
+                                // console.log(product.discount.percent_discount, product.discount.id);
+
+                                if (product.discount && product.discount.id != null) {
+                                    finalPrice = product.price - (product.price * product.discount.percent_discount);
+                                    nameDiscount = product.discount.name;
+                                } else {
+                                    finalPrice = product.price ?? 0;
+                                     nameDiscount = "New";
+                                    // console.log(finalPrice);
+                                }
+
+                                let formattedPrice = new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(finalPrice);
+
+                                // console.log(product);
+                                let totalStock = [];
+                                let addCartOrNone = [];
+                                product['product-variant'].map((variant) => {
+                                    totalStock[variant.product_id] = 0;
+                                })
+                                product['product-variant'].forEach((variant) => {
+                                    totalStock[variant.product_id] += variant.stock + 0;
+                                });
+                                product['product-variant'].map((variant) => {
+                                    if (totalStock[variant.product_id] == 0) {
+                                        addCartOrNone[variant.product_id] = false;
+                                    } else {
+                                        addCartOrNone[variant.product_id] = true;
+                                    };
+                                })
 
 
+
+                                let productItem = document.createElement('div');
+                                productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
+                                productItem.innerHTML = `
+                                            <div class="product__item" id="product-list-home">
+                                                  <div class="product__item__pic">
+                                                        <img src="{{ asset('uploads/${product.image}') }}" class="set-bg" width="280" height="280" alt="${product.name}">
+                                                        <span class="label name-ubcf" >${nameDiscount}</span>
+                                                        <ul class="product__hover">
+                                                          <li>
+                                                                <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
+                                                                    <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
+                                                                </a>
+                                                        </li>
+
+                                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
+                                                            <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
+                                                        </ul>
+                                                 </div>
+                                                <div class="product__item__text">
+                                                    <h6>${product.name}</h6>` +
+
+                                    (addCartOrNone[product.id] > 0 ?
+                                        `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
+                                        `<span class=" badge badge-warning">Hết hàng</span>`)
+
+                                    +
+                                    `<div class="rating">
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                        <i class="fa fa-star-o"></i>
+                                                    </div>
+                                                    <h5>${formattedPrice}</h5>
+                                                    <div class="product__color__select">
+                                                                                <label for="pc-${index * 3 + 1}">
+                                                                                    <input type="radio" id="pc-${index * 3 + 1}">
+                                                                                </label>
+                                                                                <label class="active black" for="pc-${index * 3 + 2}">
+                                                                                    <input type="radio" id="pc-${index * 3 + 2}">
+                                                                                </label>
+                                                                                <label class="grey" for="pc-${index * 3 + 3}">
+                                                                                    <input type="radio" id="pc-${index * 3 + 3}">
+                                                                                </label>
+                                                                            </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                container.appendChild(productItem);
+                                document.querySelectorAll('.name-ubcf').forEach(element => {
+                                if (element.textContent.trim() !== "New") {
+                                    element.classList.add('bg-danger', 'text-white');
+                                }
+                            });
+                            });
+                        } catch (error) {
+                            console.error("Lỗi API:", error);
+                        }
+                    }
+                    fetchProductUBCF();
+                </script>
+            </div>
+        </div>
+    </section>
+    @endif
+    <!-- RecommendationProduct For UserBase Content Filtering Section End -->
 
     <!-- Product Discount Section Begin -->
     <section class="product spad">
@@ -229,7 +355,7 @@
                     </ul>
                 </div>
             </div>
-            <div class="row product__filter" id="product-discount-container">
+            <div class="row product__filter-discount" id="product-discount-container">
                 <script>
                     async function fetchProductDiscount() {
                         try {
@@ -359,54 +485,55 @@
                 </div>
             </div>
             <div class="row product__filter" id="product-client-container">
-                <script>
-                    async function fetchProduct() {
-                        try {
-                            let response = await fetch('http://127.0.0.1:8000/api/product-client');
-                            let data = await response.json();
-                            let products = data.data;
+            </div>
+            <script>
+                async function fetchProduct() {
+                    try {
+                        let response = await fetch('http://127.0.0.1:8000/api/product-client');
+                        let data = await response.json();
+                        let products = data.data;
 
-                            let container = document.querySelector('#product-client-container');
-                            container.innerHTML = "";
+                        let container = document.querySelector('#product-client-container');
+                        container.innerHTML = "";
 
-                            products.forEach((product, index) => {
-                                let finalPrice;
-                                let nameDiscount = "";
+                        products.forEach((product, index) => {
+                            let finalPrice;
+                            let nameDiscount = "";
 
-                                if (product.discount_id != null) {
-                                    finalPrice = product.price - (product.price * product.discount.percent_discount);
-                                    nameDiscount = product.discount.name;
+                            if (product.discount_id != null) {
+                                finalPrice = product.price - (product.price * product.discount.percent_discount);
+                                nameDiscount = product.discount.name;
+                            } else {
+                                finalPrice = product.price ?? 0;
+                                nameDiscount = "New";
+                            }
+
+                            let formattedPrice = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(finalPrice);
+
+                            let totalStock = [];
+                            let addCartOrNone = [];
+                            product['product_variants'].map((variant) => {
+                                totalStock[variant.product_id] = 0;
+                            })
+                            product['product_variants'].forEach((variant) => {
+                                totalStock[variant.product_id] += variant.stock + 0;
+                            });
+                            product['product_variants'].map((variant) => {
+                                if (totalStock[variant.product_id] == 0) {
+                                    addCartOrNone[variant.product_id] = false;
                                 } else {
-                                    finalPrice = product.price ?? 0;
-                                    nameDiscount = "New";
-                                }
-
-                                let formattedPrice = new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(finalPrice);
-
-                                let totalStock = [];
-                                let addCartOrNone = [];
-                                product['product_variants'].map((variant) => {
-                                    totalStock[variant.product_id] = 0;
-                                })
-                                product['product_variants'].forEach((variant) => {
-                                    totalStock[variant.product_id] += variant.stock + 0;
-                                });
-                                product['product_variants'].map((variant) => {
-                                    if (totalStock[variant.product_id] == 0) {
-                                        addCartOrNone[variant.product_id] = false;
-                                    } else {
-                                        addCartOrNone[variant.product_id] = true;
-                                    };
-                                })
+                                    addCartOrNone[variant.product_id] = true;
+                                };
+                            })
 
 
-                                let productItem = document.createElement('div');
-                                productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix", index % 2 === 0 ?
-                                    "new-arrivals" : "hot-sales");
-                                productItem.innerHTML = `
+                            let productItem = document.createElement('div');
+                            productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix", index % 2 === 0 ?
+                                "new-arrivals" : "hot-sales");
+                            productItem.innerHTML = `
                                         <div class="product__item" id="product-list-home">
                                               <div class="product__item__pic">
                                                     <img src="{{ asset('uploads/${product.image}') }}" class="set-bg" width="280" height="280" alt="${product.product_name}">
@@ -426,12 +553,12 @@
                                                 <h6>${product.product_name}</h6>
                                                 ` +
 
-                                    (addCartOrNone[product.id] > 0 ?
-                                        `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
-                                        `<span class=" badge badge-warning">Hết hàng</span>`)
+                                (addCartOrNone[product.id] > 0 ?
+                                    `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
+                                    `<span class=" badge badge-warning">Hết hàng</span>`)
 
-                                    +
-                                    `
+                                +
+                                `
                                                 <div class="rating">
                                                     <i class="fa fa-star-o"></i>
                                                     <i class="fa fa-star-o"></i>
@@ -454,58 +581,69 @@
                                             </div>
                                         </div>
                                     `;
-                                container.appendChild(productItem);
-                                document.querySelectorAll('.name-discount-section').forEach(element => {
-                                    if (element.textContent.trim() !== "New") {
-                                        element.classList.add('bg-danger', 'text-white');
-                                    }
-                                });
-
+                            container.appendChild(productItem);
+                            document.querySelectorAll('.name-discount-section').forEach(element => {
+                                if (element.textContent.trim() !== "New") {
+                                    element.classList.add('bg-danger', 'text-white');
+                                }
                             });
-                        } catch (error) {
-                            console.error("Lỗi API:", error);
-                        }
+
+                        });
+                    } catch (error) {
+                        console.error("Lỗi API:", error);
                     }
-                    fetchProduct();
-                </script>
-            </div>
+                }
+                fetchProduct();
+            </script>
         </div>
     </section>
     <!-- Product Section End -->
 
+
     <!-- Icon giỏ hàng -->
     <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
-        <i class="fas fa-id-card-alt"></i><span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        <div class="icon-wrapper">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        </div>
     </div>
 
     <!-- Danh sách sản phẩm trong giỏ -->
-    <div class="cart-items" id="cartItems" style="display: none;">
-        <strong>Các sản phẩm đã thêm:</strong>
-        <div id="cartList">
+    <div class="cart-items shadow" id="cartItems">
+        <div class="cart-header d-flex justify-content-between align-items-center mb-2">
+            <strong class="text-white">🛒 Giỏ hàng của bạn</strong>
+            <i class="fas fa-times text-white" style="cursor: pointer;" onclick="toggleCart()"></i>
+        </div>
+        <div id="cartList" class="cart-body">
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
-                    <div class="cart-item p-1">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-img"
-                                    width="50">
-                                <div class="d-inline-block flex-col">
-                                    <span>{{ Str::words($items->name, 5) }}</span></br>
-                                    <span
-                                        class="font-weight-bold">{{ number_format($items->price, 0, ',', '.') . ' đ' }}</span>
-                                </div>
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                            class="cart-item-image rounded">
+                        <div class="cart-item-info flex-grow-1">
+                            <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
+                            <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
-                            <span
-                                class="cart-item-quantity-{{ $items->id }} quantity-badge">{{ $items->quantity }}</span>
                         </div>
+                        <span class="cart-item-quantity badge bg-danger ms-2">
+                            {{ $items->quantity }}
+                        </span>
                     </div>
                 @endforeach
+            @else
+                <p class="empty-cart">Chưa có sản phẩm nào.</p>
             @endif
         </div>
         <div class="cart-footer">
-            <button class="btn btn-success w-100" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
+            <button class="btn btn-success" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
         </div>
     </div>
+
+    <!-- Toast container -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
+
 
 
 
@@ -605,7 +743,7 @@
                 @foreach ($data as $model)
                     <div class="col-lg-4 col-md-6 col-sm-6">
                         <div class="blog__item">
-                            <div class="blog__item__pic set-bg" data-setbg="{{$model->image}}">
+                            <div class="blog__item__pic set-bg" data-setbg="{{ $model->image }}">
                             </div>
                             <div class="blog__item__text">
                                 <span><img src="{{ asset('client/img/icon/calendar.png') }}"

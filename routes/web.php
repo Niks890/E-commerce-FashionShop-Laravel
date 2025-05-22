@@ -85,7 +85,7 @@ Route::group(['prefix' => '/'], function () {
     Route::get('/add-to-wishlist/{product}', [WishListProductController::class, 'addToWishList'])->name('sites.addToWishList');
     Route::get('/remove-from-wishlist/{id}', [WishListProductController::class, 'removefromWishList'])->name('sites.removefromWishList');
     // Xử lý chatbot
-    Route::post('/chatbot', [OllamaController::class, 'ollamaRequest']);
+    // Route::post('/chatbot', [OllamaController::class, 'ollamaRequest']);
     // Xử lý chatbot
     // Route::post('/get-product-info/webhook', [DialogflowController::class, 'getProductInfo'])->name('dialogflow.getProductInfo');
 
@@ -195,6 +195,6 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 });
 
 //CHATBOT REDIS TEST
-Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
+// Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
 // Route::get('/cloudinary', [CloudinaryUploadController::class, 'showForm'])->name('cloudinary.showForm');

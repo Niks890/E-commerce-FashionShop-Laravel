@@ -47,6 +47,22 @@
                                 <input type="text" placeholder="Street Address" class="checkout__input__add"
                                     name="address" required>
                             </div>
+                            {{-- <div class="checkout__input">
+                                <p>Địa chỉ nhận hàng<span class="text-danger">*</span></p>
+
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" id="use-fixed-address">
+                                    <label class="form-check-label" for="use-fixed-address">
+                                        Giao tại cửa hàng (sử dụng địa chỉ cố định)
+                                    </label>
+                                </div>
+
+                                <input type="text" placeholder="Nhập địa chỉ nhận hàng" class="form-control"
+                                    name="address" id="address-input" required>
+
+                                <input type="hidden" id="fixed-address" value="123 TFashion Shop, Quận 1, TP.HCM">
+                            </div> --}}
+
                             <div class="row">
                                 <div class="col-lg-6">
                                     <div class="checkout__input">
@@ -185,24 +201,113 @@
     <!-- Checkout Section End -->
 @endsection
 
+{{-- @section('css')
+<style>
+    #address-input[readonly] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    font-style: italic;
+}
+</style>
+@endsection --}}
 @section('js')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const totalAmount = {{ $total }};
+
+            console.log('Total amount:', totalAmount); // Debug log
+
+            if (totalAmount > 2000000) {
+                const codRadio = document.getElementById('COD');
+                const vnpayRadio = document.getElementById('vnpay');
+                const codLabel = codRadio.closest('label');
+
+                // Disable COD radio button
+                codRadio.disabled = true;
+
+                // Nếu COD đang được chọn thì chuyển sang VNPAY
+                if (codRadio.checked) {
+                    codRadio.checked = false;
+                    vnpayRadio.checked = true;
+                }
+
+                // Thêm style để hiển thị rõ là disabled
+                codLabel.style.opacity = '0.5';
+                codLabel.style.cursor = 'not-allowed';
+
+                // Thêm ghi chú cảnh báo
+                const warningSpan = document.createElement('span');
+                warningSpan.style.color = 'red';
+                warningSpan.style.fontSize = '12px';
+                warningSpan.style.display = 'block';
+                warningSpan.style.marginTop = '5px';
+                warningSpan.textContent = 'Không áp dụng COD cho đơn hàng > 2 triệu đồng';
+                codLabel.appendChild(warningSpan);
+
+                // Ngăn người dùng click vào COD
+                codLabel.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    alert('Đơn hàng trên 2 triệu đồng không thể thanh toán COD!');
+                });
+            }
+        });
+
         document.getElementById('checkout-form').addEventListener('submit', function(event) {
             event.preventDefault(); // Ngăn chặn form submit mặc định
 
-            // Lấy phương thức thanh toán đã chọn
-            let paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-            if (paymentMethod === 'COD') {
+            // Kiểm tra lại tổng tiền trước khi submit
+            const totalAmount = {{ $total }};
+            let paymentMethod = document.querySelector('input[name="payment"]:checked');
+
+            if (!paymentMethod) {
+                alert('Vui lòng chọn phương thức thanh toán!');
+                return;
+            }
+
+            const paymentValue = paymentMethod.value;
+
+            // Kiểm tra COD với đơn hàng > 2 triệu
+            if (paymentValue === 'COD' && totalAmount > 2000000) {
+                alert('Đơn hàng trên 2 triệu đồng không thể thanh toán COD!');
+                return;
+            }
+
+            // Xử lý action theo phương thức thanh toán
+            if (paymentValue === 'COD') {
                 this.action = "{{ route('order.store') }}"; // Gửi đến OrderController
-            } else if (paymentMethod === 'momo') {
-                let inputName = document.querySelector('input[name="redirect"]').value;
-                this.inputName = "payUrl";
-            } else if (paymentMethod === 'zalopay') {
-                let inputName = document.querySelector('input[name="redirect"]').value;
-                this.inputName = "order_url";
+            } else if (paymentValue === 'momo') {
+                let inputName = document.querySelector('input[name="redirect"]');
+                if (inputName) {
+                    inputName.name = "payUrl";
+                }
+            } else if (paymentValue === 'zalopay') {
+                let inputName = document.querySelector('input[name="redirect"]');
+                if (inputName) {
+                    inputName.name = "order_url";
+                }
             }
 
             this.submit(); // Gửi form
         });
+
+
+    // document.addEventListener('DOMContentLoaded', function () {
+    //     const checkbox = document.getElementById('use-fixed-address');
+    //     const addressInput = document.getElementById('address-input');
+    //     const fixedAddress = document.getElementById('fixed-address').value;
+
+    //     checkbox.addEventListener('change', function () {
+    //         if (this.checked) {
+    //             addressInput.value = fixedAddress;
+    //             addressInput.readOnly = true;
+    //         } else {
+    //             addressInput.value = '';
+    //             addressInput.readOnly = false;
+    //         }
+    //     });
+    // });
+
+
     </script>
 @endsection

@@ -24,7 +24,7 @@
                         </div>
                         <div class="fw-bold" style="font-size: 2rem">
                             @if (!empty(request('q')))
-                            Kết quả tìm kiếm của từ khoá "{{ request('q') }}"
+                                Kết quả tìm kiếm của từ khoá "{{ request('q') }}"
                             @endif
                         </div>
 
@@ -43,8 +43,7 @@
                     <div class="shop__sidebar">
                         <div class="shop__sidebar__search">
                             <form action="/shop" method="GET">
-                                <input type="text" name="q" placeholder="Search..."
-                                    value="{{ request('q') }}">
+                                <input type="text" name="q" placeholder="Search..." value="{{ request('q') }}">
                                 <button type="submit"><span class="icon_search"></span></button>
                             </form>
                         </div>
@@ -274,7 +273,8 @@
                                             <li><a href="{{ route('sites.addToWishList', $items->id) }}"><img
                                                         src="{{ asset('client/img/icon/heart.png') }}"
                                                         alt=""></a></li>
-                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
+                                            <li><a href="javascript:void(0);"><img
+                                                        src="{{ asset('client/img/icon/compare.png') }}"
                                                         alt=""><span>Compare</span></a></li>
                                             <li><a href="{{ url('product') }}/{{ $items->slug }}"><img
                                                         src="{{ asset('client/img/icon/search.png') }}"
@@ -286,10 +286,12 @@
                                         <h6>{{ $items->product_name }}</h6>
                                         {{-- <a href="javascript:void(0);" class="add-cart">+ Add To Cart</a> --}}
                                         @php
-                                            if($totalStock == 0 ) {
+                                            if ($totalStock == 0) {
                                                 echo '<span class=" badge badge-warning">Hết hàng</span>';
                                             } else {
-                                                echo '<a href="javascript:void(0);" class="add-cart" data-id="'. $items->id .'">+Add To Cart</a>';
+                                                echo '<a href="javascript:void(0);" class="add-cart" data-id="' .
+                                                    $items->id .
+                                                    '">+Add To Cart</a>';
                                             }
                                         @endphp
                                         <div class="rating">
@@ -352,37 +354,46 @@
     <!-- Shop Section End -->
     <!-- Icon giỏ hàng -->
     <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
-        <i class="fas fa-id-card-alt"></i><span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        <div class="icon-wrapper">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        </div>
     </div>
 
     <!-- Danh sách sản phẩm trong giỏ -->
-    <div class="cart-items" id="cartItems" style="display: none;">
-        <strong>Các sản phẩm đã thêm:</strong>
-        <div id="cartList">
+    <div class="cart-items shadow" id="cartItems">
+        <div class="cart-header d-flex justify-content-between align-items-center mb-2">
+            <strong class="text-white">🛒 Giỏ hàng của bạn</strong>
+            <i class="fas fa-times text-white" style="cursor: pointer;" onclick="toggleCart()"></i>
+        </div>
+        <div id="cartList" class="cart-body">
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
-                    <div class="cart-item p-1">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-img"
-                                    width="50">
-                                <div class="d-inline-block flex-col">
-                                    <span>{{ Str::words($items->name, 5) }}</span></br>
-                                    <span
-                                        class="font-weight-bold">{{ number_format($items->price, 0, ',', '.') . ' đ' }}</span>
-                                </div>
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                            class="cart-item-image rounded">
+                        <div class="cart-item-info flex-grow-1">
+                            <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
+                            <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
-                            <span
-                                class="cart-item-quantity-{{ $items->id }} quantity-badge">{{ $items->quantity }}</span>
                         </div>
+                        <span class="cart-item-quantity badge bg-danger ms-2">
+                            {{ $items->quantity }}
+                        </span>
                     </div>
                 @endforeach
+            @else
+                <p class="empty-cart">Chưa có sản phẩm nào.</p>
             @endif
         </div>
         <div class="cart-footer">
-            <button class="btn btn-success w-100" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
+            <button class="btn btn-success" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
         </div>
     </div>
+
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
     <script>
         document.querySelectorAll('.name-discount-shop').forEach(element => {
             if (element.textContent.trim() !== "New") {

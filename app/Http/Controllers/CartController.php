@@ -29,6 +29,7 @@ class CartController extends Controller
         if ($product->discount_id != null) {
             $product->price = $product->price - ($product->price * $product->Discount->percent_discount);
         }
+
         if (request()->has('add_to_cart')) {
             $productVariant = ProductVariant::where('product_id', $product->id)
                 ->where('size', request()->size)
@@ -38,22 +39,40 @@ class CartController extends Controller
             if (!$productVariant) {
                 return back()->with('error', 'Sản phẩm này hiện không có sẵn biến thể!');
             }
+
+
+            $cartItems = Session::get('cart', []);
+            $variantKey = $product->id . '-' . $productVariant->color . '-' . $productVariant->size;
+
+            // Lấy số lượng đang có trong giỏ cho biến thể này (nếu có)
+            $currentItem = isset($cartItems[$variantKey]) ? (array) $cartItems[$variantKey] : [];
+            $currentQtyInCart = isset($currentItem['quantity']) ? $currentItem['quantity'] : 0;
+            // Tổng số lượng muốn thêm (hiện tại + mới)
+            $newQty = $currentQtyInCart + request()->quantity;
+
+            // Kiểm tra tồn kho
+            if ($newQty > $productVariant->stock) {
+                return back()->with('error', "Tổng số lượng bạn chọn vượt quá tồn kho. Trong kho chỉ còn {$productVariant->stock}, sản phẩm hiện tại trong giỏ hàng đã có {$currentQtyInCart}.");
+            }
+
+            // Validate số lượng (bỏ max vì đã kiểm tra ở trên)
             request()->validate(
                 [
-                    'quantity' => 'required|numeric|min:1|max:' . $productVariant->stock
+                    'quantity' => 'required|numeric|min:1',
                 ],
                 [
-                    'quantity.required' => 'Vui lý nhập số lượng.',
-                    'quantity.numeric' => 'Số lượng phải là kiểu số.',
-                    'quantity.min' => 'Số lượng phải lớn hơn 1.',
-                    'quantity.max' => 'Số lượng không được vượt quá số lượng trong kho. Trong kho có số lượng ' . $productVariant->stock
+                    'quantity.required' => 'Vui lòng nhập số lượng.',
+                    'quantity.numeric' => 'Số lượng phải là số.',
+                    'quantity.min' => 'Số lượng phải ít nhất là 1.',
                 ]
             );
 
+            // Thêm sản phẩm vào giỏ
             $cart->add($product, request()->quantity, $productVariant);
+
             return redirect()->route('sites.cart');
         }
-        // thêm ở bên ngoài 
+        // thêm ở bên ngoài
         else {
             $product = Product::with('Discount')->find($product->id);
             if ($product->discount_id != null) {
@@ -67,6 +86,23 @@ class CartController extends Controller
             if (!$productVariant) {
                 return back()->with('error', 'Sản phẩm này hiện không có sẵn biến thể!');
             }
+
+
+            $cartItems = Session::get('cart', []);
+            $variantKey = $product->id . '-' . $productVariant->color . '-' . $productVariant->size;
+
+            $currentItem = isset($cartItems[$variantKey]) ? (array)$cartItems[$variantKey] : [];
+            $currentQty = isset($currentItem['quantity']) ? $currentItem['quantity'] : 0;
+
+            $newQty = $currentQty + $quantity;
+            if ($newQty > $productVariant->stock) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Vượt quá số lượng có trong kho. Tồn kho hiện tại: {$productVariant->stock}",
+                    'stock' => $productVariant->stock,
+                ]);
+            }
+
             $cart->add($product, $quantity, $productVariant);
             $totalItems = collect(session()->get('cart', []))->sum('quantity');
 

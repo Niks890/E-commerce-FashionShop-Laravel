@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -73,9 +74,12 @@ class RecommendationController extends Controller
         $recommendationProductIds = $recommendProducts($userId, $userProducts, 3);
 
         // dd($recommendationProductIds);
-        $products = Product::whereIn('id', $recommendationProductIds)->select('id')->get();
 
-        return response()->json($products);
+        $products = Product::with('Discount', 'ProductVariants')
+        ->whereIn('id', $recommendationProductIds)
+        ->paginate(8);
+        $productResource = ProductResource::collection($products);
+        return $this->apiStatus($productResource, 200, 1, 'ok');
     }
 
     public function itemCFRecommend(int $userId)

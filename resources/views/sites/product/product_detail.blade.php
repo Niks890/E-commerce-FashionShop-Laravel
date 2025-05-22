@@ -11,14 +11,20 @@
     } else {
         $totalProduct = 0;
     }
-
-    // Xử lý màu sắc(helper.php)
-    // getColorHex($productDetail->color);
 @endphp
 
 @extends('sites.master')
 @section('title', $productDetail->product_name)
 @section('content')
+    @if(Session::has('error'))
+        <div class="shadow-lg p-3 rounded js-div-dissappear"
+            style="width: 100%; max-width: 500px; margin: 1rem auto; display: flex; align-items: center;
+                    background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; text-align: left;">
+            <i class="fas fa-exclamation-circle bg-danger text-white rounded-circle p-2 me-3"></i>
+            <span style="font-size: 1rem;">{{ Session::get('error') }}</span>
+        </div>
+    @endif
+
     <!-- Shop Details Section Begin -->
     <section class="shop-details">
         <div class="product__details__pic">
@@ -48,21 +54,21 @@
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">
                                     <div class="product__thumb__pic set-bg"
-                                    data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
+                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
                                     </div>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">
                                     <div class="product__thumb__pic set-bg"
-                                    data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
+                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
                                     </div>
                                 </a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#tabs-4" role="tab">
                                     <div class="product__thumb__pic set-bg"
-                                    data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
+                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
                                         <i class="fa fa-play"></i>
                                     </div>
                                 </a>
@@ -468,37 +474,46 @@
 
     <!-- Icon giỏ hàng -->
     <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
-        <i class="fas fa-id-card-alt"></i><span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        <div class="icon-wrapper">
+            <i class="fas fa-shopping-cart fa-lg"></i>
+            <span class="cart-badge" id="cartCount">{{ $totalProduct }}</span>
+        </div>
     </div>
 
     <!-- Danh sách sản phẩm trong giỏ -->
-    <div class="cart-items" id="cartItems" style="display: none;">
-        <strong>Các sản phẩm đã thêm:</strong>
-        <div id="cartList">
+    <div class="cart-items shadow" id="cartItems">
+        <div class="cart-header d-flex justify-content-between align-items-center mb-2">
+            <strong class="text-white">🛒 Giỏ hàng của bạn</strong>
+            <i class="fas fa-times text-white" style="cursor: pointer;" onclick="toggleCart()"></i>
+        </div>
+        <div id="cartList" class="cart-body">
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
-                    <div class="cart-item p-1">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-img"
-                                    width="50">
-                                <div class="d-inline-block flex-col">
-                                    <span>{{ Str::words($items->name, 5) }}</span></br>
-                                    <span
-                                        class="font-weight-bold">{{ number_format($items->price, 0, ',', '.') . ' đ' }}</span>
-                                </div>
+                    <div class="cart-item d-flex align-items-center">
+                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                            class="cart-item-image rounded">
+                        <div class="cart-item-info flex-grow-1">
+                            <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
+                            <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
-                            <span
-                                class="cart-item-quantity-{{ $items->id }} quantity-badge">{{ $items->quantity }}</span>
                         </div>
+                        <span class="cart-item-quantity badge bg-danger ms-2">
+                            {{ $items->quantity }}
+                        </span>
                     </div>
                 @endforeach
+            @else
+                <p class="empty-cart">Chưa có sản phẩm nào.</p>
             @endif
         </div>
         <div class="cart-footer">
-            <button class="btn btn-success w-100" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
+            <button class="btn btn-success" onclick="goToCartPage()">Đến trang Giỏ hàng</button>
         </div>
     </div>
+
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
 
     <!-- Related Section Begin -->
     <section class="related spad">
@@ -516,12 +531,133 @@
     </section>
     <!-- Related Section End -->
 @endsection
-
-
-
-
 @section('css')
+    <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/comment.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/stock.css') }}">
 @endsection
+@section('js')
+    @if (Session::has('success'))
+        <script src="{{ asset('assets/js/message.js') }}"></script>
+    @endif
+
+            {{-- danh sách sản phẩm liên quan --}}
+    <script>
+        $(document).ready(function() {
+              console.log("Loading product suggestions..."); //
+            $("#suggestion-list-product").empty(); // Xóa dữ liệu cũ trước khi cập nhật mới
+
+            $.ajax({
+                url: "http://127.0.0.1:8000/api/suggest-content-based", // API lấy danh sách sản phẩm
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    if (data.length > 0) {
+                        console.log(data);
+                        data.forEach(function(item) {
+                            let price = item.price;
+                            let nameDiscount = "";
+                            if (item.discount_id != null) {
+                                price = item.price - (item.price * item.discount
+                                    .percent_discount);
+                                nameDiscount = item.discount.name;
+                            } else {
+                                nameDiscount = "New";
+                            }
+
+                            let totalStock = [];
+                            let addCartOrNone = [];
+                            item.product_variants.map((variant) => {
+                                totalStock[variant.product_id] = 0;
+                            })
+                            item.product_variants.forEach((variant) => {
+                                totalStock[variant.product_id] += variant.stock + 0;
+                            });
+                            item.product_variants.map((variant) => {
+                                if (totalStock[variant.product_id] == 0) {
+                                    addCartOrNone[variant.product_id] = false;
+                                } else {
+                                    addCartOrNone[variant.product_id] = true;
+                                };
+                            })
+
+                            let productHTML = `
+                        <div class="col-lg-3 col-md-6 col-sm-6">
+                            <div class="product__item" id="product-list-shop">
+                                <div class="product__item__pic">
+                                    <img class="set-bg" width="280" height="250"
+                                    src="{{ asset('uploads/${item.image}') }}"
+                                    alt="${item.product_name}">
+                                    <span class="label name-discount-suggest" >${nameDiscount}</span></li>
+                                    <ul class="product__hover">
+                                        <li><a href="{{ url('add-to-wishlist') }}/${item.id}"><img src="{{ asset('client/img/icon/heart.png') }}"
+                                            alt=""></a></li>
+                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
+                                                alt=""><span>Compare</span></a></li>
+                                                <li><a href="{{ url('product') }}/${item.slug}">
+                                                    <img src="{{ asset('client/img/icon/search.png') }}"
+                                                    alt=""></a>
+
+                                                    </ul>
+                                                    </div>
+
+                                                    <div class="product__item__text">
+                                                        <h6>${item.product_name}</h6>
+                                                        ` +
+
+                                (addCartOrNone[item.id] > 0 ?
+                                    `<a href="javascript:void(0);" class="add-cart" data-id="${item.id}">+ Add To Cart</a>` :
+                                    `<span class=" badge badge-warning">Hết hàng</span>`)
+
+                                +
+                                `
+                                            <div class="rating">
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                </div>
+                                                <h5>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}</h5>
+                                                <div class="product__color__select">
+                                                    <label for="pc-4">
+                                                        <input type="radio" id="pc-4">
+                                                        </label>
+                                                <label class="active black" for="pc-5">
+                                                    <input type="radio" id="pc-5">
+                                                    </label>
+                                                    <label class="grey" for="pc-6">
+                                                        <input type="radio" id="pc-6">
+                                                        </label>
+                                                        </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            $(document).ready(function() {
+                                $('.name-discount-suggest').each(function() {
+                                    if ($(this).text().trim() !== "New") {
+                                        $(this).addClass(
+                                            'bg-danger text-white');
+                                    }
+                                });
+                            });
+                            $("#suggestion-list-product").append(productHTML);
+                        });
+                    } else {
+                        $("#suggestion-list-product").html("<p>Không có sản phẩm nào.</p>");
+                    }
+                },
+                error: function() {
+                    console.error("Lỗi API khi tải danh sách sản phẩm.");
+                    $("#suggestion-list-product").html("<p>Lỗi khi tải sản phẩm.</p>");
+                }
+            });
+        });
+    </script>
+    <script src="{{ asset('client/js/cart-add.js') }}"></script>
+@endsection
+
+
+
