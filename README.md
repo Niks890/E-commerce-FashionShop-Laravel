@@ -82,9 +82,11 @@ This project is a **Laravel-based E-Commerce System** designed for selling fashi
 ✅ REST API Support for Frontend Integration
 ✅ Multi-Payment Gateway (VNPAY, MoMo, ZaloPay)
 ✅ Role-Based Access Control with Gates
+✅ ChatBot AI 
+
 
 ## 📜 License
 This project is licensed under the [MIT License](LICENSE).
 
 ---
-**Developed by [TSTShop](https://github.com/trthinh2003/ECommerceFashionShop.git)** 🚀
+**Developed by [VMT]([https://github.com/Niks890/E-commerce-FashionShop-Laravel.git])** 🚀
