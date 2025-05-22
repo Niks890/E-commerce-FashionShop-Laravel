@@ -47,7 +47,7 @@ This project is a **Laravel-based E-Commerce System** designed for selling fashi
 ## 🚀 Installation Guide
 ### **Step 1: Clone the Repository**
 ```sh
-  git clone https://github.com/trthinh2003/ECommerceFashionShop.git
+  git clone https://github.com/Niks890/E-commerce-FashionShop-Laravel.git
   cd ECommerceFashionShop
 ```
 
