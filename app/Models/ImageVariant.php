@@ -11,7 +11,7 @@ class ImageVariant extends Model
 
     protected $fillable = [
         'url',
-        'product_id',
+        'product_variant_id',
     ];
 
     public function productVariant()

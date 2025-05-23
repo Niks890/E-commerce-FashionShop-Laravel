@@ -123,7 +123,7 @@ class HomeController extends Controller
     public function productDetail(ProductRecent $productRecent, Product $productDetail, $slug)
     {
         $productDetail = Product::where('slug', $slug)
-            ->with(['ProductVariants', 'Category', 'Discount'])
+            ->with(['ProductVariants', 'Category', 'Discount', 'ProductVariants.ImageVariants'])
             ->firstOrFail();
         $prices = $productDetail->ProductVariants->pluck('price');
         // Lấy danh sách size của sản phẩm

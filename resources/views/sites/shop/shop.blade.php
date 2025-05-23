@@ -266,7 +266,7 @@
                                 <div class="product__item" id="product-list-shop">
                                     <div class="product__item__pic">
                                         <img class="product__item__pic set-bg" width="280" height="250"
-                                            src="{{ asset('uploads/' . $items->image) }}"
+                                            src="{{ $items->image }}"
                                             alt="{{ $items->product_name }}">
                                         <span class="label name-discount-shop">{{ $discountName }}</span>
                                         <ul class="product__hover">
@@ -352,7 +352,7 @@
         </div>
     </section>
     <!-- Shop Section End -->
-    <!-- Icon giỏ hàng -->
+   <!-- Icon giỏ hàng -->
     <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
         <div class="icon-wrapper">
             <i class="fas fa-shopping-cart fa-lg"></i>
@@ -370,7 +370,7 @@
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
                     <div class="cart-item d-flex align-items-center">
-                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                        <img src="{{ $items->image }}" alt="{{ $items->name }}"
                             class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>

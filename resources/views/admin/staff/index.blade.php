@@ -29,8 +29,9 @@
         <table class="table table-hover align-middle text-nowrap">
             <thead class="table-light">
                 <tr>
-                    <th>ID</th>
+                    <th>#</th>
                     <th>Họ tên</th>
+                    <th>Avatar</th>
                     <th>Điện thoại</th>
                     <th>Địa chỉ</th>
                     <th>Email</th>
@@ -45,6 +46,7 @@
                 <tr>
                     <td>{{ $model->id }}</td>
                     <td>{{ $model->name }}</td>
+                    <td><img src="{{ $model->avatar }}" alt="" width="45" class="rounded"></td>
                     <td>{{ $model->phone }}</td>
                     <td>{{ $model->address }}</td>
                     <td>{{ $model->email }}</td>
@@ -89,6 +91,7 @@
                         <tbody>
                             <tr><th>Mã nhân viên</th><td id="staff-id"></td></tr>
                             <tr><th>Tên nhân viên</th><td id="staff-name"></td></tr>
+                            <tr><th>Avatar</th><td id="staff-avatar"><img id="staff-avatar-img" width="100" src="" alt=""></td></tr>
                             <tr><th>Giới tính</th><td id="staff-sex"></td></tr>
                             <tr><th>Địa chỉ</th><td id="staff-address"></td></tr>
                             <tr><th>Số điện thoại</th><td id="staff-phone"></td></tr>
@@ -134,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById("staff-info").textContent = staff.name;
                     document.getElementById("staff-id").textContent = staff.id;
                     document.getElementById("staff-name").textContent = staff.name;
+                    document.getElementById("staff-avatar-img").src = staff.avatar;
                     document.getElementById("staff-sex").textContent = staff.sex === 1 ? "Nam" : "Nữ";
                     document.getElementById("staff-address").textContent = staff.address;
                     document.getElementById("staff-phone").textContent = staff.phone;

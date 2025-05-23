@@ -83,7 +83,7 @@
                 <tr>
                     <td>{{$i++}}</td>
                     <td>{{$items->product_name}}</td>
-                    <td><img src="{{asset('uploads/'.$items->image)}}" width="50" class="rounded"></td>
+                    <td><img src="{{$items->image}}" width="50" class="rounded"></td>
                     <td>{{$items->quantity}}</td>
                     <td>{{$items->size}} - {{$items->color}}</td>
                     <td>{{number_format($items->price, 0, ',', '.')}} đ</td>

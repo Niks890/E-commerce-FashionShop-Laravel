@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use App\Models\Discount;
+use App\Models\ImageVariant;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -41,7 +43,7 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, CloudinaryService $cloudinaryService)
     {
         $data = $request->validate([
             'name' => 'required|unique:products,product_name|min:3|max:100',
@@ -54,33 +56,28 @@ class ProductController extends Controller
             'name.required' => 'Tên sản phẩm không được để trống.',
             'image.mimes' => 'Định dạng ảnh phải là *.jpg, *.jpeg, *.gif, *.png, *.webp.'
         ]);
-        // $data = $request->only('product_name', 'price', 'description', 'status', 'category_id');
-        // //Xu ly anh
-        // // $file_name = $request->image->getClientOriginalName();
-        // $file_name = $request->image->hashName();
-        // $request->image->move(public_path('uploads'), $file_name);
-        // $data['image'] = $file_name;
-        // // dd($file_name);
-        // if (Product::create($data)) {
-        //     return redirect()->route('product.index');
-        // }
-        // return redirect()->back();
 
-        // dd($data['status']);
         $product = new Product();
         $product->product_name = $data['name'];
         $product->description = $data['description'];
         $product->price = $data['price'];
 
         //Xu ly anh
-        $file_name = $request->image->hashName();
-        $request->image->move(public_path('uploads'), $file_name);
-        $product->image = $file_name;
+        // $file_name = $request->image->hashName();
+        // $request->image->move(public_path('uploads'), $file_name);
+        // $product->image = $file_name;
+        // Xử lý ảnh
+        // Upload ảnh lên Cloudinary
+        $uploadResult = $cloudinaryService->uploadImage($request->file('image')->getPathname(), 'product_images');
+        if (isset($uploadResult['error'])) {
+            return redirect()->back()->with('error', 'Upload ảnh thất bại: ' . $uploadResult['error']);
+        }
+        $product->image = $uploadResult['url'];
 
         $product->status = $data['status'];
         $product->category_id = $data['category_id'];
         $product->save();
-        return redirect()->route('product.index');
+        return redirect()->route('product.index')->with('success', 'Thêm sản phẩm thành công');
     }
 
     /**
@@ -99,24 +96,36 @@ class ProductController extends Controller
     {
         $cats = Category::all();
         $discounts = Discount::all();
-        $productVariants = ProductVariant::where('product_id', $product->id)->get();
+        $productVariants = ProductVariant::with('ImageVariants')->where('product_id', $product->id)->get();
         return view('admin.product.edit', compact('product', 'cats', 'discounts', 'productVariants'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Product $product)
+    public function update(Request $request, Product $product, CloudinaryService $cloudinaryService)
     {
-        $data = $request->validate([
+
+        $rules = [
             'name' => 'required|min:3|max:100|unique:products,product_name,' . $product->id,
-            'price' => 'required|numeric|min:0',
+            'price' => 'required|string',
             'status' => 'required',
-            'image' => 'mimes:jpg,jpeg,gif,png,webp,avif'
-        ], [
+            'image' => 'nullable|mimes:jpg,jpeg,gif,png,webp,avif',
+            'image_variant.*' => 'sometimes|array',
+            'image_variant.*.*' => 'sometimes|image|mimes:jpg,jpeg,png,gif,webp,avif|max:2048',
+            'price_variant.*' => 'required|string',
+        ];
+
+        $messages = [
             'name.required' => 'Tên sản phẩm không được để trống.',
-            'image.mimes' => 'Định dạng ảnh phải là *.jpg, *.jpeg, *.gif, *.png, *.webp, *.avif.'
-        ]);
+            'image.mimes' => 'Định dạng ảnh chính phải là *.jpg, *.jpeg, *.gif, *.png, *.webp, *.avif.',
+            'image_variant.*.*.image' => 'Tệp tải lên cho biến thể phải là hình ảnh.',
+            'image_variant.*.*.mimes' => 'Định dạng ảnh biến thể phải là *.jpg, *.jpeg, *.gif, *.png, *.webp, *.avif.',
+            'price_variant.*.required' => 'Giá biến thể không được để trống.',
+        ];
+
+        $data = $request->validate($rules, $messages);
+
         $product->product_name = $data['name'];
         $product->price = $data['price'];
         $product->discount_id = $request->discount_id;
@@ -125,38 +134,52 @@ class ProductController extends Controller
         $product->description = $request->description;
         $product->short_description = $request->short_description;
         $product->status = $data['status'];
+
         if ($request->image != null) {
-            $product->image = $request->image->getClientOriginalName();
-        }
-        else {
+            $uploadResult = $cloudinaryService->uploadImage($request->file('image')->getPathname(), 'product_first_variant_images');
+            if (isset($uploadResult['error'])) {
+                return redirect()->back()->with('error', 'Upload ảnh thất bại: ' . $uploadResult['error']);
+            }
+            $product->image = $uploadResult['url'];
+
+            // $product->image = $request->image->getClientOriginalName();
+        } else {
             $product->image = $request->image_path;
         }
         $product->save();
 
         $productVariants = ProductVariant::where('product_id', $product->id)->get();
-        // dd($request->all(), $productVariants, $request->image_variant);
+        foreach ($productVariants as $variant) {
+            $variantId = $variant->id;
 
-        if ($request->image_variant != null) {
-            foreach ($productVariants as $variant) {
-                $imgVariant = $request->image_variant[$variant->id] ?? null;
-                if ($imgVariant != null) {
-                    DB::statement("UPDATE product_variants
-                                   SET price = ?, image = ?
-                                   WHERE id = ?", [$request->price_variant[$variant->id],
-                                   $request->image_variant[$variant->id]->getClientOriginalName(), $variant->id]);
-                }
-                else {
-                    DB::statement("UPDATE product_variants
-                                   SET price = ?
-                                   WHERE id = ?", [$request->price_variant[$variant->id], $variant->id]);
-                }
+            // Cập nhật giá biến thể
+            if (isset($request->price_variant[$variantId])) {
+                $price = str_replace('.', '', $request->price_variant[$variantId]);
+                $variant->price = $price;
+                $variant->save(); // Lưu giá mới
             }
-        }
-        else {
-            foreach ($productVariants as $variant) {
-                DB::statement("UPDATE product_variants
-                               SET price = ?
-                               WHERE id = ?", [$request->price_variant[$variant->id], $variant->id]);
+
+            // Xử lý ảnh biến thể mới (nếu có)
+            if ($request->hasFile("image_variant.{$variantId}")) {
+                $images = $request->file("image_variant.{$variantId}");
+
+                foreach ($images as $imageFile) {
+                    // Upload lên Cloudinary
+                    $uploadResult = $cloudinaryService->uploadImage($imageFile->getPathname(), 'product_variant_images');
+
+                    if (isset($uploadResult['error'])) {
+                        // Thông báo lỗi cụ thể hơn
+                        return redirect()->back()->with('error', "Upload ảnh cho biến thể {$variant->size} - {$variant->color} thất bại: " . $uploadResult['error'])->withInput();
+                    }
+
+                    $imageUrl = $uploadResult['url'];
+
+                    // Tạo bản ghi ImageVariant mới
+                    ImageVariant::create([
+                        'url' => $imageUrl,
+                        'product_variant_id' => $variantId, // <-- Sử dụng ID của biến thể
+                    ]);
+                }
             }
         }
         return redirect()->route('product.index')->with('success', 'Sửa thông tin sản phẩm thành công!');
@@ -180,6 +203,4 @@ class ProductController extends Controller
         $data = Product::where('product_name', 'like', "%$keyword%")->paginate();
         return view('admin.product.index', compact('data', 'keyword'));
     }
-
-
 }

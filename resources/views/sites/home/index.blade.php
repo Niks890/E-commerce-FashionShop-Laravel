@@ -147,7 +147,7 @@
                         <div class="col-lg-3 col-md-6 col-sm-6 mix">
                             <div class="product__item">
                                 <div class="product__item__pic">
-                                    <img src="{{ asset('uploads/' . $itemRecent->image) }}" class="set-bg" width="280"
+                                    <img src="{{$itemRecent->image}}" class="set-bg" width="280"
                                         height="280" alt="{{ $itemRecent->product_name }}">
                                     <span class="label name-discount bg-danger text-white">{{ $discountName }}</span>
                                     <ul class="product__hover">
@@ -283,7 +283,7 @@
                                 productItem.innerHTML = `
                                             <div class="product__item" id="product-list-home">
                                                   <div class="product__item__pic">
-                                                        <img src="{{ asset('uploads/${product.image}') }}" class="set-bg" width="280" height="280" alt="${product.name}">
+                                                        <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.name}">
                                                         <span class="label name-ubcf" >${nameDiscount}</span>
                                                         <ul class="product__hover">
                                                           <li>
@@ -409,7 +409,7 @@
                                 productItem.innerHTML = `
                                             <div class="product__item" id="product-list-home">
                                                   <div class="product__item__pic">
-                                                        <img src="{{ asset('uploads/${product.image}') }}" class="set-bg" width="280" height="280" alt="${product.name}">
+                                                        <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.name}">
                                                         <span class="label name-discount" >${product.discount.name}</span>
                                                         <ul class="product__hover">
                                                           <li>
@@ -536,7 +536,7 @@
                             productItem.innerHTML = `
                                         <div class="product__item" id="product-list-home">
                                               <div class="product__item__pic">
-                                                    <img src="{{ asset('uploads/${product.image}') }}" class="set-bg" width="280" height="280" alt="${product.product_name}">
+                                                    <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
                                                     <span class="label name-discount-section" >${nameDiscount}</span>
                                                     <ul class="product__hover">
                                                       <li>
@@ -618,7 +618,7 @@
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
                     <div class="cart-item d-flex align-items-center">
-                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                        <img src="{{ $items->image }}" alt="{{ $items->name }}"
                             class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
@@ -641,9 +641,6 @@
 
     <!-- Toast container -->
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
-
-
-
 
 
 

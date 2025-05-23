@@ -1,3 +1,8 @@
+@php
+    $userId = auth()->user()->id - 1;
+    $staff = DB::table('staff')->where('id', $userId)->select('avatar')->first();
+    // dd($staff);
+@endphp
 <div class="main-header">
     <div class="main-header-logo">
         <!-- Logo Header -->
@@ -241,7 +246,7 @@
                     <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="javascript:void(0);"
                         aria-expanded="false">
                         <div class="avatar-sm">
-                            <img src="assets/img/profile.jpg" alt="..." class="avatar-img rounded-circle" />
+                            <img src="{{$staff->avatar ?? asset('assets/img/profile.jpg')}} " alt="..." class="avatar-img rounded-circle" />
                         </div>
                         <span class="profile-username">
                             <span class="op-7">Xin chào,</span>
@@ -253,7 +258,7 @@
                             <li>
                                 <div class="user-box">
                                     <div class="avatar-lg">
-                                        <img src="assets/img/profile.jpg" alt="ảnh đại diện"
+                                        <img src="{{$staff->avatar ?? asset('assets/img/profile.jpg')}} " alt="ảnh đại diện"
                                             class="avatar-img rounded" />
                                     </div>
                                     <div class="u-text">

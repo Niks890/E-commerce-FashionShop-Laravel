@@ -76,7 +76,7 @@
                                             <td class="product__cart__item">
                                                 <a href="{{ route('sites.productDetail', $items->slug) }}">
                                                     <div class="product__cart__item__pic">
-                                                        <img src="{{ asset('uploads/' . $items->image) }}" width="80"
+                                                        <img src="{{$items->image }}" width="80"
                                                             alt="">
                                                     </div>
                                                 </a>

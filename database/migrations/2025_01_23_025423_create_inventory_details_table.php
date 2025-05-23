@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedInteger('product_variant_id');
             $table->unsignedInteger('quantity')->default(1);
             $table->decimal('price', 10,2);
-            $table->string('size', 30)->nullable();
+            $table->string('size')->nullable();
             $table->foreign('product_variant_id')->references('id')->on('product_variants');
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('inventory_id')->references('id')->on('inventories');

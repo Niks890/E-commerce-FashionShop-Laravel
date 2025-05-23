@@ -319,7 +319,7 @@
                                                 onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
                                                 onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
                                             <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
-                                            <img src="{{ asset('uploads/${item.image}') }}" width="50" height="50" alt="">
+                                            <img src="${item.image}" width="50" height="50" alt="">
                                             ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
                                             </a>
                                         </li>
@@ -351,7 +351,7 @@
                     let listItem = `
                         <li class="list-group-item d-flex align-items-center p-3 border-bottom">
                             <a href="/product/${item.slug}" class="fw-medium text-decoration-none text-dark">
-                                <img src="{{ asset('uploads/${item.image}') }}" width="50" height="50" alt="">
+                                <img src="${item.image}" width="50" height="50" alt="">
                                 ${item.product_name} | <p class="d-inline">Giá:</p> ${Intl.NumberFormat('vi-VN').format(price)} đ
                             </a>
                         </li>

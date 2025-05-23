@@ -39,7 +39,7 @@
                             <div class="row align-items-center">
                                 <div class="col-md-2 col-4">
                                     <a href="{{ url('product/'.$item->slug) }}">
-                                        <img src="{{ asset('uploads/' . $item->image) }}"
+                                        <img src="{{ $item->image}}"
                                              alt="{{ $item->name }}"
                                              class="img-fluid rounded-3 object-fit-cover"
                                              style="width: 120px; height: 120px;">

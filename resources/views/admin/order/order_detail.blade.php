@@ -206,7 +206,7 @@
                             <td>{{ $i++ }}</td>
                             <td class="text-start">{{ $item->product_name }}</td>
                             <td>
-                                <img src="{{ asset('uploads/'.$item->image) }}" alt="{{ $item->product_name }}" class="product-img" />
+                                <img src="{{$item->image}}" alt="{{ $item->product_name }}" class="product-img" />
                             </td>
                             <td>{{ $item->quantity }}</td>
                             <td>{{ $item->size }} - {{ $item->color }}</td>

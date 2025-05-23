@@ -1,4 +1,5 @@
 @php
+    // dd($productDetail);
     // Session::forget('product_recent');
     // dd(Session::get('product_recent'));
 
@@ -16,7 +17,7 @@
 @extends('sites.master')
 @section('title', $productDetail->product_name)
 @section('content')
-    @if(Session::has('error'))
+    @if (Session::has('error'))
         <div class="shadow-lg p-3 rounded js-div-dissappear"
             style="width: 100%; max-width: 500px; margin: 1rem auto; display: flex; align-items: center;
                     background-color: #f8d7da; color: #842029; border: 1px solid #f5c2c7; text-align: left;">
@@ -39,70 +40,82 @@
                     </div>
                 </div>
                 <div class="row">
+                    @php
+                        // Thu thập tất cả hình ảnh vào một mảng duy nhất
+                        $allImages = [];
+                        // Thêm ảnh gốc (nếu có)
+                        if ($productDetail->image) {
+                            $allImages[] = $productDetail->image;
+                        }
+                        // Thêm ảnh từ các biến thể
+                        foreach ($productDetail->ProductVariants as $variant) {
+                            foreach ($variant->ImageVariants as $image) {
+                                $allImages[] = $image->url; // Lấy URL từ ImageVariant
+                            }
+                        }
+                        // Loại bỏ các ảnh trùng lặp (nếu có)
+                        $allImages = array_unique($allImages);
+                        $imageIndex = 0; // Biến đếm để tạo ID duy nhất
+                    @endphp
+
+                    {{-- Hiển thị danh sách Thumbnails (cột trái) --}}
                     <div class="col-lg-3 col-md-3">
                         <ul class="nav nav-tabs" role="tablist">
-                            <li class="nav-item">
-                                {{-- hình gốc của sản phẩm (list thumnail) --}}
-                                <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">
-                                    <div class="product__thumb__pic set-bg"
-                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
-                                    </div>
-                                </a>
-                            </li>
-
-                            {{-- các hình của varians --}}
-                            <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tabs-2" role="tab">
-                                    <div class="product__thumb__pic set-bg"
-                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tabs-3" role="tab">
-                                    <div class="product__thumb__pic set-bg"
-                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
-                                    </div>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" data-toggle="tab" href="#tabs-4" role="tab">
-                                    <div class="product__thumb__pic set-bg"
-                                        data-setbg="{{ asset('uploads/' . $productDetail->image) }}">
-                                        <i class="fa fa-play"></i>
-                                    </div>
-                                </a>
-                            </li>
+                            @forelse ($allImages as $imageUrl)
+                                @php $imageIndex++; @endphp
+                                <li class="nav-item">
+                                    {{-- Đặt 'active' cho ảnh đầu tiên --}}
+                                    <a class="nav-link {{ $imageIndex == 1 ? 'active' : '' }}" data-toggle="tab"
+                                        href="#tabs-{{ $imageIndex }}" role="tab">
+                                        {{-- Sử dụng URL ảnh trực tiếp (từ Cloudinary hoặc DB) --}}
+                                        {{-- Lưu ý: data-setbg cần JS của template để hoạt động, nếu không, dùng style --}}
+                                        <div class="product__thumb__pic set-bg" data-setbg="{{ $imageUrl }}">
+                                        </div>
+                                    </a>
+                                </li>
+                            @empty
+                                {{-- Trường hợp không có ảnh nào --}}
+                                <li class="nav-item">
+                                    <a class="nav-link active" data-toggle="tab" href="#tabs-1" role="tab">
+                                        <div class="product__thumb__pic set-bg"
+                                            data-setbg="{{ asset('client/img/default-product.png') }}">
+                                            {{-- Ảnh mặc định --}}
+                                        </div>
+                                    </a>
+                                </li>
+                            @endforelse
+                            {{-- Có thể thêm tab video ở đây nếu cần --}}
                         </ul>
                     </div>
+
+                    {{-- 3. Hiển thị Ảnh Lớn (cột giữa) --}}
+                    @php $imageIndex = 0; @endphp {{-- Reset biến đếm --}}
                     <div class="col-lg-6 col-md-9">
                         <div class="tab-content">
-                            {{-- hình gốc của sản phẩm (panel) --}}
-                            <div class="tab-pane active" id="tabs-1" role="tabpanel">
-                                <div class="product__details__pic__item">
-                                    <img src="{{ asset('uploads/' . $productDetail->image) }}" alt="">
+                            @forelse ($allImages as $imageUrl)
+                                @php $imageIndex++; @endphp
+                                {{-- Đặt 'active' cho panel ảnh đầu tiên --}}
+                                <div class="tab-pane {{ $imageIndex == 1 ? 'active' : '' }}" id="tabs-{{ $imageIndex }}"
+                                    role="tabpanel">
+                                    <div class="product__details__pic__item">
+                                        {{-- Sử dụng URL ảnh trực tiếp --}}
+                                        <img src="{{ $imageUrl }}" alt="Product Image {{ $imageIndex }}">
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="tab-pane" id="tabs-2" role="tabpanel">
-                                <div class="product__details__pic__item">
-                                    <img src="{{ 'client/img/shop-details/product-big-3.png' }}" alt="">
+                            @empty
+                                {{-- Trường hợp không có ảnh nào --}}
+                                <div class="tab-pane active" id="tabs-1" role="tabpanel">
+                                    <div class="product__details__pic__item">
+                                        <img src="{{ asset('client/img/default-product.png') }}" alt="Product Image">
+                                        {{-- Ảnh mặc định --}}
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="tab-pane" id="tabs-3" role="tabpanel">
-                                <div class="product__details__pic__item">
-                                    <img src="{{ 'client/img/shop-details/product-big.png' }}" alt="">
-                                </div>
-                            </div>
-                            <div class="tab-pane" id="tabs-4" role="tabpanel">
-                                <div class="product__details__pic__item">
-                                    <img src="{{ 'client/img/shop-details/product-big-4.png' }}" alt="">
-                                    <a href="https://www.youtube.com/watch?v=8PJ3_p7VqHw&list=RD8PJ3_p7VqHw&start_radio=1"
-                                        class="video-popup"><i class="fa fa-play"></i></a>
-                                </div>
-                            </div>
+                            @endforelse
+                            {{-- Có thể thêm panel video ở đây nếu cần --}}
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
         <div class="product__details__content">
@@ -110,7 +123,7 @@
                 <div class="row d-flex justify-content-center">
 
                     <div class="col-lg-8">
-                        <form action="{{ route('sites.addFromDetail', $productDetail->id) }}" method="post">
+                        <form id="add-to-cart-form" action="{{ route('sites.addFromDetail', $productDetail->id) }}" method="post">
                             @csrf
                             <div class="product__details__text">
                                 <h4>{{ $productDetail->product_name }}</h4>
@@ -120,11 +133,7 @@
                                         $fullStars = floor($avgStar); // Số sao đầy
                                         $hasHalfStar = $avgStar - $fullStars >= 0.5; // Kiểm tra có nửa sao không
                                         $emptyStars = 5 - $fullStars - ($hasHalfStar ? 1 : 0); // Số sao rỗng còn lại
-
                                     @endphp
-
-
-
                                     {{-- Sao đầy --}}
                                     @for ($i = 0; $i < $fullStars; $i++)
                                         <i class="fa fa-star fw-bold" @style('color: #FFD700')></i>
@@ -172,8 +181,9 @@
                                         <span>Kích cỡ:</span>
                                         @foreach ($sizes as $size)
                                             <label for="size-{{ $size }}">{{ $size }}
+                                                 {{-- bỏ required với js --}}
                                                 <input type="radio" name="size" id="size-{{ $size }}"
-                                                    value="{{ $size }}" required>
+                                                    value="{{ $size }}">
                                                 <input type="radio" name="size" value="" hidden checked>
                                             </label>
                                         @endforeach
@@ -183,8 +193,9 @@
                                         @foreach ($colors as $index => $color)
                                             <label class="color-box" style="background-color: {{ getColorHex($color) }};"
                                                 for="color-{{ $index }}" title="{{ $color }}">
+                                                  {{-- bỏ required với js --}}
                                                 <input type="radio" name="color" id="color-{{ $index }}"
-                                                    class="color-choice-item" value="{{ $color }}" required>
+                                                    class="color-choice-item" value="{{ $color }}">
                                             </label>
                                         @endforeach
                                     </div>
@@ -314,13 +325,10 @@
                                                         </div>
                                                     </li>
                                                 @endif
-
-
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -328,6 +336,35 @@
             </div>
         </div>
         <script>
+            const addToCartForm = document.getElementById('add-to-cart-form');
+            // console.log(addToCartForm);
+            if (addToCartForm) {
+                addToCartForm.addEventListener('submit', function(event) {
+                    const selectedSizeInput = document.querySelector('input[name="size"]:checked');
+                    const selectedColorInput = document.querySelector('input[name="color"]:checked');
+
+                    console.log(selectedSizeInput, selectedColorInput);
+                    const selectedSize = selectedSizeInput ? selectedSizeInput.value : null;
+                    const selectedColor = selectedColorInput ? selectedColorInput.value : null;
+
+                    let errorMessage = '';
+                    const isSizeSelected = selectedSize !== null && selectedSize !== '';
+                    const isColorSelected = selectedColor !== null;
+
+                    if (!isSizeSelected && !isColorSelected) {
+                        errorMessage = 'Vui lòng chọn size và màu sắc để thêm vào giỏ hàng.';
+                    } else if (!isSizeSelected) {
+                        errorMessage = 'Vui lòng chọn size bạn cần.';
+                    } else if (!isColorSelected) {
+                        errorMessage = 'Vui lòng chọn màu sắc bạn thích.';
+                    }
+
+                    if (errorMessage) {
+                        showToast(errorMessage);
+                        event.preventDefault(); // Ngăn form gửi đi
+                    }
+                });
+            }
             document.querySelectorAll('.color-choice-item').forEach(item => {
                 item.addEventListener('change', async (e) => {
                     // Xóa viền tất cả label
@@ -490,7 +527,7 @@
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
                     <div class="cart-item d-flex align-items-center">
-                        <img src="uploads/{{ $items->image }}" alt="{{ $items->name }}"
+                        <img src="{{ $items->image }}" alt="{{ $items->name }}"
                             class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
@@ -542,10 +579,10 @@
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
 
-            {{-- danh sách sản phẩm liên quan --}}
+    {{-- danh sách sản phẩm liên quan --}}
     <script>
         $(document).ready(function() {
-              console.log("Loading product suggestions..."); //
+            // console.log("Loading product suggestions...");
             $("#suggestion-list-product").empty(); // Xóa dữ liệu cũ trước khi cập nhật mới
 
             $.ajax({
@@ -554,7 +591,7 @@
                 dataType: "json",
                 success: function(data) {
                     if (data.length > 0) {
-                        console.log(data);
+                        // console.log(data);
                         data.forEach(function(item) {
                             let price = item.price;
                             let nameDiscount = "";
@@ -587,7 +624,7 @@
                             <div class="product__item" id="product-list-shop">
                                 <div class="product__item__pic">
                                     <img class="set-bg" width="280" height="250"
-                                    src="{{ asset('uploads/${item.image}') }}"
+                                    src="${item.image}"
                                     alt="${item.product_name}">
                                     <span class="label name-discount-suggest" >${nameDiscount}</span></li>
                                     <ul class="product__hover">
@@ -655,9 +692,9 @@
                 }
             });
         });
+
+
+
     </script>
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
 @endsection
-
-
-

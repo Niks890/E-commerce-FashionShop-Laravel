@@ -134,7 +134,7 @@
                                             <ul class="checkout__total__products">
                                                 <li>{{ $index++ }}.
                                                     {{ Str::words($items->name, 10) }}<span>{{ number_format($items->price, 0, ',', '.') . ' đ' }}</span>
-                                                    <img src="{{ asset('uploads/' . $items->image) }}" width="50"
+                                                    <img src="{{$items->image}}" width="50"
                                                         alt="">
                                                     <h6>Số lượng: {{ $items->quantity }}</h6>
                                                     <h6>Size: {{ $items->size }}</h6>

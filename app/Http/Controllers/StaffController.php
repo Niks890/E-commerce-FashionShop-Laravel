@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Staff;
 use App\Models\User;
+use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -31,13 +32,14 @@ class StaffController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, CloudinaryService $cloudinaryService)
     {
         $rule = [
             'name' => 'required|string|min:0|max:255',
             'phone' => 'required|unique:staff,phone',
             'address' => 'required',
             'email' => 'required|email',
+            'avatar'=>'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'sex' => 'required',
             'username' => 'required|unique:staff,username',
             'password' => 'required',
@@ -50,7 +52,8 @@ class StaffController extends Controller
             'phone.required' => 'Số điện thoại không được để trống',
             'phone.unique' => 'Số điện thoại đã tồn tại.',
             'address.required' => 'Vui lòng nhập địa chỉ của nhân viên.',
-            'email.required' => 'Trường này bắt buộc nhâp',
+            'email.required' => 'Trường này bắt buộc nhập',
+            'avatar.required' => 'Avatar không được để trống',
             'sex.required' => 'Trường này bắt buộc nhâp',
             'username.required' => 'Tên tài khoản không được để trống.',
             'username.unique' => 'Tài khoản này đã tồn tại.',
@@ -66,6 +69,12 @@ class StaffController extends Controller
         $staff->phone = $data['phone'];
         $staff->address = $data['address'];
         $staff->email = $data['email'];
+
+        $uploadResult = $cloudinaryService->uploadImage($request->file('avatar')->getPathname(), 'staff_avatars');
+        if (isset($uploadResult['error'])) {
+            return redirect()->back()->with('error', 'Upload ảnh thất bại: ' . $uploadResult['error']);
+        }
+        $staff->avatar = $uploadResult['url'];
         $staff->sex = $data['sex'];
         $staff->username = $data['username'];
         $staff->password = bcrypt($data['password']);
@@ -115,10 +124,12 @@ class StaffController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Staff $staff)
+    public function update(Request $request, Staff $staff,  CloudinaryService $cloudinaryService)
     {
         $data = $request->validate([
             'name' => 'required|string|min:0|max:255',
+            'avatar' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'old_avatar' => 'nullable|string',
             'phone' => 'required',
             'address' => 'required',
             'email' => 'required',
@@ -127,6 +138,7 @@ class StaffController extends Controller
             'status' => 'required',
         ], [
             'name.required' => 'Trường này bắt buộc nhâp',
+            'avatar.required' => 'Trường này bắt buộc nhâp',
             'phone.required' => 'Trường này bắt buộc nhâp',
             'address.required' => 'Trường này bắt buộc nhâp',
             'email.required' => 'Trường này bắt buộc nhâp',
@@ -149,7 +161,31 @@ class StaffController extends Controller
             $user->roles = '';
         }
         $user->save();
-        $staff->update($data);
+       // Cập nhật các field còn lại ngoài avatar
+        $staff->name = $data['name'];
+        $staff->phone = $data['phone'];
+        $staff->address = $data['address'];
+        $staff->email = $data['email'];
+        $staff->sex = $data['sex'];
+        $staff->position = $data['position'];
+        $staff->status = $data['status'];
+
+        // Nếu có avatar mới thì upload
+        if($request->hasFile('avatar')) {
+            $uploadResult = $cloudinaryService->uploadImage($request->file('avatar')->getPathname(), 'staff_avatars');
+
+            if (isset($uploadResult['error'])) {
+                return redirect()->back()->with('error', 'Upload ảnh thất bại: ' . $uploadResult['error']);
+            }
+
+            $staff->avatar = $uploadResult['url'];
+        } else {
+            // Nếu không upload ảnh mới, giữ nguyên ảnh cũ
+            $staff->avatar = $data['old_avatar'];
+        }
+        $staff->save();
+
+
         $user_current = User::where('id', $request->input('user_id'))->first();
         if (in_array('admin', $user_current->roles()) || in_array('manage', $user_current->roles())) {
             return redirect()->route('staff.index')->with('success', 'Cập nhật thông tin nhân viên thành công!');

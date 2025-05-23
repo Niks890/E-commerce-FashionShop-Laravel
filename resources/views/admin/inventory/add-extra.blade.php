@@ -2,10 +2,13 @@
     @extends('admin.master')
     @section('title', 'Nhập thêm')
     @section('back-page')
-        <a class="text-primary" onclick="window.history.back()">
-            <i class="fas fa-chevron-left ms-3"></i>
-            <p class="d-inline text-decoration-underline" style="cursor: pointer">Quay lại</p>
-        </a>
+        <div class="d-flex align-items-center mb-3">
+            <button class="btn btn-outline-primary rounded-pill px-3 py-2 shadow-sm"
+                onclick="window.history.back()" style="transition: all 0.3s ease; border: 2px solid #007bff;">
+                <i class="fas fa-arrow-left me-2"></i>
+                <span class="fw-semibold">Quay lại</span>
+            </button>
+        </div>
     @endsection
     @section('content')
         <form id="formCreateInventory" method="POST" action="{{ route('inventory.post_add_extra') }}"
