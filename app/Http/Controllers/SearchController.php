@@ -23,6 +23,7 @@ class SearchController extends Controller
             ->orWhere('description', 'LIKE', "%{$query}%")
             ->orWhere('tags', 'LIKE', "%{$query}%")
             ->get()
+            ->where('status', 1)
             ->take(10);
 
         if ($results->isEmpty()) {
@@ -72,7 +73,7 @@ class SearchController extends Controller
                             ELSE 3
                         END", ["%{$history[0]}%", "%{$history[0]}%"])
             ->limit(10)
-            ->get();
+            ->where('status', 1)->get();
 
         return response()->json($suggestedProducts);
     }

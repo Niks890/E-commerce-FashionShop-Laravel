@@ -35,7 +35,7 @@ class HomeController extends Controller
     public function shop(Request $request)
     {
         // dd($request->all());
-        $query = Product::with('category', 'Discount', 'ProductVariants');
+        $query = Product::with('category', 'Discount', 'ProductVariants')->where('status', 1);
         if ($request->has('q')) {
             $search = $request->q;
             $query->where('product_name', 'LIKE', "%$search%");
@@ -69,9 +69,23 @@ class HomeController extends Controller
             $tag = str_replace('-', ' ', $request->tag);
             $query->where('tags', 'like', "%$tag%");
         }
-        //  dd($minPrice, $maxPrice ?? 0);
-        // dd($tag);
-        $products = $query->paginate(12);
+
+        switch ($request->input('sort_by', 'newest')) {
+            case 'price_asc':
+                $query->orderBy('price', 'asc');
+                break;
+            case 'price_desc':
+                $query->orderBy('price', 'desc');
+                break;
+            case 'newest':
+            default:
+                $query->orderBy('created_at', 'desc');
+                break;
+        }
+
+        $products = $query->paginate(12)->appends($request->except('page'));
+
+        // $products = $query->paginate(12);
 
         return view("sites.shop.shop", compact('products'));
     }

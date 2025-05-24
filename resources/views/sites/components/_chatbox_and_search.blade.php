@@ -44,37 +44,33 @@
     </div>
 </div>
 
-        <!-- Start Search Modal -->
-    <form id="modal-search" class="modal-search js-modal" method="post" action="{{ route('sites.shopSearch') }}">
-        @csrf
-        <div class="modal-container-search js-modal-container p-4 shadow-lg rounded-lg bg-white position-relative">
-            <!-- Nút đóng -->
-            <div class="modal-close js-modal-close">
-                <i class="fas fa-times"></i>
-            </div>
-
-            <div class="modal-body" style="overflow-y: hidden;">
-                <div class="form-group position-relative d-flex align-items-center">
-                    <input type="text" name="q" id="search-box" class="form-control rounded-pill px-4 py-2"
-                        placeholder="Nhập từ khóa bạn muốn tìm...">
-                    <button type="button" class="position-absolute btn btn-success rounded-pill ms-2 px-3"
-                        onclick="submitSearch()" style="top: 0; right: 0;">
-                        <i class="fa fa-fw fa-search text-white"></i>
-                    </button>
-                </div>
-
-                <ul id="search-results" class="list-unstyled mt-3"></ul>
-
-                {{-- <h5 class="mt-4 text-muted">Lịch sử tìm kiếm</h5>
-            <ul id="search-history" class="list-group small"></ul>
-            <button id="clear-history" class="btn btn-outline-danger btn-sm mt-2">Xóa lịch sử tìm kiếm</button> --}}
-
-                <h5 class="mt-4 text-muted">Có thể bạn sẽ thích</h5>
-                <ul id="suggestion-list" class="list-group small"></ul>
-            </div>
+<!-- Start Search Modal -->
+<form id="modal-search" class="modal-search js-modal" method="post" action="{{ route('sites.shopSearch') }}">
+    @csrf
+    <div class="modal-container-search js-modal-container p-4 shadow-lg rounded-lg bg-white position-relative">
+        <!-- Nút đóng -->
+        <div class="modal-close js-modal-close">
+            <i class="fas fa-times"></i>
         </div>
-    </form>
-    <!-- End Modal Search -->
+
+        <div class="modal-body" style="overflow-y: hidden;">
+            <div class="form-group position-relative d-flex align-items-center">
+                <input type="text" name="q" id="search-box" class="form-control rounded-pill px-4 py-2"
+                    placeholder="Nhập từ khóa bạn muốn tìm...">
+                <button type="button" class="position-absolute btn btn-success rounded-pill ms-2 px-3"
+                    onclick="submitSearch()" style="top: 0; right: 0;">
+                    <i class="fa fa-fw fa-search text-white"></i>
+                </button>
+            </div>
+
+            <ul id="search-results" class="list-unstyled mt-3"></ul>
+
+            <h5 class="mt-4 text-muted">Có thể bạn sẽ thích</h5>
+            <ul id="suggestion-list" class="list-group small"></ul>
+        </div>
+    </div>
+</form>
+<!-- End Modal Search -->
 @section('js')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -87,7 +83,6 @@
             const modalElement = document.getElementById("chatbox-modal");
             const modal = new bootstrap.Modal(modalElement);
 
-            // Event Listeners
             chatboxIcon.addEventListener("click", () => {
                 modal.show();
                 // Focus on input when modal opens
@@ -161,12 +156,11 @@
                 `;
                 chatboxMessages.appendChild(typingContainer);
                 scrollToBottom();
-
-                // Call real API
                 fetch("/chat/send", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
+                            // Đảm bảo meta tag CSRF token đã được render trong HTML của bạn
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute(
                                 'content') || ''
                         },
@@ -174,18 +168,28 @@
                             message: message
                         })
                     })
-                    .then(res => {
+                    .then(async res => { // Sử dụng async để có thể dùng await
                         if (!res.ok) {
-                            throw new Error(`HTTP error! status: ${res.status}`);
+                            // Nếu phản hồi không thành công, cố gắng đọc nó như văn bản để debug
+                            const errorText = await res.text();
+                            console.error('Server responded with an error:', res.status, res.statusText,
+                                errorText);
+                            throw new Error(
+                                `HTTP error! Status: ${res.status} - ${errorText.substring(0, 200)}...`
+                            ); // Giới hạn độ dài lỗi
                         }
+                        // Nếu thành công, mới parse JSON
                         return res.json();
                     })
                     .then(response => {
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();
 
-                        if (response.reply) {
-                            appendBotMessage(response.reply, true);
+                        // Kiểm tra xem phản hồi có phải là dữ liệu cấu trúc (như danh sách sản phẩm) hay là tin nhắn văn bản thông thường
+                        if (response.reply_data) {
+                            appendBotMessage(response.reply_data);
+                        } else if (response.reply) {
+                            appendBotMessage(response.reply);
                         } else {
                             appendBotMessage(
                                 "Xin lỗi, tôi không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.");
@@ -199,14 +203,18 @@
                         if (typingIndicator) typingIndicator.remove();
 
                         appendBotMessage(
-                            "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại.");
+                            "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại. (Lỗi: " +
+                            error.message + ")");
                         scrollToBottom();
                     });
             }
 
 
-            // Add bot message
-            function appendBotMessage(text, typing = false) {
+
+            function appendBotMessage(data) {
+                // Debug: hiển thị toàn bộ dữ liệu nhận được
+                // console.log('Raw data received:', data);
+
                 const botMessageContainer = document.createElement("div");
                 botMessageContainer.className = "message-container bot-message-container slide-up";
 
@@ -219,23 +227,46 @@
 
                 const messageContent = document.createElement("div");
 
-                if (typing) {
-                    typeText(messageContent, text);
-                } else if (isImageUrl(text)) {
-                    const img = document.createElement("img");
-                    img.src = text;
-                    img.className = "img-fluid rounded";
-                    img.style.maxWidth = "200px";
-                    messageContent.appendChild(img);
-                } else {
-                    messageContent.innerHTML = text.replace(/\n/g, '<br>');
+                // Xử lý mọi trường hợp
+                if (typeof data === 'string') {
+                    messageContent.innerHTML = data.replace(/\n/g, '<br>');
+                } else if (typeof data === 'object') {
+                    // Trường hợp response từ handleSpecialCases
+                    if (data.content) {
+                        messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
+                    }
+                    // Trường hợp product list
+                    else if (data.type === 'product_list') {
+                        let html = `<strong>${data.intro_message}</strong><br><br>`;
+                        data.products.forEach(product => {
+                            html += `
+                    <div class="product-card mb-2 d-flex align-items-center">
+                        <a href="${product.link}" target="_blank" class="text-decoration-none text-dark">
+                            <img src="${product.image_url}" alt="${escapeHtml(product.name)}" class="product-image rounded me-3">
+                        </a>
+                        <div class="product-info flex-grow-1">
+                            <a href="${product.link}" target="_blank" class="product-name text-decoration-none text-primary fw-bold">${escapeHtml(product.name)}</a><br>
+                            <span class="product-price text-danger">${product.price}</span>
+                        </div>
+                    </div>`;
+                        });
+                        html += `<br>${data.outro_message}`;
+                        messageContent.innerHTML = html;
+                    }
+                    // Fallback cho các trường hợp khác
+                    else {
+                        // console.error('Unsupported data format:', data);
+                        messageContent.innerHTML = "Xin lỗi, có lỗi xảy ra khi xử lý tin nhắn.";
+                    }
                 }
 
                 messageWrapper.appendChild(messageContent);
                 botMessageContainer.appendChild(avatar);
                 botMessageContainer.appendChild(messageWrapper);
                 chatboxMessages.appendChild(botMessageContainer);
+                scrollToBottom();
             }
+
 
             // Typing effect
             function typeText(element, text, index = 0) {
@@ -264,18 +295,233 @@
                 });
             }
 
-            // Add some demo messages for showcase
             setTimeout(() => {
-                // Only add demo if no real conversation has started
-                if (chatboxMessages.querySelector('.welcome-message')) {
-                    // Demo can be added here if needed
-                }
+                if (chatboxMessages.querySelector('.welcome-message')) {}
             }, 3000);
         });
     </script>
 
 
-   {{-- Xử lý tìm kiếm --}}
+    {{-- <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const chatboxIcon = document.getElementById("chatbox-icon");
+        const chatboxMessages = document.getElementById("chatbox-messages");
+        const chatboxInput = document.getElementById("chatbox-input");
+        const chatboxSend = document.getElementById("chatbox-send");
+        const closeChatbot = document.querySelector(".btn-close-chatbot");
+
+        const modalElement = document.getElementById("chatbox-modal");
+        const modal = new bootstrap.Modal(modalElement);
+
+        chatboxIcon.addEventListener("click", () => {
+            modal.show();
+            // Focus on input when modal opens
+            setTimeout(() => {
+                chatboxInput.focus();
+            }, 300);
+        });
+
+        chatboxSend.addEventListener("click", sendMessage);
+
+        chatboxInput.addEventListener("keypress", function(event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        if (closeChatbot) {
+            closeChatbot.addEventListener("click", () => {
+                modal.hide();
+            });
+        }
+
+        // Auto-scroll to bottom
+        function scrollToBottom() {
+            setTimeout(() => {
+                chatboxMessages.scrollTop = chatboxMessages.scrollHeight;
+            }, 100);
+        }
+
+
+        function sendMessage() {
+            let message = chatboxInput.value.trim();
+            if (message === "") return;
+
+            // Remove welcome message if it exists
+            const welcomeMessage = chatboxMessages.querySelector('.welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            // Add user message
+            const userMessageContainer = document.createElement("div");
+            userMessageContainer.className = "message-container d-flex justify-content-end";
+            userMessageContainer.innerHTML = `
+                <div class="user-message">
+                    ${escapeHtml(message)}
+                </div>
+            `;
+            chatboxMessages.appendChild(userMessageContainer);
+
+            chatboxInput.value = "";
+            scrollToBottom();
+
+            // Show typing indicator
+            const typingContainer = document.createElement("div");
+            typingContainer.className = "message-container bot-message-container";
+            typingContainer.id = "typing-indicator";
+            typingContainer.innerHTML = `
+                <div class="bot-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="typing-indicator">
+                    <span style="color: #6b7280; font-size: 0.9rem;">Đang phản hồi</span>
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                </div>
+            `;
+            chatboxMessages.appendChild(typingContainer);
+            scrollToBottom();
+
+            fetch("/chat/send", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Đảm bảo meta tag CSRF token đã được render trong HTML của bạn
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            })
+            .then(async res => { // Sử dụng async để có thể dùng await
+                if (!res.ok) {
+                    // Nếu phản hồi không thành công, cố gắng đọc nó như văn bản để debug
+                    const errorText = await res.text();
+                    console.error('Server responded with an error:', res.status, res.statusText, errorText);
+                    throw new Error(`HTTP error! Status: ${res.status} - ${errorText.substring(0, 200)}...`); // Giới hạn độ dài lỗi
+                }
+                // Nếu thành công, mới parse JSON
+                return res.json();
+            })
+            .then(response => {
+                const typingIndicator = document.getElementById("typing-indicator");
+                if (typingIndicator) typingIndicator.remove();
+
+                // Kiểm tra xem phản hồi có phải là dữ liệu cấu trúc (như danh sách sản phẩm) hay là tin nhắn văn bản thông thường
+                if (response.reply_data) {
+                    appendBotMessage(response.reply_data);
+                } else if (response.reply) {
+                    appendBotMessage(response.reply);
+                } else {
+                    appendBotMessage("Xin lỗi, tôi không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.");
+                }
+
+                scrollToBottom();
+            })
+            .catch(error => {
+                console.error('Chat API Error:', error);
+                const typingIndicator = document.getElementById("typing-indicator");
+                if (typingIndicator) typingIndicator.remove();
+
+                appendBotMessage("Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại. (Lỗi: " + error.message + ")");
+                scrollToBottom();
+            });
+        }
+
+        // --- Hàm quan trọng nhất được cập nhật ---
+        function appendBotMessage(data) {
+            const botMessageContainer = document.createElement("div");
+            botMessageContainer.className = "message-container bot-message-container slide-up";
+
+            const avatar = document.createElement("div");
+            avatar.className = "bot-avatar";
+            avatar.innerHTML = '<i class="fas fa-robot"></i>';
+
+            const messageWrapper = document.createElement("div");
+            messageWrapper.className = "bot-message";
+
+            const messageContent = document.createElement("div");
+
+            if (typeof data === 'string') {
+                // Xử lý tin nhắn văn bản thuần túy
+                messageContent.innerHTML = data.replace(/\n/g, '<br>');
+            } else if (typeof data === 'object' && data.type === 'product_list') {
+                // Xử lý dữ liệu danh sách sản phẩm
+                let html = `<strong>${escapeHtml(data.intro_message)}</strong><br><br>`;
+                data.products.forEach((product, index) => {
+                    html += `
+                        <div class="product-card mb-2 d-flex align-items-start p-2 border rounded">
+                            <a href="${product.link}" target="_blank" class="text-decoration-none text-dark me-3">
+                                <img src="${product.image_url}" alt="${escapeHtml(product.name)}" class="product-image rounded" style="max-width: 100px; height: auto;">
+                            </a>
+                            <div class="product-info flex-grow-1">
+                                <a href="${product.link}" target="_blank" class="product-name text-decoration-none text-primary fw-bold">${index + 1}. ${escapeHtml(product.name)}</a><br>
+                                ${product.color && product.size ? `<span class="text-muted small">Màu: ${escapeHtml(product.color)}, Size: ${escapeHtml(product.size)}</span><br>` : ''}
+                                <span class="product-price text-danger fw-bold">${product.price}</span>
+                                ${product.discount ? `<span class="badge bg-success ms-2">${escapeHtml(product.discount)}</span>` : ''}
+                                <br>
+                                <span class="product-stock text-muted small">Còn: ${product.stock} sản phẩm</span>
+                            </div>
+                        </div>`;
+                });
+                html += `<br>${escapeHtml(data.outro_message)}`;
+                messageContent.innerHTML = html;
+            } else if (typeof data === 'object' && data.content) {
+                // Xử lý các phản hồi text từ handleSpecialCases
+                messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
+            } else {
+                // Fallback cho các trường hợp dữ liệu không xác định
+                console.error('Unsupported data format or missing content:', data);
+                messageContent.innerHTML = "Xin lỗi, có lỗi xảy ra khi xử lý tin nhắn hoặc định dạng không được hỗ trợ.";
+            }
+
+            messageWrapper.appendChild(messageContent);
+            botMessageContainer.appendChild(avatar);
+            botMessageContainer.appendChild(messageWrapper);
+            chatboxMessages.appendChild(botMessageContainer);
+            scrollToBottom();
+        }
+
+        // Typing effect (giữ nguyên)
+        function typeText(element, text, index = 0) {
+            if (index < text.length) {
+                element.textContent += text.charAt(index);
+                setTimeout(() => typeText(element, text, index + 1), 30);
+            }
+        }
+
+        // Check if URL is image (giữ nguyên)
+        function isImageUrl(url) {
+            return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url) ||
+                /cloudinary\.com\/.+/i.test(url);
+        }
+
+        // Escape HTML (giữ nguyên)
+        function escapeHtml(text) {
+            return text.replace(/[&<>"']/g, function(m) {
+                return {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                }[m];
+            });
+        }
+
+        setTimeout(() => {
+            if (chatboxMessages.querySelector('.welcome-message')) {}
+        }, 3000);
+    });
+</script> --}}
+
+
+    {{-- Xử lý tìm kiếm --}}
     <script>
         $('.search-btn').click(function() {
             $('.js-modal').addClass("open");
@@ -374,7 +620,6 @@
             $(".dropdown-content").hide();
         });
     </script>
-
 
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
 @endsection

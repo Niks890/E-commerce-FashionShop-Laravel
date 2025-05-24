@@ -60,6 +60,18 @@
                     </div>
                 </div>
 
+                {{-- Hàng mới cho bộ lọc trạng thái --}}
+                <div class="row g-2 mt-2 align-items-end"> {{-- Thêm mt-2 để tạo khoảng cách --}}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <label for="status" class="form-label">Trạng thái</label>
+                        <select name="status" id="status" class="form-select">
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hiển thị</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
+                        </select>
+                    </div>
+                </div>
+
                 {{-- Hàng mới cho các nút chức năng --}}
                 <div class="row g-2 mt-3 justify-content-end"> {{-- Thêm mt-3 để tạo khoảng cách với hàng trên --}}
                     <div class="col-auto"> {{-- Sử dụng col-auto để nút có kích thước tự động --}}
@@ -148,7 +160,8 @@
             <div class="modal-content">
 
                 <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title" id="productDetailLabel">Thông tin sản phẩm: <span id="product-info"></span></h5>
+                    <h5 class="modal-title" id="productDetailLabel">Thông tin sản phẩm: <span id="product-info"></span>
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
 
@@ -225,8 +238,8 @@
 
     <script>
         $(document).ready(function() {
-            // Tự động submit form khi thay đổi danh mục hoặc giá
-            $('#category, #price_range').on('change', function() {
+            // Tự động submit form khi thay đổi danh mục, giá hoặc trạng thái
+            $('#category, #price_range, #status').on('change', function() {
                 $('#filterForm').submit();
             });
 
@@ -235,6 +248,7 @@
                 $('#query').val(''); // Xóa nội dung ô tìm kiếm
                 $('#category').val(''); // Đặt lại danh mục về "Tất cả"
                 $('#price_range').val(''); // Đặt lại giá về "Tất cả"
+                $('#status').val(''); // Đặt lại trạng thái về "Tất cả"
                 $('#filterForm').submit(); // Gửi lại form để xóa tất cả các bộ lọc
             });
 

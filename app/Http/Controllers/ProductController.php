@@ -31,9 +31,6 @@ class ProductController extends Controller
         return view('admin.product.index', compact('data', 'categories'));
     }
 
-
-
-
     public function search(Request $request)
     {
         $query = Product::query();
@@ -67,6 +64,12 @@ class ProductController extends Controller
                     $query->where('price', '>', 1000000);
                     break;
             }
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $status = $request->input('status');
+            $query->where('status', $status);
         }
 
         $data = $query->paginate(5)->appends($request->except('page')); // Giữ lại các tham số lọc khi phân trang

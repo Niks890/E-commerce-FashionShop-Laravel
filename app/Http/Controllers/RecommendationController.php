@@ -77,7 +77,7 @@ class RecommendationController extends Controller
 
         $products = Product::with('Discount', 'ProductVariants')
         ->whereIn('id', $recommendationProductIds)
-        ->paginate(8);
+        ->where('status', 1)->paginate(8);
         $productResource = ProductResource::collection($products);
         return $this->apiStatus($productResource, 200, 1, 'ok');
     }

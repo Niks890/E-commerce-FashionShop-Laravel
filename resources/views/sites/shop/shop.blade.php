@@ -227,15 +227,15 @@
                             <div class="col-lg-6 col-md-6 col-sm-6">
                                 <div class="shop__product__option__right">
                                     <p>Sắp xếp theo</p>
-                                    {{-- <ul class="list-unstyled">
-                                        <li><a class="sort" href="">abc</a></li>
-                                        <li><a href=""></a></li>
-                                        <li><a href=""></a></li>
-                                    </ul> --}}
-                                    <select>
-                                        <option class="sort" value="">Hàng mới về</option>
-                                        <option class="sort" value="">Thấp tới cao</option>
-                                        <option class="sort" value="">Cao tới thấp</option>
+                                    <select id="sortSelect">
+                                        <option value="newest" {{ request('sort_by') == 'newest' ? 'selected' : '' }}>
+                                            Hàng mới về</option>
+                                        <option value="price_asc"
+                                            {{ request('sort_by') == 'price_asc' ? 'selected' : '' }}>Giá: Thấp tới cao
+                                        </option>
+                                        <option value="price_desc"
+                                            {{ request('sort_by') == 'price_desc' ? 'selected' : '' }}>Giá: Cao tới
+                                            thấp</option>
                                     </select>
                                 </div>
                             </div>
@@ -266,8 +266,7 @@
                                 <div class="product__item" id="product-list-shop">
                                     <div class="product__item__pic">
                                         <img class="product__item__pic set-bg" width="280" height="250"
-                                            src="{{ $items->image }}"
-                                            alt="{{ $items->product_name }}">
+                                            src="{{ $items->image }}" alt="{{ $items->product_name }}">
                                         <span class="label name-discount-shop">{{ $discountName }}</span>
                                         <ul class="product__hover">
                                             <li><a href="{{ route('sites.addToWishList', $items->id) }}"><img
@@ -352,7 +351,7 @@
         </div>
     </section>
     <!-- Shop Section End -->
-   <!-- Icon giỏ hàng -->
+    <!-- Icon giỏ hàng -->
     <div class="cart-icon" id="cartIcon" onclick="toggleCart()">
         <div class="icon-wrapper">
             <i class="fas fa-shopping-cart fa-lg"></i>
@@ -370,8 +369,7 @@
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
                     <div class="cart-item d-flex align-items-center">
-                        <img src="{{ $items->image }}" alt="{{ $items->name }}"
-                            class="cart-item-image rounded">
+                        <img src="{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
                             <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
@@ -399,6 +397,20 @@
             if (element.textContent.trim() !== "New") {
                 element.classList.add('bg-danger', 'text-white');
             }
+        });
+    </script>
+@endsection
+
+@section('js')
+    <script>
+        $(document).ready(function() {
+            $('#sortSelect').change(function() {
+                let sortBy = $(this).val();
+                let url = new URL(window.location.href);
+                url.searchParams.set('sort_by', sortBy);
+                url.searchParams.delete('page');
+                window.location.href = url.toString() + '#product-list-shop';
+            });
         });
     </script>
 @endsection
