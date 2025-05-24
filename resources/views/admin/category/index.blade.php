@@ -17,7 +17,7 @@
         <div class="card-body">
             <div class="card-sub">
                 <form method="GET" class="form-inline row" action="{{ route('category.search') }}">
-                    @csrf
+                    {{-- @csrf --}}
                     <div
                         class="col-9 navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
                         <div class="input-group">

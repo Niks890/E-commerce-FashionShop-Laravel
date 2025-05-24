@@ -26,8 +26,53 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $data = Product::orderBy('id', 'DESC')->paginate(5); //SELECT * FROM PRODUCT
-        return view('admin.product.index', compact('data'));
+        $data = Product::orderBy('id', 'DESC')->paginate(5);
+        $categories = Category::all();
+        return view('admin.product.index', compact('data', 'categories'));
+    }
+
+
+
+
+    public function search(Request $request)
+    {
+        $query = Product::query();
+
+        // Lọc theo tên sản phẩm
+        if ($request->filled('query')) {
+            $keyword = $request->input('query');
+            $query->where('product_name', 'like', "%$keyword%");
+        }
+
+        // Lọc theo danh mục
+        if ($request->filled('category')) {
+            $categoryId = $request->input('category');
+            $query->where('category_id', $categoryId);
+        }
+
+        // Lọc theo giá
+        if ($request->filled('price_range')) {
+            $priceRange = $request->input('price_range');
+            switch ($priceRange) {
+                case '0-100000':
+                    $query->whereBetween('price', [0, 100000]);
+                    break;
+                case '100001-500000':
+                    $query->whereBetween('price', [100001, 500000]);
+                    break;
+                case '500001-1000000':
+                    $query->whereBetween('price', [500001, 1000000]);
+                    break;
+                case '1000001-max':
+                    $query->where('price', '>', 1000000);
+                    break;
+            }
+        }
+
+        $data = $query->paginate(5)->appends($request->except('page')); // Giữ lại các tham số lọc khi phân trang
+        $categories = Category::all(); // Lấy tất cả danh mục để hiển thị trong bộ lọc
+
+        return view('admin.product.index', compact('data', 'categories'));
     }
 
     /**
@@ -197,10 +242,4 @@ class ProductController extends Controller
     /**
      * Search Engine the specified resource from storage.
      */
-    public function search(Request $request)
-    {
-        $keyword = $request->input('query');
-        $data = Product::where('product_name', 'like', "%$keyword%")->paginate();
-        return view('admin.product.index', compact('data', 'keyword'));
-    }
 }

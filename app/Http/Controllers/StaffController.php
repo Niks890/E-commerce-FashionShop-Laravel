@@ -15,11 +15,56 @@ class StaffController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $data = Staff::orderby('id', 'ASC')->paginate();
-        return view('admin.staff.index', compact('data'));
+        $query = Staff::query();
+
+        // Lọc theo từ khóa tìm kiếm
+        if ($request->filled('search')) {
+            $keyword = $request->input('search');
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%$keyword%")
+                    ->orWhere('phone', 'like', "%$keyword%")
+                    ->orWhere('email', 'like', "%$keyword%");
+            });
+        }
+
+        // Lọc theo trạng thái
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        // Lọc theo chức vụ
+        if ($request->filled('position')) {
+            $query->where('position', $request->input('position'));
+        }
+
+        $data = $query->orderBy('id', 'ASC')->paginate(10);
+
+        // Lấy danh sách chức vụ và trạng thái để hiển thị trong dropdown
+        $positions = Staff::select('position')->distinct()->whereNotNull('position')->pluck('position');
+        $statuses = [
+            'Đang làm việc',
+            'Đã nghỉ việc',
+            'Tạm nghỉ'
+        ];
+
+        // Giữ lại các tham số filter khi phân trang
+        $data->appends($request->all());
+
+        return view('admin.staff.index', compact('data', 'positions', 'statuses'));
     }
+
+    public function search(Request $request)
+    {
+        // Chuyển hướng về index với tham số tìm kiếm
+        return redirect()->route('staff.index', [
+            'search' => $request->input('query'),
+            'status' => $request->input('status'),
+            'position' => $request->input('position')
+        ]);
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -39,7 +84,7 @@ class StaffController extends Controller
             'phone' => 'required|unique:staff,phone',
             'address' => 'required',
             'email' => 'required|email',
-            'avatar'=>'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'avatar' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'sex' => 'required',
             'username' => 'required|unique:staff,username',
             'password' => 'required',
@@ -95,8 +140,7 @@ class StaffController extends Controller
             $user->roles = 'inventory';
         } else if ($data['position'] === 'Nhân viên giao hàng') {
             $user->roles = 'delivery';
-        }
-        else {
+        } else {
             $user->roles = '';
         }
         $user->remember_token = Str::random(10);
@@ -105,13 +149,7 @@ class StaffController extends Controller
         return redirect()->route('staff.index')->with('success', 'Thêm nhân viên mới thành công');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Staff $staff)
-    {
-        //
-    }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -154,14 +192,13 @@ class StaffController extends Controller
             $user->roles = 'sale';
         } else if ($data['position'] === 'Nhân viên kho') {
             $user->roles = 'inventory';
-        }else if ($data['position'] === 'Nhân viên giao hàng') {
+        } else if ($data['position'] === 'Nhân viên giao hàng') {
             $user->roles = 'delivery';
-        }
-        else {
+        } else {
             $user->roles = '';
         }
         $user->save();
-       // Cập nhật các field còn lại ngoài avatar
+        // Cập nhật các field còn lại ngoài avatar
         $staff->name = $data['name'];
         $staff->phone = $data['phone'];
         $staff->address = $data['address'];
@@ -171,7 +208,7 @@ class StaffController extends Controller
         $staff->status = $data['status'];
 
         // Nếu có avatar mới thì upload
-        if($request->hasFile('avatar')) {
+        if ($request->hasFile('avatar')) {
             $uploadResult = $cloudinaryService->uploadImage($request->file('avatar')->getPathname(), 'staff_avatars');
 
             if (isset($uploadResult['error'])) {
@@ -200,21 +237,13 @@ class StaffController extends Controller
      */
     public function destroy(Staff $staff)
     {
-        // if ($staff->Inventory->count() == 0) {
-        $staff->delete();
-        return redirect()->back();
-        // }
-        // return redirect()->back();
+        if ($staff->Inventories->count() == 0) {
+            $staff->delete();
+            return redirect()->back()->with('success', 'Xoá nhân viên bán hàng thành công!');
+        }
+        return redirect()->back()->with('error', 'Xoá thất bại!');
     }
 
-    public function search(Request $request)
-    {
-        $keyword = $request->input('query');
-        $data = Staff::where('name', 'like', "%$keyword%")
-            ->orWhere('phone', 'like', "%$keyword%")
-            ->paginate();
-        return view('admin.staff.index', compact('data', 'keyword'));
-    }
 
     public function profile()
     {

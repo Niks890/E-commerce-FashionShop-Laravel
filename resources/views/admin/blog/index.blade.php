@@ -1,108 +1,121 @@
 @can('managers')
     @extends('admin.master')
     @section('title', 'Thông tin bài viết')
-    @section('content')
+@section('content')
 
-<div class="container py-4">
+    <div class="container py-4">
 
-    @if (Session::has('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert" style="max-width: 400px; margin: auto;">
-            <i class="fas fa-check-circle me-2"></i> {{ Session::get('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (Session::has('error'))
-        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert" style="max-width: 400px; margin: auto;">
-            <i class="fas fa-exclamation-circle me-2"></i> {{ Session::get('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
-                <form method="GET" action="{{ route('blog.search') }}" class="d-flex flex-grow-1">
-                    @csrf
-                    <div class="input-group w-100">
-                        <input name="query" type="search" class="form-control" placeholder="Nhập tags hoặc tiêu đề bài viết..." aria-label="Tìm kiếm bài viết" />
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-
-                <button type="button" class="btn btn-success flex-shrink-0" data-bs-toggle="modal" data-bs-target="#addBlogModal">
-                    <i class="fa fa-plus me-1"></i> Thêm mới
-                </button>
+        @if (Session::has('success'))
+            <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert"
+                style="max-width: 400px; margin: auto;">
+                <i class="fas fa-check-circle me-2"></i> {{ Session::get('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
+        @endif
 
-            <div class="table-responsive">
-                <table class="table table-hover align-middle text-nowrap">
-                    <thead class="table-light">
-                        <tr>
-                            <th>ID</th>
-                            <th>Tiêu đề</th>
-                            <th>Nội dung</th>
-                            <th>Ảnh</th>
-                            <th>Tags</th>
-                            <th>ID nhân viên</th>
-                            <th>Status</th>
-                            <th class="text-center" style="min-width: 150px;">Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($data as $model)
+        @if (Session::has('error'))
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert"
+                style="max-width: 400px; margin: auto;">
+                <i class="fas fa-exclamation-circle me-2"></i> {{ Session::get('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-3 gap-3">
+                    <form method="GET" action="{{ route('blog.search') }}" class="d-flex flex-grow-1">
+                        @csrf
+                        <div class="input-group w-100">
+                            <input name="query" type="search" class="form-control"
+                                placeholder="Nhập tags hoặc tiêu đề bài viết..." aria-label="Tìm kiếm bài viết" />
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                    <button type="button" class="btn btn-success flex-shrink-0" data-bs-toggle="modal"
+                        data-bs-target="#addBlogModal">
+                        <i class="fa fa-plus me-1"></i> Thêm mới
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle text-nowrap">
+                        <thead class="table-light">
                             <tr>
-                                <td>{{ $model->id }}</td>
-                                <td class="text-truncate" style="max-width: 150px;" title="{{ $model->title }}">{{ $model->title }}</td>
-                                <td class="text-truncate" style="max-width: 250px;" title="{{ strip_tags($model->content) }}">{{ Str::limit(strip_tags($model->content), 50, '...') }}</td>
-                                <td>
-                                    @if($model->image)
-                                        <img src="{{ $model->image }}" alt="Ảnh bài viết" class="rounded" style="width: 60px; height: auto;">
-                                    @else
-                                        <span class="text-muted">Không có</span>
-                                    @endif
-                                </td>
-                                <td class="text-truncate" style="max-width: 100px;">{{ $model->tags }}</td>
-                                <td>{{ $model->staff_id }}</td>
-                                <td>
-                                    @if($model->status == 1)
-                                        <span class="badge bg-success">Hiển thị</span>
-                                    @else
-                                        <span class="badge bg-secondary">Ẩn</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <form method="POST" action="{{ route('blog.destroy', $model->id) }}" onsubmit="return confirm('Bạn có chắc muốn xóa không?');" class="d-flex justify-content-center gap-2 flex-wrap">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-info btn-detail" data-bs-toggle="modal" data-bs-target="#detailBlogModal" data-id="{{ $model->id }}" title="Chi tiết">
-                                            <i class="fa fa-eye"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-sm btn-warning btn-update" data-bs-toggle="modal" data-bs-target="#updateBlogModal" data-id="{{ $model->id }}" title="Sửa">
-                                            <i class="fa fa-edit"></i>
-                                        </button>
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
+                                <th>ID</th>
+                                <th>Tiêu đề</th>
+                                <th>Nội dung</th>
+                                <th>Ảnh</th>
+                                <th>Tags</th>
+                                <th>ID nhân viên</th>
+                                <th>Status</th>
+                                <th class="text-center" style="min-width: 150px;">Hành động</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            @foreach ($data as $model)
+                                <tr>
+                                    <td>{{ $model->id }}</td>
+                                    <td class="text-truncate" style="max-width: 150px;" title="{{ $model->title }}">
+                                        {{ $model->title }}</td>
+                                    <td class="text-truncate" style="max-width: 250px;"
+                                        title="{{ strip_tags($model->content) }}">
+                                        {{ Str::limit(strip_tags($model->content), 50, '...') }}</td>
+                                    <td>
+                                        @if ($model->image)
+                                            <img src="{{ $model->image }}" alt="Ảnh bài viết" class="rounded"
+                                                style="width: 60px; height: auto;">
+                                        @else
+                                            <span class="text-muted">Không có</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-truncate" style="max-width: 100px;">{{ $model->tags }}</td>
+                                    <td>{{ $model->staff_id }}</td>
+                                    <td>
+                                        @if ($model->status == 1)
+                                            <span class="badge bg-success">Hiển thị</span>
+                                        @else
+                                            <span class="badge bg-secondary">Ẩn</span>
+                                        @endif
+                                    </td>
+                                    <td class="text-center">
+                                        <form method="POST" action="{{ route('blog.destroy', $model->id) }}"
+                                            onsubmit="return confirm('Bạn có chắc muốn xóa không?');"
+                                            class="d-flex justify-content-center gap-2 flex-wrap">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-info btn-detail"
+                                                data-bs-toggle="modal" data-bs-target="#detailBlogModal"
+                                                data-id="{{ $model->id }}" title="Chi tiết">
+                                                <i class="fa fa-eye"></i>
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-warning btn-update"
+                                                data-bs-toggle="modal" data-bs-target="#updateBlogModal"
+                                                data-id="{{ $model->id }}" title="Sửa">
+                                                <i class="fa fa-edit"></i>
+                                            </button>
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
 
-            <div class="d-flex justify-content-center mt-4">
-                {{ $data->links() }}
+                <div class="d-flex justify-content-center mt-4">
+                    {{ $data->links() }}
+                </div>
             </div>
         </div>
+
     </div>
 
-</div>
-
-    <!-- Modal blogAdd-->
     <div class="modal fade" id="addBlogModal" tabindex="-1" aria-labelledby="addBlogModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -118,13 +131,17 @@
                             <input type="text" class="form-control" id="title" name="title" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Nội dung</label>
-                            <textarea class="form-control" id="content" name="content" rows="3" required></textarea>
+                            <label for="content_add" class="form-label">Nội dung</label>
+                            {{-- Thay thế textarea bằng div cho CKEditor --}}
+                            <div id="content_add_editor"></div>
+                            {{-- Thêm một input hidden để chứa nội dung từ CKEditor --}}
+                            <input type="hidden" name="content" id="content_add_hidden">
                         </div>
                         <div class="mb-3 row">
                             <div class="col-md-6">
                                 <label for="image" class="form-label">Ảnh</label>
-                                <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                <input type="file" class="form-control" id="image" name="image"
+                                    accept="image/*">
                             </div>
                             <div class="col-md-6">
                                 <img src="" alt="" width="100"
@@ -137,8 +154,8 @@
                                 value="" required>
                         </div>
                         <div class="mb-3">
-                            <input type="hidden" class="form-control" value="{{ auth()->user()->id - 1 }}"
-                                id="staff_id" name="staff_id">
+                            <input type="hidden" class="form-control" value="{{ auth()->user()->id }}" id="staff_id"
+                                name="staff_id">
                         </div>
                         <div class="mb-3">
                             <label for="status" class="form-label">Trạng thái</label>
@@ -158,7 +175,6 @@
     </div>
 
 
-    <!-- Modal blogUpdate-->
     <div class="modal fade" id="updateBlogModal" tabindex="-1" aria-labelledby="updateBlogModalLabel"
         aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -177,14 +193,16 @@
                             <input type="text" class="form-control" id="blog-title-update" name="title" required>
                         </div>
                         <div class="mb-3">
-                            <label for="content" class="form-label">Nội dung:</label>
-                            <textarea class="form-control" id="blog-content-update" name="content" rows="10" required></textarea>
+                            <label for="content_update" class="form-label">Nội dung:</label>
+                            {{-- Thay thế textarea bằng div cho CKEditor --}}
+                            <div id="content_update_editor"></div>
+                            {{-- Thêm một input hidden để chứa nội dung từ CKEditor --}}
+                            <input type="hidden" name="content" id="content_update_hidden">
                         </div>
                         <div class="mb-3 row">
                             <div class="col-md-6">
                                 <label for="image" class="form-label">Ảnh:</label>
-                                <input type="file" class="form-control" name="image_update" accept="image/*"
-                                    required>
+                                <input type="file" class="form-control" name="image_update" accept="image/*">
                             </div>
                             <div class="col-md-6">
                                 <img src="" id="blog-image-update" alt="" width="100"
@@ -193,10 +211,12 @@
                         </div>
                         <div class="mb-3">
                             <label for="blog_tag" class="form-label">Tags:</label>
-                            <input type="text" id="blog-tag-update" name="blog_tag" class="form-control" data-role="tagsinput" required>
+                            <input type="text" id="blog-tag-update" name="blog_tag" class="form-control"
+                                data-role="tagsinput" required>
                         </div>
                         <div class="mb-3">
-                            <input type="hidden" class="form-control" value="{{ auth()->user()->id - 1 }}"
+                            {{-- Giữ nguyên staff_id nếu cần --}}
+                            <input type="hidden" class="form-control" value="{{ auth()->user()->id }}"
                                 id="staff-id-update" name="staff_id">
                         </div>
                         <div class="mb-3">
@@ -238,7 +258,9 @@
                     </div>
                     <div class="mb-3">
                         <label for="content" class="form-label">Nội dung</label>
-                        <textarea class="form-control" id="blog-content" name="content" rows="10" cols="10" readonly></textarea>
+                        {{-- Hiển thị nội dung HTML --}}
+                        <div id="blog-content-detail-view" class="form-control" style="height: auto; overflow-y: auto;">
+                        </div>
                     </div>
                     <div class="mb-3 row">
                         <div class="col-md-6">
@@ -285,21 +307,25 @@
             .table-responsive {
                 overflow-x: auto;
             }
-            table td, table th {
+
+            table td,
+            table th {
                 white-space: nowrap;
             }
+        }
+
+        /* Tùy chỉnh chiều cao của CKEditor */
+        .ck-editor__editable_inline {
+            min-height: 200px;
+            /* Chiều cao tối thiểu cho trình soạn thảo */
         }
     </style>
 @endsection
 
-
-
-@section('css')
-    <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
-    <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-tagsinput.css') }}" />
-@endsection
-
 @section('js')
+
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+
     @if (Session::has('success') || Session::has('error'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
@@ -307,6 +333,38 @@
     <script src="{{ asset('assets/js/plugin/bootstrap-tagsinput/bootstrap-tagsinput.min.js') }}"></script>
 
     <script>
+        // Khởi tạo CKEditor cho modal thêm mới
+        let addEditor;
+        ClassicEditor
+            .create(document.querySelector('#content_add_editor'))
+            .then(editor => {
+                addEditor = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        // Cập nhật giá trị CKEditor vào input hidden khi form submit
+        document.querySelector('#addBlogModal form').addEventListener('submit', function() {
+            document.querySelector('#content_add_hidden').value = addEditor.getData();
+        });
+
+        // Khởi tạo CKEditor cho modal cập nhật
+        let updateEditor;
+        ClassicEditor
+            .create(document.querySelector('#content_update_editor'))
+            .then(editor => {
+                updateEditor = editor;
+            })
+            .catch(error => {
+                console.error(error);
+            });
+
+        // Cập nhật giá trị CKEditor vào input hidden khi form submit
+        document.querySelector('#updateBlogModal form').addEventListener('submit', function() {
+            document.querySelector('#content_update_hidden').value = updateEditor.getData();
+        });
+
         document.querySelector('input[name="image"]').addEventListener('change', function(e) {
             const [file] = e.target.files
             if (file) {
@@ -315,16 +373,13 @@
             }
         })
 
-
-        document.querySelector('input[name="image-update"]').addEventListener('change', function(e) {
+        document.querySelector('input[name="image_update"]').addEventListener('change', function(e) {
             const [file] = e.target.files
             if (file) {
-                document.querySelector('.img-preview-update').src = URL.createObjectURL(file)
+                document.querySelector('.preview-img-item-update').src = URL.createObjectURL(file)
             }
         })
     </script>
-
-
 
     <script>
         $(document).ready(function() {
@@ -343,7 +398,8 @@
                             console.log(blogInfo);
                             $("#blog-id").val(blogInfo.id);
                             $("#blog-title").val(blogInfo.title);
-                            $("#blog-content").val(blogInfo.content);
+                            // Hiển thị nội dung HTML của blog
+                            $("#blog-content-detail-view").html(blogInfo.content);
                             $("#blog-image").attr("src", `${blogInfo.image}`);
                             $("#blog-tag").val(blogInfo.tags);
                             $("#staff-name").val(blogInfo.staff.name);
@@ -361,11 +417,12 @@
                     }
                 });
             });
+
             $(".btn-update").click(function(event) {
-                // event.preventDefault();
                 let blogId = $(this).data("id");
                 let formAction = $("#updateBlogForm").attr("action").replace(':id', blogId);
                 $("#updateBlogForm").attr("action", formAction);
+
                 $.ajax({
                     url: `http://127.0.0.1:8000/api/blog_detail/${blogId}`,
                     type: "GET",
@@ -374,11 +431,13 @@
                         if (response.status_code === 200) {
                             let blogInfo = response.data;
                             $("#blog-title-update").val(blogInfo.title);
-                            $("#blog-content-update").val(blogInfo.content);
+                            // Set nội dung cho CKEditor cập nhật
+                            updateEditor.setData(blogInfo.content);
                             $(".preview-img-item-update").attr("src", `${blogInfo.image}`);
                             $("#blog-tag-update").tagsinput('removeAll');
                             $("#blog-tag-update").tagsinput('add', blogInfo.tags);
-                            $("#staff-name-update").val(blogInfo.staff.name);
+                            $("#staff-id-update").val(blogInfo
+                            .staff_id); // Đảm bảo staff_id được cập nhật đúng
                             $("#blog-status-update").val(blogInfo.status);
                         } else {
                             alert("Không thể lấy dữ liệu chi tiết!");
@@ -395,7 +454,3 @@
 @else
 {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan
-
-
-
-

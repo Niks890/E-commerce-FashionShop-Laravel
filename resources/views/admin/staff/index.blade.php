@@ -11,67 +11,158 @@
 @endif
 
 <div class="card shadow-sm">
-    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-center">
-        <form method="GET" action="{{ route('staff.search') }}" class="d-flex flex-grow-1 me-md-3 mb-2 mb-md-0">
-            <div class="input-group">
-                <input name="query" type="text" class="form-control" placeholder="Nhập tên nhân viên..." />
-                <button class="btn btn-outline-secondary" type="submit">
-                    <i class="fa fa-search"></i>
-                </button>
+    <div class="card-header">
+        <div class="row g-3">
+            <!-- Form tìm kiếm và lọc -->
+            <div class="col-12">
+                <form method="GET" action="{{ route('staff.index') }}" class="row g-2 align-items-end">
+                    <!-- Tìm kiếm theo tên, phone, email -->
+                    <div class="col-md-4">
+                        <label class="form-label small">Tìm kiếm</label>
+                        <div class="input-group">
+                            <input name="search" type="text" class="form-control"
+                                   placeholder="Nhập tên, điện thoại, email..."
+                                   value="{{ request('search') }}" />
+                            <button class="btn btn-outline-secondary" type="submit">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Lọc theo trạng thái -->
+                    <div class="col-md-3">
+                        <label class="form-label small">Trạng thái</label>
+                        <select name="status" class="form-select">
+                            <option value="">Tất cả trạng thái</option>
+                            @foreach($statuses as $status)
+                                <option value="{{ $status }}"
+                                        {{ request('status') == $status ? 'selected' : '' }}>
+                                    {{ $status }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Lọc theo chức vụ -->
+                    <div class="col-md-3">
+                        <label class="form-label small">Chức vụ</label>
+                        <select name="position" class="form-select">
+                            <option value="">Tất cả chức vụ</option>
+                            @foreach($positions as $position)
+                                <option value="{{ $position }}"
+                                        {{ request('position') == $position ? 'selected' : '' }}>
+                                    {{ $position }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Các nút hành động -->
+                    <div class="col-md-2 d-flex gap-1">
+                        <button type="submit" class="btn btn-primary flex-fill">
+                            <i class="fa fa-filter"></i> Lọc
+                        </button>
+                        <a href="{{ route('staff.index') }}" class="btn btn-danger flex-fill" title="Xóa bộ lọc">
+                        Xoá bộ lọc
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
-        <a href="{{ route('staff.create') }}" class="btn btn-success">
-            <i class="fa fa-plus me-1"></i> Thêm mới
-        </a>
+
+            <!-- Nút thêm mới -->
+            <div class="col-12 text-end">
+                <a href="{{ route('staff.create') }}" class="btn btn-success">
+                    <i class="fa fa-plus me-1"></i> Thêm mới
+                </a>
+            </div>
+        </div>
+
+        <!-- Hiển thị kết quả tìm kiếm -->
+        @if(request()->hasAny(['search', 'status', 'position']))
+            <div class="mt-3">
+                <small class="text-muted">
+                    Kết quả lọc: {{ $data->total() }} nhân viên
+                    @if(request('search'))
+                        | Từ khóa: <strong>{{ request('search') }}</strong>
+                    @endif
+                    @if(request('status'))
+                        | Trạng thái: <strong>{{ request('status') }}</strong>
+                    @endif
+                    @if(request('position'))
+                        | Chức vụ: <strong>{{ request('position') }}</strong>
+                    @endif
+                </small>
+            </div>
+        @endif
     </div>
 
     <div class="card-body table-responsive">
-        <table class="table table-hover align-middle text-nowrap">
-            <thead class="table-light">
-                <tr>
-                    <th>#</th>
-                    <th>Họ tên</th>
-                    <th>Avatar</th>
-                    <th>Điện thoại</th>
-                    <th>Địa chỉ</th>
-                    <th>Email</th>
-                    <th>Giới tính</th>
-                    <th>Chức vụ</th>
-                    <th>Trạng thái</th>
-                    <th class="text-center">Hành động</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($data as $model)
-                <tr>
-                    <td>{{ $model->id }}</td>
-                    <td>{{ $model->name }}</td>
-                    <td><img src="{{ $model->avatar }}" alt="" width="45" class="rounded"></td>
-                    <td>{{ $model->phone }}</td>
-                    <td>{{ $model->address }}</td>
-                    <td>{{ $model->email }}</td>
-                    <td>{{ $model->sex == 1 ? 'Nam' : 'Nữ' }}</td>
-                    <td>{{ $model->position }}</td>
-                    <td>{{ $model->status }}</td>
-                    <td class="text-center">
-                        <form method="POST" action="{{ route('staff.destroy', $model->id) }}">
-                            @csrf @method('DELETE')
-                            <button type="button" class="btn btn-sm btn-secondary btn-detail" title="Chi tiết">
-                                <i class="fa fa-eye"></i>
-                            </button>
-                            <a href="{{ route('staff.edit', $model->id) }}" class="btn btn-sm btn-primary" title="Sửa">
-                                <i class="fa fa-edit"></i>
-                            </a>
-                            <button class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa không?')" title="Xóa">
-                                <i class="fa fa-trash"></i>
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-        {{ $data->links() }}
+        @if($data->count() > 0)
+            <table class="table table-hover align-middle text-nowrap">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Họ tên</th>
+                        <th>Avatar</th>
+                        <th>Điện thoại</th>
+                        <th>Địa chỉ</th>
+                        <th>Email</th>
+                        <th>Giới tính</th>
+                        <th>Chức vụ</th>
+                        <th>Trạng thái</th>
+                        <th class="text-center">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($data as $model)
+                    <tr>
+                        <td>{{ $model->id }}</td>
+                        <td>{{ $model->name }}</td>
+                        <td><img src="{{ $model->avatar }}" alt="" width="45" class="rounded"></td>
+                        <td>{{ $model->phone }}</td>
+                        <td>{{ $model->address }}</td>
+                        <td>{{ $model->email }}</td>
+                        <td>{{ $model->sex == 1 ? 'Nam' : 'Nữ' }}</td>
+                        <td>{{ $model->position }}</td>
+                        <td>
+                            <span class="badge
+                                @if($model->status == 'Đang làm việc') bg-success
+                                @elseif($model->status == 'Đã nghỉ việc') bg-danger
+                                @elseif($model->status == 'Tạm nghỉ') bg-warning
+                                @else bg-secondary
+                                @endif">
+                                {{ $model->status }}
+                            </span>
+                        </td>
+                        <td class="text-center">
+                            <form method="POST" action="{{ route('staff.destroy', $model->id) }}">
+                                @csrf @method('DELETE')
+                                <button type="button" class="btn btn-sm btn-secondary btn-detail" title="Chi tiết">
+                                    <i class="fa fa-eye"></i>
+                                </button>
+                                <a href="{{ route('staff.edit', $model->id) }}" class="btn btn-sm btn-primary" title="Sửa">
+                                    <i class="fa fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-danger" onclick="return confirm('Bạn có chắc muốn xóa không?')" title="Xóa">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+            {{ $data->links() }}
+        @else
+            <div class="text-center py-4">
+                <i class="fa fa-search fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Không tìm thấy nhân viên nào</h5>
+                <p class="text-muted">Hãy thử điều chỉnh các tiêu chí tìm kiếm</p>
+                <a href="{{ route('staff.index') }}" class="btn btn-outline-primary">
+                    <i class="fa fa-refresh me-1"></i> Xem tất cả
+                </a>
+            </div>
+        @endif
     </div>
 </div>
 

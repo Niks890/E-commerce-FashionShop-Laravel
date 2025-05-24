@@ -27,6 +27,49 @@ class InventoryController extends Controller
         return view('admin.inventory.index');
     }
 
+    public function search(Request $request)
+    {
+        try {
+            $query = $request->input('query');
+
+            // Nếu không có từ khóa tìm kiếm, chuyển hướng về trang index ban đầu
+            if (empty($query)) {
+                return redirect()->route('inventory.index');
+            }
+
+            // Tìm kiếm trong database
+            $inventories = Inventory::with(['staff', 'provider', 'detail.product.category'])
+                ->where(function ($q) use ($query) {
+                    // Tìm kiếm theo ID phiếu nhập (chính xác hoặc một phần)
+                    $q->where('id', 'LIKE', '%' . $query . '%')
+                        // Tìm kiếm theo tên nhân viên
+                        ->orWhereHas('staff', function ($staffQuery) use ($query) {
+                            $staffQuery->where('name', 'LIKE', '%' . $query . '%');
+                        })
+                        // Tìm kiếm theo tên nhà cung cấp
+                        ->orWhereHas('provider', function ($providerQuery) use ($query) {
+                            $providerQuery->where('name', 'LIKE', '%' . $query . '%');
+                        })
+                        // Tìm kiếm theo tên sản phẩm
+                        ->orWhereHas('detail.product', function ($productQuery) use ($query) {
+                            $productQuery->where('name', 'LIKE', '%' . $query . '%');
+                        });
+                })
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            // Thêm query parameter vào pagination links để giữ từ khóa tìm kiếm khi chuyển trang
+            $inventories->appends(['query' => $query]);
+
+            // Trả về view 'admin.inventory.index' với dữ liệu đã tìm kiếm
+            return view('admin.inventory.index', compact('inventories', 'query'));
+        } catch (\Exception $e) {
+            return redirect()->route('inventory.index')
+                ->with('error', 'Có lỗi xảy ra khi tìm kiếm: ' . $e->getMessage());
+        }
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -352,7 +395,4 @@ class InventoryController extends Controller
 
         return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công!");
     }
-
-
-    public function search(Request $request) {}
 }

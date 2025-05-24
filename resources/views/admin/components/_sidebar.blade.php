@@ -112,7 +112,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base3">
                             <i class="fas fa-percentage"></i>
-                            <p>Quản lý Khuyến mãi/ Voucher</p>
+                            <p>Quản lý Khuyến mãi/Voucher</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base3">
@@ -120,6 +120,11 @@
                                 <li>
                                     <a href="{{ route('discount.index') }}">
                                         <span class="sub-item">Thông tin Khuyến mãi</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('voucher.index') }}">
+                                        <span class="sub-item">Thông tin Voucher</span>
                                     </a>
                                 </li>
                                 <li>
@@ -141,13 +146,13 @@
                         <div class="collapse" id="base999">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="javascript:void(0);">
+                                    <a href="{{route('order.trackingOrder')}}">
                                         <span class="sub-item">Đơn hàng đang giao</span>
                                     </a>
                                 </li>
                                 <li>
                                     <a href="javascript:void(0);">
-                                        <span class="sub-item">Quản lý trạng thái đơn hàng</span>
+                                        <span class="sub-item">Thống kê đơn hàng đã giao</span>
                                     </a>
                                 </li>
                             </ul>

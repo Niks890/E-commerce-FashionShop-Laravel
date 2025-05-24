@@ -21,6 +21,7 @@ use App\Http\Controllers\RateController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueInventoryController;
 use App\Http\Controllers\RevenueProductController;
+use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WishListProductController;
 use Illuminate\Support\Facades\Route;
 
@@ -159,7 +160,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             'provider' => ProviderController::class,
             'inventory' => InventoryController::class,
             'staff' => StaffController::class,
-            'blog' => BlogController::class
+            'blog' => BlogController::class,
+            'voucher' => VoucherController::class,
         ]
     );
     Route::put('/staff/{staff}/update', [StaffController::class, 'update_staff'])->name('staff.update_staff');
@@ -171,11 +173,16 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/search_provider', [ProviderController::class, 'search'])->name('provider.search');
     Route::get('/search_staff', [StaffController::class, 'search'])->name('staff.search');
     Route::get('/search_inventory', [InventoryController::class, 'search'])->name('inventory.search');
+    // Route::get('/advanced-search', [InventoryController::class, 'advancedSearch'])->name('advanced_search');
     Route::get('/search_order', [OrderController::class, 'search'])->name('order.search');
+    Route::get('/search_order_approval', [OrderController::class, 'searchOrderApproval'])->name('order.searchOrderApproval');
+    Route::get('/search_order_success', [OrderController::class, 'searchOrderSuccess'])->name('order.searchOrderSuccess');
+
     Route::get('/search_blog', [BlogController::class, 'search'])->name('blog.search');
     Route::get('/profile', [StaffController::class, 'profile'])->name('staff.profile');
     Route::get('/order-approval', [OrderController::class, 'orderApproval'])->name('order.approval');
     Route::get('/order_success', [OrderController::class, 'orderSuccess'])->name('order.orderSuccess');
+    Route::get('/tracking-order', [OrderController::class, 'orderTrackingAdmin'])->name('order.trackingOrder');
     // Thong ke doanh thu va loi nhuan
     Route::group(['prefix' => '/revenue'], function () {
         Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay')->middleware('can:managers');

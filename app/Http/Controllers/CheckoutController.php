@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductVariant;
@@ -10,6 +11,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 
 class CheckoutController extends Controller
@@ -113,97 +115,7 @@ class CheckoutController extends Controller
         return redirect()->away($vnp_Url);
     }
 
-    // Xử lý thanh toán VNPAY bình thường
-    // public function vnpayReturn(Request $request)
-    // {
-    //     $vnp_ResponseCode = $request->vnp_ResponseCode; // Mã phản hồi từ VNPAY
-    //     $vnp_TxnRef = $request->vnp_TxnRef; // Mã giao dịch đơn hàng
-    //     $vnp_Amount = $request->vnp_Amount / 100; // Số tiền thanh toán (chuyển về đơn vị VNĐ)
 
-    //     if ($vnp_ResponseCode == "00") { // Thanh toán thành công
-    //         if (Session::has('order_data')) {
-    //             $data = Session::get('order_data');
-    //             // dd($data);
-
-    //             // Tạo đơn hàng lưu vào db
-    //             $order = new Order();
-    //             $order->address = $data['address'];
-    //             $order->phone = $data['phone'];
-    //             $order->shipping_fee = $data['shipping_fee'];
-    //             $order->total = $data['total'];
-    //             $order->note = $data['note'];
-    //             $order->receiver_name = $data['receiver_name'];
-    //             $order->email = $data['email'];
-    //             $order->VAT = $data['VAT'];
-    //             $order->payment = $data['payment'];
-    //             $order->customer_id = $data['customer_id'];
-    //             $order->status = 'Đã thanh toán'; // Đánh dấu đơn hàng đã thanh toán
-    //             $order->transaction_id = $vnp_TxnRef; // Lưu mã giao dịch VNPAY
-    //             $order->save();
-
-    //             // Lấy giỏ hàng từ session
-    //             $cart = session('cart', []);
-
-    //             // Lọc ra các sản phẩm đã được chọn (checked = true)
-    //             $selectedItems = array_filter($cart, function ($item) {
-    //                 return !empty($item->checked) && $item->checked;
-    //             });
-
-    //             if (empty($selectedItems)) {
-    //                 return redirect()->back()->with('error', 'Không có sản phẩm nào được chọn để thanh toán.');
-    //             }
-
-    //             // Tạo chi tiết đơn hàng từ các sản phẩm đã chọn
-    //             foreach ($selectedItems as $item) {
-    //                 OrderDetail::create([
-    //                     'order_id' => $order->id,
-    //                     'product_id' => $item->id,
-    //                     'product_variant_id' => $item->product_variant_id,
-    //                     'quantity' => $item->quantity,
-    //                     'price' => $item->price,
-    //                     'size_and_color' => $item->size . '-' . $item->color,
-    //                     'code' => session('percent_discount', 0),
-    //                 ]);
-    //             }
-
-    //             // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
-    //             if (count($selectedItems) === count($cart)) {
-    //                 session()->forget('cart');
-    //             } else {
-    //                 // Cập nhật lại giỏ hàng chỉ giữ lại sản phẩm chưa chọn
-    //                 $cart = array_filter($cart, function ($item) {
-    //                     return empty($item->checked) || !$item->checked;
-    //                 });
-    //                 session(['cart' => $cart]);
-    //             }
-
-    //             // Cập nhật số lượng tồn kho sau khi tạo đơn hàng
-    //             $orderDetails = OrderDetail::where('order_id', $order->id)->get();
-    //             foreach ($orderDetails as $detail) {
-    //                 [$size, $color] = explode('-', $detail->size_and_color);
-    //                 $variant = ProductVariant::where('product_id', $detail->product_id)
-    //                     ->where('size', trim($size))
-    //                     ->where('color', trim($color))
-    //                     ->first();
-
-    //                 if ($variant) {
-    //                     $variant->stock -= $detail->quantity;
-    //                     $variant->save();
-    //                 }
-    //             }
-    //             Session::put('success_data', [
-    //                 'logo' => 'vnpay.png',
-    //                 'receiver_name' => $order->receiver_name,
-    //                 'order_id' => $order->id,
-    //                 'total' => $order->total
-    //             ]);
-    //             Session::forget('order_data'); // Xóa session sau khi lưu vào db
-    //             return redirect()->route('sites.success.payment');
-    //         }
-    //     } else {
-    //         return redirect()->route('sites.cart')->with('error', 'Thanh toán thất bại hoặc bị hủy!');
-    //     }
-    // }
 
     // Xử lý thanh toán VNPAY (Persimistic Lock)
     public function vnpayReturn(Request $request)
@@ -298,6 +210,13 @@ class CheckoutController extends Controller
                             $variant->stock -= $item->quantity;
                             $variant->save();
                         }
+                    }
+
+                    try {
+                        Mail::to($order->email)->queue(new OrderConfirmationMail($order));
+                        Log::info('Email xác nhận đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
+                    } catch (\Exception $mailException) {
+                        Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
                     }
 
                     // Xóa giỏ hàng và session giảm giá sau khi tạo đơn hàng thành công
@@ -469,6 +388,13 @@ class CheckoutController extends Controller
                         ]);
                     }
 
+                    try {
+                        Mail::to($order->email)->queue(new OrderConfirmationMail($order));
+                        Log::info('Email xác nhận đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
+                    } catch (\Exception $mailException) {
+                        Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
+                    }
+
                     // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
                     if (count($selectedItems) === count($cart)) {
                         session()->forget('cart');
@@ -546,20 +472,20 @@ class CheckoutController extends Controller
     //                 $order->status = 'Đã thanh toán';
     //                 $order->transaction_id = $transId; // Lưu mã giao dịch MoMo
     //                 $order->save();
-        
+
     //                 // Lấy giỏ hàng từ session
     //                 $cart = session('cart', []);
-        
+
     //                 // Lọc ra các sản phẩm đã được chọn (checked = true)
     //                 $selectedItems = array_filter($cart, function ($item) {
     //                     return !empty($item->checked) && $item->checked;
     //                 });
-        
+
     //                 if (empty($selectedItems)) {
     //                     DB::rollBack(); // Rollback transaction nếu không có sản phẩm nào được chọn
     //                     return redirect()->back()->with('error', 'Không có sản phẩm nào được chọn để thanh toán.');
     //                 }
-        
+
     //                 // Kiểm tra tồn kho và loại bỏ sản phẩm hết hàng
     //                 $errors = [];
     //                 foreach ($selectedItems as $key => $item) {
@@ -569,14 +495,14 @@ class CheckoutController extends Controller
     //                         ->where('color', trim($item->color))
     //                         ->lockForUpdate()
     //                         ->first();
-        
+
     //                     if (!$variant || $variant->stock < $item->quantity) {
     //                         // Xóa sản phẩm hết hàng khỏi giỏ
     //                         unset($cart[$key]);
     //                         $errors[] = 'Sản phẩm bạn chọn đã hết hàng và đã bị xóa khỏi giỏ hàng.';
     //                     }
     //                 }
-        
+
     //                 // Nếu có lỗi, chuyển về trang giỏ kèm thông báo
     //                 if (!empty($errors)) {
     //                     // Cập nhật lại giỏ hàng sau khi loại bỏ các sản phẩm hết hàng
@@ -584,7 +510,7 @@ class CheckoutController extends Controller
     //                     DB::rollBack(); // Rollback nếu có sản phẩm hết hàng
     //                     return redirect()->route('sites.cart')->with('error', implode('<br>', $errors));
     //                 }
-        
+
     //                 // Tạo chi tiết đơn hàng từ các sản phẩm đã chọn
     //                 foreach ($selectedItems as $item) {
     //                     OrderDetail::create([
@@ -597,7 +523,7 @@ class CheckoutController extends Controller
     //                         'code' => session('percent_discount', 0),
     //                     ]);
     //                 }
-        
+
     //                 // Trừ số lượng tồn kho
     //                 foreach ($selectedItems as $item) {
     //                     $variant = ProductVariant::where('product_id', $item->id)
@@ -605,18 +531,18 @@ class CheckoutController extends Controller
     //                         ->where('color', trim($item->color))
     //                         ->lockForUpdate()
     //                         ->first();
-        
+
     //                     if ($variant) {
     //                         $variant->stock -= $item->quantity;
     //                         $variant->save();
     //                     }
     //                 }
-        
+
     //                 // Xóa giỏ hàng và session giảm giá sau khi tạo đơn hàng thành công
     //                 session()->forget('cart');
     //                 session()->forget('percent_discount');
     //                 Session::forget('order_data'); // Xóa session sau khi lưu vào db
-        
+
     //                 // Lưu thông tin hiển thị thanh toán thành công
     //                 Session::put('success_data', [
     //                     'logo' => 'momo.png',
@@ -624,9 +550,9 @@ class CheckoutController extends Controller
     //                     'order_id' => $order->id,
     //                     'total' => $order->total
     //                 ]);
-        
+
     //                 DB::commit(); // Commit transaction
-        
+
     //                 return redirect()->route('sites.success.payment');
     //             }
     //         } else {
@@ -639,8 +565,8 @@ class CheckoutController extends Controller
     //         dd($e->getMessage(), $e->getFile(), $e->getLine());
     //     }
     // }
-    
-    
+
+
 
 
     public function checkoutZaloPay(Request $request)

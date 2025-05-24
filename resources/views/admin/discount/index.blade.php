@@ -16,23 +16,31 @@
         <div class="card-body">
             <div class="card-sub">
                 <form method="GET" class="form-inline row" action="{{ route('discount.search') }}">
-                    @csrf
-                    <div
-                        class="col-9 navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
-                        <div class="input-group">
+                    {{-- @csrf --}}
+                    <div class="col-md-9 d-flex align-items-center"> {{-- Adjusted column for better alignment --}}
+                        <div class="input-group flex-grow-1"> {{-- Allow input group to grow --}}
                             <div class="input-group-prepend">
                                 <button type="submit" class="btn btn-search pe-1">
                                     <i class="fa fa-search search-icon"></i>
                                 </button>
                             </div>
                             <input name="query" type="text" placeholder="Nhập vào tên chương trình khuyến mãi..."
-                                class="form-control" />
+                                class="form-control" value="{{ request('query') }}" /> {{-- Keep old query value --}}
+                        </div>
+
+                        <div class="ms-3"> {{-- Added margin-left for spacing --}}
+                            <select name="status" class="form-select">
+                                <option value="">Tất cả trạng thái</option>
+                                <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Còn hạn
+                                </option>
+                                <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Đã hết hạn
+                                </option>
+                            </select>
                         </div>
                     </div>
-                    <div class="col-3">
-                        <button type="button" class="btn btn-success add-new-modal btn-create"><i
-                                class="fa fa-plus"></i>Thêm
-                            mới</button>
+                    <div class="col-md-3 text-end"> {{-- Align to end for "Add new" button --}}
+                        <button type="button" class="btn btn-success add-new-modal btn-create"><i class="fa fa-plus"></i>
+                            Thêm mới</button>
                     </div>
                 </form>
             </div>
@@ -44,6 +52,7 @@
                         <th>% KM</th>
                         <th>Bắt đầu</th>
                         <th>Kết thúc</th>
+                        <th>Trạng thái</th>
                         <th class="text-center">Hành động</th>
                     </tr>
                 </thead>
@@ -55,9 +64,32 @@
                             <td><span class="badge bg-success">{{ round($model->percent_discount, 2) * 100 }}%</span></td>
                             <td>{{ $model->start_date->format('d/m/Y H:i') }}</td>
                             <td>{{ $model->end_date->format('d/m/Y H:i') }}</td>
+                            <td>
+                                {{-- Display dynamic status using the accessor --}}
+                                @php
+                                    $statusClass = '';
+                                    $statusText = '';
+                                    switch ($model->calculated_status) {
+                                        case 'active':
+                                            $statusClass = 'bg-success';
+                                            $statusText = 'Đang hiệu lực';
+                                            break;
+                                        case 'inactive':
+                                            $statusClass = 'bg-danger';
+                                            $statusText = 'Đã hết hạn';
+                                            break;
+                                        default:
+                                            $statusClass = 'bg-dark'; // Fallback
+                                            $statusText = 'Không xác định';
+                                            break;
+                                    }
+                                @endphp
+                                <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex justify-content-center gap-2">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-info btn-detail"><i class="fas fa-eye"></i></a>
+                                    <a href="javascript:void(0);" class="btn btn-sm btn-info btn-detail"><i
+                                            class="fas fa-eye"></i></a>
                                     <a href="javascript:void(0);" class="btn btn-sm btn-primary btn-edit"><i
                                             class="fas fa-edit"></i></a>
                                     <form method="POST" action="{{ route('discount.destroy', $model->id) }}"
@@ -141,6 +173,7 @@
                                     class="badge bg-success"></span></p>
                             <p><strong>Ngày bắt đầu:</strong> <span id="promo-start" class="text-muted"></span></p>
                             <p><strong>Ngày kết thúc:</strong> <span id="promo-end" class="text-muted"></span></p>
+                            <p><strong>Trạng thái:</strong> <span id="promo-status" class="fw-bold badge-info"></span></p>
                         </div>
                     </div>
                 </div>
@@ -198,6 +231,7 @@
                                 'vi-VN'));
                             $("#promo-end").text(new Date(promo.end_date).toLocaleString(
                                 'vi-VN')); //text->h1,..h7, p, span,...
+                            $("#promo-status").text(promo.status);
                             $("#detailModal").modal("show");
                             // console.log(response);
                         } else {
@@ -208,6 +242,21 @@
                         alert("Đã có lỗi xảy ra, vui lòng thử lại!");
                     }
                 });
+            });
+
+
+            $('select[name="status"]').change(function() {
+                $(this).closest('form').submit(); // Gửi form khi dropdown thay đổi
+            });
+
+            // Lắng nghe sự kiện "keyup" trên ô tìm kiếm sau một khoảng trễ
+            let searchTimeout = null;
+            $('input[name="query"]').keyup(function() {
+                clearTimeout(searchTimeout); // Xóa timeout cũ nếu có
+                const form = $(this).closest('form');
+                searchTimeout = setTimeout(function() {
+                    form.submit(); // Gửi form sau khi người dùng ngừng gõ một lúc
+                }, 500); // 500ms (0.5 giây) trễ
             });
         });
     </script>
@@ -254,6 +303,7 @@
             });
         });
     </script>
+    {{-- <script src="https://cdn.tailwindcss.com"></script> --}}
 @endsection
 @else
 {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}

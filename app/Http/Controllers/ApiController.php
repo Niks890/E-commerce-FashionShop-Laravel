@@ -63,16 +63,88 @@ class ApiController extends Controller
         return $this->apiStatus($categories, 200, $categories->count(), 'ok');
     }
 
-    public function inventories()
+
+
+// public function inventories(Request $request)
+// {
+//     $query = Inventory::with([
+//         'Staff',
+//         'Provider',
+//         'InventoryDetails.Product.Category',
+//         'InventoryDetails.Product.ProductVariants'
+//     ])->orderBy('id', 'DESC');
+
+//     // Thêm điều kiện tìm kiếm nếu có tham số 'query' trong request
+//     if ($request->has('query') && !empty($request->input('query'))) {
+//         $searchTerm = $request->input('query');
+//         $query->where(function ($q) use ($searchTerm) {
+//             // Tìm kiếm theo ID phiếu nhập (chính xác)
+//             $q->where('id', $searchTerm)
+//               // Tìm kiếm theo tên nhân viên (gần đúng)
+//               ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
+//                   $subQuery->where('name', 'like', '%' . $searchTerm . '%');
+//               })
+//               // THÊM ĐIỀU KIỆN NÀY ĐỂ TÌM KIẾM THEO TÊN SẢN PHẨM
+//               ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
+//                   $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
+//               });
+//         });
+//     }
+
+//     $inventories = $query->paginate(10);
+
+//     return response()->json([
+//         'status_code' => 200,
+//         'data' => InventoryResource::collection($inventories),
+//         'pagination' => [
+//             'current_page' => $inventories->currentPage(),
+//             'last_page' => $inventories->lastPage(),
+//             'total' => $inventories->total(),
+//             'per_page' => $inventories->perPage(),
+//             'next_page_url' => $inventories->nextPageUrl(),
+//             'prev_page_url' => $inventories->previousPageUrl(),
+//         ],
+//     ]);
+// }
+
+ public function inventories(Request $request)
     {
-        $inventories = Inventory::with([
+        $query = Inventory::with([
             'Staff',
             'Provider',
             'InventoryDetails.Product.Category',
             'InventoryDetails.Product.ProductVariants'
-        ])
-            ->orderBy('id', 'DESC')
-            ->paginate(10);
+        ])->orderBy('id', 'DESC');
+
+        // Lọc theo từ khóa tìm kiếm (ID phiếu nhập, tên nhân viên, tên sản phẩm)
+        if ($request->has('query') && !empty($request->input('query'))) {
+            $searchTerm = $request->input('query');
+            $query->where(function ($q) use ($searchTerm) {
+                // Tìm kiếm theo ID phiếu nhập (chính xác)
+                $q->where('id', $searchTerm)
+                  // Tìm kiếm theo tên nhân viên (gần đúng)
+                  ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
+                      $subQuery->where('name', 'like', '%' . $searchTerm . '%');
+                  })
+                  // Tìm kiếm theo tên sản phẩm (gần đúng)
+                  ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
+                      $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        // Lọc theo ngày tạo (created_at)
+        if ($request->has('start_date') && !empty($request->input('start_date'))) {
+            $startDate = $request->input('start_date');
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+
+        if ($request->has('end_date') && !empty($request->input('end_date'))) {
+            $endDate = $request->input('end_date');
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $inventories = $query->paginate(10);
 
         return response()->json([
             'status_code' => 200,

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\CloudinaryUploadController;
+use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueProductController;
@@ -45,6 +46,7 @@ Route::get('product-variant', [ApiController::class, 'productVariants'])->name('
 Route::get('inventory', [ApiController::class, 'inventories'])->name('api.inventories');
 Route::get('inventory/{id}', [ApiController::class, 'inventory'])->name('api.inventory');
 Route::get('inventoryDetail/{id}', [ApiController::class, 'inventoryDetail'])->name('api.inventoryDetail');
+// Route::get('/inventory/search', [InventoryController::class, 'apiSearch'])->name('api.inventory.search');
 
 Route::get('staff/{id}', [ApiController::class, 'staff'])->name('api.staff');
 

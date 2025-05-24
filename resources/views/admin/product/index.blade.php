@@ -13,27 +13,72 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            {{-- Search Bar --}}
-            <form method="GET" action="{{ route('product.search') }}" class="row g-2 mb-3 ">
-                @csrf
-                <div class="col-lg-8 col-12 d-flex align-items-center">
-                    <div class="input-group">
-                        <input type="text" name="query" class="form-control" placeholder="Tìm tên sản phẩm...">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="fa fa-search"></i>
-                        </button>
+            {{-- Search Bar with Filters --}}
+            <form method="GET" action="{{ route('product.search') }}" id="filterForm" class="mb-3">
+                <div class="row g-2 align-items-end">
+                    {{-- Input tìm kiếm --}}
+                    <div class="col-lg-5 col-md-12"> {{-- Tăng kích thước cột để cân đối --}}
+                        <label for="query" class="form-label visually-hidden">Tìm tên sản phẩm</label>
+                        <div class="input-group">
+                            <input type="text" name="query" id="query" class="form-control"
+                                placeholder="Tìm tên sản phẩm..." value="{{ request('query') }}">
+                            <button type="submit" class="btn btn-outline-secondary">
+                                <i class="fa fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Bộ lọc Danh mục --}}
+                    <div class="col-lg-4 col-md-6 col-sm-6"> {{-- Tăng kích thước cột để cân đối --}}
+                        <label for="category" class="form-label">Danh mục</label>
+                        <select name="category" id="category" class="form-select">
+                            <option value="">Tất cả danh mục</option>
+                            @foreach ($categories as $category)
+                                <option value="{{ $category->id }}"
+                                    {{ request('category') == $category->id ? 'selected' : '' }}>
+                                    {{ $category->category_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Bộ lọc Giá --}}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <label for="price_range" class="form-label">Giá</label>
+                        <select name="price_range" id="price_range" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="0-100000" {{ request('price_range') == '0-100000' ? 'selected' : '' }}>Dưới
+                                100.000đ</option>
+                            <option value="100001-500000" {{ request('price_range') == '100001-500000' ? 'selected' : '' }}>
+                                100.000đ - 500.000đ</option>
+                            <option value="500001-1000000"
+                                {{ request('price_range') == '500001-1000000' ? 'selected' : '' }}>500.000đ - 1.000.000đ
+                            </option>
+                            <option value="1000001-max" {{ request('price_range') == '1000001-max' ? 'selected' : '' }}>Trên
+                                1.000.000đ</option>
+                        </select>
                     </div>
                 </div>
-                <div class="col-lg-4 d-flex justify-content-end align-items-center gap-2 mt-2 mt-lg-0">
-                    <a href="{{ route('inventory.create') }}" class="btn btn-success">
-                        <i class="fa fa-plus"></i> Nhập Hàng
-                    </a>
-                    <a href="{{ route('admin.revenueInventory') }}" class="btn btn-warning">
-                        <i class="fa fa-list"></i> Quản lý kho
-                    </a>
+
+                {{-- Hàng mới cho các nút chức năng --}}
+                <div class="row g-2 mt-3 justify-content-end"> {{-- Thêm mt-3 để tạo khoảng cách với hàng trên --}}
+                    <div class="col-auto"> {{-- Sử dụng col-auto để nút có kích thước tự động --}}
+                        <button type="button" id="clearFilters" class="btn btn-secondary">
+                            <i class="fa fa-times"></i> Reset bộ lọc
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('inventory.create') }}" class="btn btn-success">
+                            <i class="fa fa-plus"></i> Nhập Hàng
+                        </a>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ route('admin.revenueInventory') }}" class="btn btn-warning">
+                            <i class="fa fa-list"></i> Quản lý kho
+                        </a>
+                    </div>
                 </div>
             </form>
-
             {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
@@ -50,11 +95,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach ($data as $model)
+                        @forelse ($data as $model)
                             <tr>
                                 <td>{{ $model->id }}</td>
                                 <td>{{ $model->product_name }}</td>
-                                <td>{{ $model->Category->category_name }}</td>
+                                <td>{{ $model->category->category_name }}</td>
                                 <td>{{ number_format($model->price, 0, ',', '.') }} đ</td>
                                 <td>
                                     <span class="badge bg-{{ $model->status == 1 ? 'success' : 'secondary' }}">
@@ -81,7 +126,11 @@
                                     </form>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center">Không tìm thấy sản phẩm nào.</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
@@ -94,7 +143,6 @@
     </div>
 
 
-    <!-- Modal productDetail -->
     <div class="modal fade" id="productDetail" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -155,7 +203,6 @@
                             </tbody>
                         </table>
                     </div>
-                    <!-- Modal footer -->
                     <div class="modal-footer d-flex justify-content-center">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
@@ -178,6 +225,19 @@
 
     <script>
         $(document).ready(function() {
+            // Tự động submit form khi thay đổi danh mục hoặc giá
+            $('#category, #price_range').on('change', function() {
+                $('#filterForm').submit();
+            });
+
+            // Xử lý nút "Xóa Bộ Lọc"
+            $('#clearFilters').on('click', function() {
+                $('#query').val(''); // Xóa nội dung ô tìm kiếm
+                $('#category').val(''); // Đặt lại danh mục về "Tất cả"
+                $('#price_range').val(''); // Đặt lại giá về "Tất cả"
+                $('#filterForm').submit(); // Gửi lại form để xóa tất cả các bộ lọc
+            });
+
             $(".btn-detail").click(function(event) {
                 event.preventDefault();
                 let productId = $(this).closest("tr").find("td:first").text().trim();

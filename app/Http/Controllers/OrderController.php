@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
-
-use SebastianBergmann\CodeCoverage\Report\Xml\Totals;
 
 class OrderController extends Controller
 {
@@ -31,27 +31,221 @@ class OrderController extends Controller
         return view('admin.order.order_pending', compact('data'));
     }
 
+    public function search(Request $request)
+    {
+        $query = $request->get('query');
+        $statusFilter = $request->get('status_filter');
+
+        // Base query
+        $orderQuery = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->whereIn('o.status', ['Chờ xử lý', 'Đã huỷ đơn hàng'])
+            ->select('o.*', 'c.name as customer_name');
+
+        // Apply search filter
+        if (!empty($query)) {
+            $orderQuery->where(function ($q) use ($query) {
+                $q->where('o.id', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.phone', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.name', 'LIKE', '%' . $query . '%');
+            });
+        }
+
+        // Apply status filter
+        if (!empty($statusFilter)) {
+            $orderQuery->where('o.status', $statusFilter);
+        }
+
+        // Get paginated data
+        $data = $orderQuery->orderBy('o.id', 'DESC')->paginate(5);
+
+        // Get counts for badges
+        $totalCount = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->whereIn('o.status', ['Chờ xử lý', 'Đã huỷ đơn hàng'])
+            ->count();
+
+        $pendingCount = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->where('o.status', 'Chờ xử lý')
+            ->count();
+
+        $cancelledCount = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->where('o.status', 'Đã huỷ đơn hàng')
+            ->count();
+
+        return view('admin.order.order_pending', compact(
+            'data',
+            'totalCount',
+            'pendingCount',
+            'cancelledCount'
+        ));
+    }
+
+
 
     public function orderApproval()
     {
+        // Chỉ hiển thị đơn hàng đã xử lý và đang giao hàng
         $data = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->where('o.status', 'Đã xử lý')
+            ->whereIn('o.status', ['Đã xử lý', 'Đang giao hàng'])
             ->orderBy('o.id', 'DESC')
             ->select('o.*', 'c.name as customer_name')
             ->paginate(5);
-        return view('admin.order.order_approved', compact('data'));
+
+        // Get counts for badges
+        $processedCount = DB::table('orders as o')
+            ->where('o.status', 'Đã xử lý')
+            ->count();
+
+        $shippingCount = DB::table('orders as o')
+            ->where('o.status', 'Đang giao hàng')
+            ->count();
+
+        $totalApprovalCount = $processedCount + $shippingCount;
+
+        return view('admin.order.order_approved', compact(
+            'data',
+            'processedCount',
+            'shippingCount',
+            'totalApprovalCount'
+        ));
     }
+
+    public function searchOrderApproval(Request $request)
+    {
+        $query = $request->get('query');
+        $statusFilter = $request->get('status_filter');
+
+        // Valid statuses - chỉ còn "Đã xử lý" và "Đang giao hàng"
+        $validStatuses = ['Đã xử lý', 'Đang giao hàng'];
+
+        // Base query
+        $orderQuery = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->select('o.*', 'c.name as customer_name');
+
+        // Apply status filter
+        if (!empty($statusFilter) && in_array($statusFilter, $validStatuses)) {
+            $orderQuery->where('o.status', $statusFilter);
+        } else {
+            // Default: chỉ hiển thị đơn hàng đã xử lý và đang giao hàng
+            $orderQuery->whereIn('o.status', $validStatuses);
+        }
+
+        // Apply search filter
+        if (!empty($query)) {
+            $orderQuery->where(function ($q) use ($query) {
+                $q->where('o.id', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.phone', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.name', 'LIKE', '%' . $query . '%');
+            });
+        }
+
+        // Get paginated data
+        $data = $orderQuery->orderBy('o.id', 'DESC')->paginate(5);
+
+        // Get counts for badges - chỉ tính 2 trạng thái
+        $processedCount = DB::table('orders as o')
+            ->where('o.status', 'Đã xử lý')
+            ->count();
+
+        $shippingCount = DB::table('orders as o')
+            ->where('o.status', 'Đang giao hàng')
+            ->count();
+
+        $totalApprovalCount = $processedCount + $shippingCount;
+
+        return view('admin.order.order_approved', compact(
+            'data',
+            'processedCount',
+            'shippingCount',
+            'totalApprovalCount'
+        ));
+    }
+
 
     public function orderSuccess()
     {
+        // Hiển thị đơn hàng đã giao thành công và đã thanh toán
         $data = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->where('o.status', 'Đã thanh toán')
+            ->whereIn('o.status', ['Đã giao hàng', 'Đã thanh toán'])
             ->orderBy('o.id', 'DESC')
             ->select('o.*', 'c.name as customer_name')
             ->paginate(5);
-        return view('admin.order.order_success', compact('data'));
+
+        // Get counts for badges
+        $deliveredCount = DB::table('orders as o')
+            ->where('o.status', 'Đã giao hàng')
+            ->count();
+
+        $paidCount = DB::table('orders as o')
+            ->where('o.status', 'Đã thanh toán')
+            ->count();
+
+        $totalSuccessCount = $deliveredCount + $paidCount;
+
+        return view('admin.order.order_success', compact(
+            'data',
+            'deliveredCount',
+            'paidCount',
+            'totalSuccessCount'
+        ));
+    }
+
+    public function searchOrderSuccess(Request $request)
+    {
+        $query = $request->get('query');
+        $statusFilter = $request->get('status_filter');
+
+        // Valid statuses - đơn hàng thành công
+        $validStatuses = ['Đã giao hàng', 'Đã thanh toán'];
+
+        // Base query
+        $orderQuery = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->select('o.*', 'c.name as customer_name');
+
+        // Apply status filter
+        if (!empty($statusFilter) && in_array($statusFilter, $validStatuses)) {
+            $orderQuery->where('o.status', $statusFilter);
+        } else {
+            // Default: hiển thị tất cả đơn hàng thành công
+            $orderQuery->whereIn('o.status', $validStatuses);
+        }
+
+        // Apply search filter
+        if (!empty($query)) {
+            $orderQuery->where(function ($q) use ($query) {
+                $q->where('o.id', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.phone', 'LIKE', '%' . $query . '%')
+                    ->orWhere('c.name', 'LIKE', '%' . $query . '%');
+            });
+        }
+
+        // Get paginated data
+        $data = $orderQuery->orderBy('o.id', 'DESC')->paginate(5);
+
+        // Get counts for badges
+        $deliveredCount = DB::table('orders as o')
+            ->where('o.status', 'Đã giao hàng')
+            ->count();
+
+        $paidCount = DB::table('orders as o')
+            ->where('o.status', 'Đã thanh toán')
+            ->count();
+
+        $totalSuccessCount = $deliveredCount + $paidCount;
+
+        return view('admin.order.order_success', compact(
+            'data',
+            'deliveredCount',
+            'paidCount',
+            'totalSuccessCount'
+        ));
     }
 
 
@@ -86,122 +280,6 @@ class OrderController extends Controller
         return $pdf->download('invoice_order_' . $id . '.pdf');
     }
 
-
-
-
-
-    /**
-     * Store a newly created resource in storage.
-     */
-
-    // Hàm gốc
-    // public function store(Request $request)
-    // {
-    //     $data = $request->validate([
-    //         'address' => 'required',
-    //         'phone' => 'required',
-    //         'shipping_fee' => 'required|numeric',
-    //         'total' => 'required|numeric',
-    //         'note' => 'required',
-    //         'receiver_name' => 'required',
-    //         'email' => 'required|email',
-    //         'VAT' => 'required|numeric',
-    //         'customer_id' => 'required',
-    //         'payment' => 'required',
-    //     ], [
-    //         'address.required' => 'Vui lòng nhập điểm giao hàng',
-    //         'phone.required' => 'Vui lòng nhập số điện thoại',
-    //         'note.required' => 'Vui lòng nhập ghi chú',
-    //         'receiver_name.required' => 'Vui lòng nhập tên người nhận',
-    //         'email.required' => 'Vui lòng nhập email hợp lệ',
-    //     ]);
-    //     // dd($request->all());
-    //     // Tạo đơn hàng
-    //     $order = new Order();
-    //     $order->address = $data['address'];
-    //     $order->phone = $data['phone'];
-    //     $order->shipping_fee = $data['shipping_fee'];
-    //     $order->total = $data['total'];
-    //     $order->note = $data['note'];
-    //     $order->receiver_name = $data['receiver_name'];
-    //     $order->email = $data['email'];
-    //     $order->VAT = $data['VAT'];
-    //     $order->payment = $data['payment'];
-    //     $order->customer_id = $data['customer_id'];
-    //     $order->save();
-
-    //     // Lấy giỏ hàng từ session
-    //     $cart = session('cart', []);
-
-    //     // Lọc ra các sản phẩm đã được chọn (checked = true)
-    //     $selectedItems = array_filter($cart, function ($item) {
-    //         return !empty($item->checked) && $item->checked;
-    //     });
-
-    //     if (empty($selectedItems)) {
-    //         return redirect()->back()->with('error', 'Không có sản phẩm nào được chọn để thanh toán.');
-    //     }
-
-    //     // Tạo chi tiết đơn hàng từ các sản phẩm đã chọn
-    //     foreach ($selectedItems as $item) {
-    //         OrderDetail::create([
-    //             'order_id' => $order->id,
-    //             'product_id' => $item->id,
-    //             'product_variant_id' => $item->product_variant_id,
-    //             'quantity' => $item->quantity,
-    //             'price' => $item->price,
-    //             'size_and_color' => $item->size . '-' . $item->color,
-    //             'code' => session('percent_discount', 0),
-    //         ]);
-    //     }
-
-    //     // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
-    //     if (count($selectedItems) === count($cart)) {
-    //         session()->forget('cart');
-    //     } else {
-    //         // Cập nhật lại giỏ hàng chỉ giữ lại sản phẩm chưa chọn
-    //         $cart = array_filter($cart, function ($item) {
-    //             return empty($item->checked) || !$item->checked;
-    //         });
-    //         session(['cart' => $cart]);
-    //     }
-
-    //     session()->forget('percent_discount');
-
-    //     // Xử lý trừ đi số lượng sản phẩm trong kho theo số lượng đã được đặt
-    //     $orderDetails = OrderDetail::where('order_id', $order->id)->get();
-
-    //     foreach ($orderDetails as $detail) {
-    //         // Tách size và color từ chuỗi size_and_color
-    //         [$size, $color] = array_map('trim', explode('-', $detail->size_and_color));
-
-    //         // Tìm đúng variant của sản phẩm trong bảng variant theo product_id, size và color
-    //         $variant = ProductVariant::where('product_id', $detail->product_id)
-    //             ->where('size', trim($size))
-    //             ->where('color', trim($color))
-    //             ->first();
-
-
-    //         if ($variant) {
-    //             $variant->stock -= $detail->quantity;
-    //             $variant->save();
-
-    //         } else {
-    //             // Xử lý trường hợp không tìm thấy variant
-    //             Log::warning("Không tìm thấy variant cho sản phẩm ID: {$detail->product_id}, size: {$size}, color: {$color}");
-    //         }
-    //     }
-    //     Session::put('success_data', [
-    //         'logo' => 'cod.png',
-    //         'receiver_name' => $order->receiver_name,
-    //         'order_id' => $order->id,
-    //         'total' => $order->total
-    //     ]);
-    //     Session::forget('order_data'); // Xóa session sau khi lưu vào db
-    //     return redirect()->route('sites.success.payment');
-
-    //     // return redirect()->route('sites.home')->with('success', "Đặt hàng thành công!");
-    // }
 
 
     // Pessimistic Lock (Khóa bi quan) là kiểu khóa mà khi một bản ghi đang được truy cập (đọc/ghi), nó sẽ bị khóa lại để ngăn chặn các giao dịch khác đọc hoặc sửa đổi.
@@ -314,6 +392,13 @@ class OrderController extends Controller
                 }
             }
 
+            try {
+                Mail::to($order->email)->queue(new OrderConfirmationMail($order));
+                Log::info('Email xác nhận đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
+            } catch (\Exception $mailException) {
+                Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
+            }
+
             // Xóa giỏ hàng sau khi tạo đơn hàng thành công
             session()->forget('cart');
             session()->forget('percent_discount');
@@ -377,34 +462,14 @@ class OrderController extends Controller
     }
 
 
-    public function orderTracking() {
+    public function orderTracking()
+    {
         return view('sites.ordertracking.order_tracking');
     }
 
 
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function orderTrackingAdmin()
     {
-        //
+        return view('admin.tracking-order.tracking-order');
     }
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $order)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Order $order)
-    {
-        //
-    }
-
-    public function search(Request $request) {}
 }

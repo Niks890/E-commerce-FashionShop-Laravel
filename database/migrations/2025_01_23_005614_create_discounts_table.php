@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('code', 10)->unique();
             $table->datetime('start_date');
             $table->datetime('end_date');
+            $table->string('status')->default('active')->after('end_date');
             $table->timestamps();
         });
     }

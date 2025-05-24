@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Discount;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -13,8 +14,34 @@ class DiscountController extends Controller
      */
     public function index()
     {
-        $data = Discount::orderBy('id', 'ASC')->paginate();
+        $data = Discount::orderBy('id', 'ASC')->paginate(10);
         return view('admin.discount.index', compact('data'));
+    }
+
+
+    public function search(Request $request)
+    {
+        $keyword = $request->input('query');
+        $statusFilter = $request->input('status'); // Lấy giá trị của bộ lọc trạng thái từ form (ví dụ: 'active', 'inactive', 'pending')
+
+        $query = Discount::query();
+
+        // Lọc theo từ khóa (tên hoặc ID)
+        if ($keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('id', 'like', "%{$keyword}%");
+            });
+        }
+
+        // Lọc theo cột 'status' mới trong bảng
+        if ($statusFilter) {
+            $query->where('status', $statusFilter);
+        }
+
+        $data = $query->orderBy('id', 'ASC')->paginate(3);
+
+        return view('admin.discount.index', compact('data', 'keyword', 'statusFilter'));
     }
 
     /**
@@ -52,21 +79,7 @@ class DiscountController extends Controller
         return redirect()->route('discount.index')->with('success', 'Thêm chương trình khuyến mãi mới thành công!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Discount $discount)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Discount $discount)
-    {
-        //
-    }
 
     /**
      * Update the specified resource in storage.
@@ -104,12 +117,5 @@ class DiscountController extends Controller
             return redirect()->back()->with('success', 'Xoá khuyến mãi thành công!');
         }
         return redirect()->back()->with('error', 'Xoá khuyến mãi thất bại!');
-    }
-
-    public function search(Request $request)
-    {
-        $keyword = $request->input('query');
-        $data = Discount::where('name', 'like', "%$keyword%")->orWhere('id', "%$keyword%")->paginate(3);
-        return view('admin.discount.index', compact('data', 'keyword'));
     }
 }
