@@ -1,4 +1,4 @@
-@can('salers')
+@can('delivery workers')
 @extends('admin.master')
 @section('title', "Đơn hàng #".$data[0]->id)
 

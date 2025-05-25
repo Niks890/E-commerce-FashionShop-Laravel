@@ -56,25 +56,7 @@
                                 <span id="status{{ $item->id }}" class="badge bg-warning">{{ $item->status }}</span>
                             </td>
                             <td>{{ $item->created_at }}</td>
-                            {{-- <td class="text-center" id="action{{ $item->id }}">
-                                <div class="d-flex justify-content-center action-buttons">
-                                    <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
-                                        class="btn btn-sm btn-secondary">
-                                        <i class="fa fa-eye"></i> Xem
-                                    </a>
-                                    @if ($item->status === 'Chờ xử lý')
-                                        <button type="button" class="btn btn-sm btn-danger ms-2"
-                                            onclick="openCancelModal({{ $item->id }})">
-                                            <i class="fa fa-times"></i> Hủy
-                                        </button>
-                                    @elseif ($item->status === 'Đã thanh toán')
-                                        <button type="button" class="btn btn-sm btn-success ms-2"
-                                            onclick="openSidebar({{ $item->id }})">
-                                            <i class="fa fa-comments"></i> Đánh giá
-                                        </button>
-                                    @endif
-                                </div>
-                            </td> --}}
+
                             <td class="text-center" id="action{{ $item->id }}">
                                 <div class="d-flex justify-content-center action-buttons">
                                     <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
@@ -82,7 +64,7 @@
                                         <i class="fa fa-eye"></i> Xem
                                     </a>
 
-                                    <a href="{{route('order.orderTracking')}}" class="btn btn-sm btn-info ms-2">
+                                    <a href="{{route('order.orderTracking', $item->id)}}" class="btn btn-sm btn-info ms-2">
                                         <i class="fa fa-truck"></i>
                                     </a>
                                     @if ($item->status === 'Chờ xử lý')

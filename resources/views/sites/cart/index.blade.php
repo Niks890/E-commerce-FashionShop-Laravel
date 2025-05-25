@@ -3,6 +3,9 @@
 2. Chỗ cart icon bị vấn đề là nếu chỉ còn 1 sản phẩm còn hàng vd 5 thì dù click 6 lần vẫn đc :))))
 --}}
 
+{{-- @php
+    // dd(Session::get('cart'));
+@endphp --}}
 @if (Session::has('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         {{ Session::get('error') }}
@@ -522,7 +525,7 @@
                     let productKey = $(this).data("key");
                     checkedItems.push(productKey);
                 });
-                // console.log("Danh sách checked:", checkedItems);
+                console.log("Danh sách checked:", checkedItems);
                 $.ajax({
                     url: "/cart/update-check-status",
                     method: "POST",

@@ -215,7 +215,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             const totalAmount = {{ $total }};
 
-            console.log('Total amount:', totalAmount); // Debug log
+            // console.log('Total amount:', totalAmount); // Debug log
 
             if (totalAmount > 2000000) {
                 const codRadio = document.getElementById('COD');
@@ -277,9 +277,9 @@
             if (paymentValue === 'COD') {
                 this.action = "{{ route('order.store') }}"; // Gửi đến OrderController
             } else if (paymentValue === 'momo') {
-                let inputName = document.querySelector('input[name="redirect"]');
+                let inputName = document.querySelector('input[name="redirect"]').value;
                 if (inputName) {
-                    inputName.name = "payUrl";
+                    this.inputName = "payUrl";
                 }
             } else if (paymentValue === 'zalopay') {
                 let inputName = document.querySelector('input[name="redirect"]');

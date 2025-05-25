@@ -5,11 +5,15 @@ namespace App\Http\Controllers;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\ProductVariant;
+use App\Models\Staff;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -35,8 +39,9 @@ class OrderController extends Controller
     {
         $query = $request->get('query');
         $statusFilter = $request->get('status_filter');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
-        // Base query
         $orderQuery = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
             ->whereIn('o.status', ['Chờ xử lý', 'Đã huỷ đơn hàng'])
@@ -56,24 +61,36 @@ class OrderController extends Controller
             $orderQuery->where('o.status', $statusFilter);
         }
 
+        // Apply date filter
+        if (!empty($dateFrom)) {
+            $orderQuery->whereDate('o.created_at', '>=', $dateFrom);
+        }
+        if (!empty($dateTo)) {
+            $orderQuery->whereDate('o.created_at', '<=', $dateTo);
+        }
+
         // Get paginated data
         $data = $orderQuery->orderBy('o.id', 'DESC')->paginate(5);
 
-        // Get counts for badges
-        $totalCount = DB::table('orders as o')
+        // Get counts for badges - cần cập nhật các hàm count để bao gồm bộ lọc ngày
+        $countQuery = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->whereIn('o.status', ['Chờ xử lý', 'Đã huỷ đơn hàng'])
-            ->count();
+            ->whereIn('o.status', ['Chờ xử lý', 'Đã huỷ đơn hàng']);
 
-        $pendingCount = DB::table('orders as o')
-            ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->where('o.status', 'Chờ xử lý')
-            ->count();
+        if (!empty($dateFrom)) {
+            $countQuery->whereDate('o.created_at', '>=', $dateFrom);
+        }
+        if (!empty($dateTo)) {
+            $countQuery->whereDate('o.created_at', '<=', $dateTo);
+        }
 
-        $cancelledCount = DB::table('orders as o')
-            ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->where('o.status', 'Đã huỷ đơn hàng')
-            ->count();
+        $totalCount = $countQuery->count();
+
+        $pendingCount = clone $countQuery;
+        $pendingCount = $pendingCount->where('o.status', 'Chờ xử lý')->count();
+
+        $cancelledCount = clone $countQuery;
+        $cancelledCount = $cancelledCount->where('o.status', 'Đã huỷ đơn hàng')->count();
 
         return view('admin.order.order_pending', compact(
             'data',
@@ -87,10 +104,10 @@ class OrderController extends Controller
 
     public function orderApproval()
     {
-        // Chỉ hiển thị đơn hàng đã xử lý và đang giao hàng
+        // Chỉ hiển thị đơn hàng đã xử lý và Đã gửi cho đơn vị vận chuyển
         $data = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->whereIn('o.status', ['Đã xử lý', 'Đang giao hàng'])
+            ->whereIn('o.status', ['Đã xử lý', 'Đã gửi cho đơn vị vận chuyển'])
             ->orderBy('o.id', 'DESC')
             ->select('o.*', 'c.name as customer_name')
             ->paginate(5);
@@ -101,16 +118,25 @@ class OrderController extends Controller
             ->count();
 
         $shippingCount = DB::table('orders as o')
-            ->where('o.status', 'Đang giao hàng')
+            ->where('o.status', 'Đã gửi cho đơn vị vận chuyển')
             ->count();
 
         $totalApprovalCount = $processedCount + $shippingCount;
+
+        $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+            ->selectRaw('COUNT(orders.id) AS delivery_count')
+            ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
+            ->where('staff.position', 'Nhân viên giao hàng')
+            ->orWhere('orders.status', ['Đang giao hàng', 'Đã lấy hàng'])
+            ->groupBy('staff.id', 'staff.name')
+            ->get();
 
         return view('admin.order.order_approved', compact(
             'data',
             'processedCount',
             'shippingCount',
-            'totalApprovalCount'
+            'totalApprovalCount',
+            'employeesWithDeliveryCount'
         ));
     }
 
@@ -118,9 +144,11 @@ class OrderController extends Controller
     {
         $query = $request->get('query');
         $statusFilter = $request->get('status_filter');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
 
-        // Valid statuses - chỉ còn "Đã xử lý" và "Đang giao hàng"
-        $validStatuses = ['Đã xử lý', 'Đang giao hàng'];
+        // Valid statuses
+        $validStatuses = ['Đã xử lý', 'Đã gửi cho đơn vị vận chuyển'];
 
         // Base query
         $orderQuery = DB::table('orders as o')
@@ -131,7 +159,7 @@ class OrderController extends Controller
         if (!empty($statusFilter) && in_array($statusFilter, $validStatuses)) {
             $orderQuery->where('o.status', $statusFilter);
         } else {
-            // Default: chỉ hiển thị đơn hàng đã xử lý và đang giao hàng
+            // Default: chỉ hiển thị đơn hàng đã xử lý và Đã gửi cho đơn vị vận chuyển
             $orderQuery->whereIn('o.status', $validStatuses);
         }
 
@@ -144,42 +172,66 @@ class OrderController extends Controller
             });
         }
 
+        // Apply date filter
+        if (!empty($dateFrom)) {
+            $orderQuery->whereDate('o.created_at', '>=', $dateFrom);
+        }
+        if (!empty($dateTo)) {
+            $orderQuery->whereDate('o.created_at', '<=', $dateTo);
+        }
+
         // Get paginated data
         $data = $orderQuery->orderBy('o.id', 'DESC')->paginate(5);
 
-        // Get counts for badges - chỉ tính 2 trạng thái
-        $processedCount = DB::table('orders as o')
-            ->where('o.status', 'Đã xử lý')
-            ->count();
+        // Get counts for badges - với điều kiện lọc ngày
+        $countQuery = DB::table('orders as o')
+            ->whereIn('o.status', $validStatuses);
 
-        $shippingCount = DB::table('orders as o')
-            ->where('o.status', 'Đang giao hàng')
-            ->count();
+        if (!empty($dateFrom)) {
+            $countQuery->whereDate('o.created_at', '>=', $dateFrom);
+        }
+        if (!empty($dateTo)) {
+            $countQuery->whereDate('o.created_at', '<=', $dateTo);
+        }
+
+        $processedCount = clone $countQuery;
+        $processedCount = $processedCount->where('o.status', 'Đã xử lý')->count();
+
+        $shippingCount = clone $countQuery;
+        $shippingCount = $shippingCount->where('o.status', 'Đã gửi cho đơn vị vận chuyển')->count();
 
         $totalApprovalCount = $processedCount + $shippingCount;
+
+        $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+            ->selectRaw('COUNT(orders.id) AS delivery_count')
+            ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
+            ->where('staff.position', 'Nhân viên giao hàng')
+            ->orWhere('orders.status', ['Đang giao hàng', 'Đã lấy hàng'])
+            ->groupBy('staff.id', 'staff.name')
+            ->get();
 
         return view('admin.order.order_approved', compact(
             'data',
             'processedCount',
             'shippingCount',
-            'totalApprovalCount'
+            'totalApprovalCount',
+            'employeesWithDeliveryCount'
         ));
     }
-
 
     public function orderSuccess()
     {
         // Hiển thị đơn hàng đã giao thành công và đã thanh toán
         $data = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
-            ->whereIn('o.status', ['Đã giao hàng', 'Đã thanh toán'])
+            ->whereIn('o.status', ['Giao hàng thành công', 'Đã thanh toán'])
             ->orderBy('o.id', 'DESC')
             ->select('o.*', 'c.name as customer_name')
             ->paginate(5);
 
         // Get counts for badges
         $deliveredCount = DB::table('orders as o')
-            ->where('o.status', 'Đã giao hàng')
+            ->where('o.status', 'Giao hàng thành công')
             ->count();
 
         $paidCount = DB::table('orders as o')
@@ -187,12 +239,20 @@ class OrderController extends Controller
             ->count();
 
         $totalSuccessCount = $deliveredCount + $paidCount;
+          $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+            ->selectRaw('COUNT(orders.id) AS delivery_count')
+            ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
+            ->where('staff.position', 'Nhân viên giao hàng')
+            ->orWhere('orders.status', ['Đang giao hàng', 'Đã lấy hàng'])
+            ->groupBy('staff.id', 'staff.name')
+            ->get();
 
         return view('admin.order.order_success', compact(
             'data',
             'deliveredCount',
             'paidCount',
-            'totalSuccessCount'
+            'totalSuccessCount',
+            'employeesWithDeliveryCount'
         ));
     }
 
@@ -200,9 +260,12 @@ class OrderController extends Controller
     {
         $query = $request->get('query');
         $statusFilter = $request->get('status_filter');
+        $dateFilter = $request->get('date_filter');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
 
         // Valid statuses - đơn hàng thành công
-        $validStatuses = ['Đã giao hàng', 'Đã thanh toán'];
+        $validStatuses = ['Giao hàng thành công', 'Đã thanh toán'];
 
         // Base query
         $orderQuery = DB::table('orders as o')
@@ -210,11 +273,50 @@ class OrderController extends Controller
             ->select('o.*', 'c.name as customer_name');
 
         // Apply status filter
-        if (!empty($statusFilter) && in_array($statusFilter, $validStatuses)) {
+        if (!empty($statusFilter)) {
             $orderQuery->where('o.status', $statusFilter);
         } else {
             // Default: hiển thị tất cả đơn hàng thành công
             $orderQuery->whereIn('o.status', $validStatuses);
+        }
+
+        // Apply date filters
+        if (!empty($dateFilter) || (!empty($startDate) && !empty($endDate))) {
+            if ($dateFilter === 'today') {
+                $orderQuery->whereDate('o.created_at', Carbon::today());
+            } elseif ($dateFilter === 'yesterday') {
+                $orderQuery->whereDate('o.created_at', Carbon::yesterday());
+            } elseif ($dateFilter === 'this_week') {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::now()->startOfWeek(),
+                    Carbon::now()->endOfWeek()
+                ]);
+            } elseif ($dateFilter === 'last_week') {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::now()->subWeek()->startOfWeek(),
+                    Carbon::now()->subWeek()->endOfWeek()
+                ]);
+            } elseif ($dateFilter === 'this_month') {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::now()->startOfMonth(),
+                    Carbon::now()->endOfMonth()
+                ]);
+            } elseif ($dateFilter === 'last_month') {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::now()->subMonth()->startOfMonth(),
+                    Carbon::now()->subMonth()->endOfMonth()
+                ]);
+            } elseif ($dateFilter === 'this_year') {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::now()->startOfYear(),
+                    Carbon::now()->endOfYear()
+                ]);
+            } elseif ($dateFilter === 'custom' && $startDate && $endDate) {
+                $orderQuery->whereBetween('o.created_at', [
+                    Carbon::parse($startDate)->startOfDay(),
+                    Carbon::parse($endDate)->endOfDay()
+                ]);
+            }
         }
 
         // Apply search filter
@@ -231,7 +333,7 @@ class OrderController extends Controller
 
         // Get counts for badges
         $deliveredCount = DB::table('orders as o')
-            ->where('o.status', 'Đã giao hàng')
+            ->where('o.status', 'Giao hàng thành công')
             ->count();
 
         $paidCount = DB::table('orders as o')
@@ -240,13 +342,25 @@ class OrderController extends Controller
 
         $totalSuccessCount = $deliveredCount + $paidCount;
 
+                $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+            ->selectRaw('COUNT(orders.id) AS delivery_count')
+            ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
+            ->where('staff.position', 'Nhân viên giao hàng')
+            ->orWhere('orders.status', ['Đang giao hàng', 'Đã lấy hàng'])
+            ->groupBy('staff.id', 'staff.name')
+            ->get();
+
         return view('admin.order.order_success', compact(
             'data',
             'deliveredCount',
             'paidCount',
-            'totalSuccessCount'
+            'totalSuccessCount',
+            'employeesWithDeliveryCount'
         ));
     }
+
+
+
 
 
     public function exportInvoice($id)
@@ -365,6 +479,12 @@ class OrderController extends Controller
             $order->customer_id = $data['customer_id'];
             $order->save();
 
+
+            $orderhistories = new OrderStatusHistory();
+            $orderhistories->order_id = $order->id;
+            $orderhistories->status = 'Chờ xử lý';
+            $orderhistories->save();
+
             // Tạo chi tiết đơn hàng từ các sản phẩm còn lại
             foreach ($selectedItems as $item) {
                 OrderDetail::create([
@@ -399,8 +519,19 @@ class OrderController extends Controller
                 Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
             }
 
+
             // Xóa giỏ hàng sau khi tạo đơn hàng thành công
-            session()->forget('cart');
+            // session()->forget('cart');
+            // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
+            if (count($selectedItems) === count($cart)) {
+                session()->forget('cart');
+            } else {
+                // Cập nhật lại giỏ hàng chỉ giữ lại sản phẩm chưa chọn
+                $cart = array_filter($cart, function ($item) {
+                    return empty($item->checked) || !$item->checked;
+                });
+                session(['cart' => $cart]);
+            }
             session()->forget('percent_discount');
 
             // Lưu thông tin thành công vào session
@@ -458,18 +589,200 @@ class OrderController extends Controller
         // dd($order);
         $order->status = "Đã xử lý";
         $order->save();
+
+        $orderhistories = new OrderStatusHistory();
+        $orderhistories->order_id = $order->id;
+        $orderhistories->status = "Đã xử lý";
+        $orderhistories->updated_by = auth()->user()->id - 1;
+        $orderhistories->save();
         return redirect()->route('order.approval')->with('success', "Duyệt đơn hàng thành công!");
     }
 
 
-    public function orderTracking()
+    public function updateOrderStatusDelivery(Request $request, Order $order)
     {
-        return view('sites.ordertracking.order_tracking');
+        $data = $request->all();
+        $order = Order::find($data['order_id']);
+        $order->status = "Đã gửi cho đơn vị vận chuyển";
+        $order->staff_delivery_id = $data['updated_by'];
+        $order->save();
+
+        $orderhistories = new OrderStatusHistory();
+        $orderhistories->order_id = $order->id;
+        $orderhistories->status = "Đã gửi cho đơn vị vận chuyển";
+        $orderhistories->updated_by = $data['updated_by'];
+        $orderhistories->save();
+        return redirect()->route('order.approval')->with('success', "Đơn hàng đã được gửi cho đơn vị vận chuyển!");
     }
 
 
-    public function orderTrackingAdmin()
+    public function manageDeliveryOrders(Request $request)
     {
-        return view('admin.tracking-order.tracking-order');
+        // Khởi tạo query lấy tất cả đơn hàng của nhân viên giao hàng đó
+        $ordersQuery = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->whereIn('o.status', [
+                'Đã gửi cho đơn vị vận chuyển',
+                'Đang giao hàng',
+                'Giao hàng thành công',
+                'Đã huỷ đơn hàng'
+            ])
+            ->where('o.staff_delivery_id', auth()->user()->id - 1)
+            ->select(
+                'o.*',
+                'c.name as customer_name',
+            )
+            ->orderBy('o.id', 'DESC');
+
+        // Lấy query gốc để tính toán các bộ đếm tổng
+        $baseQueryForCounts = clone $ordersQuery;
+
+        // Áp dụng tìm kiếm theo query
+        $searchQuery = $request->input('query');
+        if ($searchQuery) {
+            $ordersQuery->where(function ($q) use ($searchQuery) {
+                $q->where('o.id', 'like', '%' . $searchQuery . '%')
+                    ->orWhere('c.phone', 'like', '%' . $searchQuery . '%');
+            });
+        }
+
+        // Áp dụng lọc theo trạng thái
+        $statusFilter = $request->input('status_filter');
+        if ($statusFilter) {
+            $ordersQuery->where('o.status', $statusFilter);
+        }
+
+        // Áp dụng lọc theo ngày tạo
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+
+        if ($startDate) {
+            $ordersQuery->whereDate('o.created_at', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $ordersQuery->whereDate('o.created_at', '<=', $endDate);
+        }
+
+        // Lấy dữ liệu đã phân trang
+        $data = $ordersQuery->paginate(5)->appends($request->except('page'));
+
+        // Lấy các bộ đếm trạng thái từ query gốc
+        $totalOrders = $baseQueryForCounts->count();
+        $processedOrders = (clone $baseQueryForCounts)->where('o.status', 'Đã gửi cho đơn vị vận chuyển')->count();
+        $shippingOrders = (clone $baseQueryForCounts)->where('o.status', 'Đang giao hàng')->count();
+        $successOrders = (clone $baseQueryForCounts)->where('o.status', 'Giao hàng thành công')->count();
+        $failedOrders = (clone $baseQueryForCounts)->where('o.status', 'Đã huỷ đơn hàng')->count();
+
+        return view('admin.tracking-order.tracking-order', compact(
+            'data',
+            'totalOrders',
+            'processedOrders',
+            'shippingOrders',
+            'successOrders',
+            'failedOrders'
+        ));
     }
+
+    // Phương thức cập nhật trạng thái đơn hàng sử dụng form submit
+    public function updateOrderStatus(Request $request, $orderId)
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:Đang giao hàng,Giao hàng thành công,Đã huỷ đơn hàng',
+        ]);
+
+        try {
+            $order = Order::findOrFail($orderId);
+            $currentStatus = $order->status;
+            $newStatus = $validated['status'];
+
+            // Validate status transition
+            $allowedTransitions = [
+                'Đã gửi cho đơn vị vận chuyển' => ['Đang giao hàng', 'Đã huỷ đơn hàng'],
+                'Đang giao hàng' => ['Giao hàng thành công', 'Đã huỷ đơn hàng'],
+            ];
+
+            if (in_array($currentStatus, ['Giao hàng thành công', 'Đã huỷ đơn hàng'])) {
+                return redirect()->back()->with('error', 'Không thể cập nhật trạng thái cho đơn hàng đã hoàn tất hoặc đã hủy.');
+            }
+
+            if (!in_array($newStatus, $allowedTransitions[$currentStatus] ?? [])) {
+                return redirect()->back()->with('error', 'Chuyển trạng thái không hợp lệ.');
+            }
+
+            DB::transaction(function () use ($order, $newStatus) {
+                $order->update(['status' => $newStatus]);
+
+                OrderStatusHistory::create([
+                    'order_id' => $order->id,
+                    'status' => $newStatus,
+                ]);
+            });
+
+            return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return redirect()->back()->with('error', 'Đơn hàng không tồn tại.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+        }
+    }
+
+
+
+
+    public function orderTracking($orderId)
+{
+    // Lấy thông tin đơn hàng cơ bản
+    $order = DB::table('orders as o')
+        ->join('customers as c', 'o.customer_id', '=', 'c.id')
+        ->where('o.id', $orderId)
+        ->select(
+            'o.*',
+            'c.name as customer_name',
+            'c.phone as customer_phone',
+            'c.address as customer_address'
+        )
+        ->first();
+
+    if (!$order) {
+        abort(404, 'Đơn hàng không tồn tại');
+    }
+
+    // Lấy chi tiết sản phẩm trong đơn hàng
+    $orderDetails = DB::table('order_details as od')
+        ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
+        ->join('products as p', 'p.id', '=', 'pv.product_id')
+        ->where('od.order_id', $orderId)
+        ->select(
+            'od.*',
+            'p.product_name',
+            'p.image as product_image',
+            'pv.size',
+            'pv.color'
+        )
+        ->get();
+
+    // Gắn orderDetails vào order object
+    $order->orderDetails = $orderDetails;
+
+    // Sử dụng thông tin từ customer thay vì order nếu order không có
+    $order->phone = $order->phone ?? $order->customer_phone;
+    $order->address = $order->address ?? $order->customer_address;
+
+    // Lấy lịch sử trạng thái đơn hàng (timeline)
+    $orderStatusHistory = OrderStatusHistory::where('order_id', $orderId)
+        ->orderBy('created_at', 'asc')
+        ->get();
+
+    // Lấy thông tin nhân viên giao hàng (nếu có)
+    $deliveryPerson = Order::with(['staffDelivery:id,name,phone,sex,status,avatar'])
+        ->find($orderId);
+
+    return view('sites.ordertracking.order_tracking', [
+        'dataOrder' => $order,
+        'orderStatusHistory' => $orderStatusHistory,
+        'deliveryPerson' => $deliveryPerson
+    ]);
 }
+}
+

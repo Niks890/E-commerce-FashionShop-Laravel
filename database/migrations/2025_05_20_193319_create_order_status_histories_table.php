@@ -15,11 +15,13 @@ return new class extends Migration
             $table->increments('id');
             $table->enum('status', [
                 'Chờ xử lý',
+                'Đã xử lý',
                 'Đã duyệt',
-                'Đang gửi cho đơn vị vận chuyển',
+                'Đã thanh toán',
+                'Đã gửi cho đơn vị vận chuyển',
                 'Đang giao hàng',
                 'Giao hàng thành công',
-                'Đã bị huỷ'
+                'Đã huỷ đơn hàng'
             ]);
             $table->text('note')->nullable();
             $table->unsignedInteger('updated_by')->nullable();

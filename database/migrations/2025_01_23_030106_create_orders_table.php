@@ -27,6 +27,8 @@ return new class extends Migration
             $table->string('transaction_id', 50)->nullable();
             $table->unsignedInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
+            $table->unsignedInteger('staff_delivery_id')->nullable();
+            $table->foreign('staff_delivery_id')->references('id')->on('staff');
             $table->timestamps();
         });
     }

@@ -402,6 +402,7 @@
 @endsection
 
 @section('js')
+    <script src="{{ asset('client/js/cart-add.js') }}"></script>
     <script>
         $(document).ready(function() {
             $('#sortSelect').change(function() {

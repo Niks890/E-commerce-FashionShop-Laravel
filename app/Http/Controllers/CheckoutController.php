@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\OrderStatusHistory;
 use App\Models\ProductVariant;
 use Exception;
 use Illuminate\Support\Str;
@@ -185,6 +186,12 @@ class CheckoutController extends Controller
                     $order->transaction_id = $vnp_TxnRef; // Lưu mã giao dịch VNPAY
                     $order->save();
 
+
+                    $orderhistories = new OrderStatusHistory();
+                    $orderhistories->order_id = $order->id;
+                    $orderhistories->status = 'Đã thanh toán';
+                    $orderhistories->save();
+
                     // Tạo chi tiết đơn hàng từ các sản phẩm đã chọn
                     foreach ($selectedItems as $item) {
                         OrderDetail::create([
@@ -196,6 +203,17 @@ class CheckoutController extends Controller
                             'size_and_color' => $item->size . '-' . $item->color,
                             'code' => session('percent_discount', 0),
                         ]);
+                    }
+
+                    // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
+                    if (count($selectedItems) === count($cart)) {
+                        session()->forget('cart');
+                    } else {
+                        // Cập nhật lại giỏ hàng chỉ giữ lại sản phẩm chưa chọn
+                        $cart = array_filter($cart, function ($item) {
+                            return empty($item->checked) || !$item->checked;
+                        });
+                        session(['cart' => $cart]);
                     }
 
                     // Trừ số lượng tồn kho
@@ -219,8 +237,7 @@ class CheckoutController extends Controller
                         Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
                     }
 
-                    // Xóa giỏ hàng và session giảm giá sau khi tạo đơn hàng thành công
-                    session()->forget('cart');
+
                     session()->forget('percent_discount');
                     Session::forget('order_data'); // Xóa session sau khi lưu vào db
 
@@ -363,6 +380,12 @@ class CheckoutController extends Controller
                     $order->transaction_id = $transId; // Lưu mã giao dịch MoMo
                     $order->save();
 
+                    $orderhistories = new OrderStatusHistory();
+                    $orderhistories->order_id = $order->id;
+                    $orderhistories->status = 'Đã thanh toán';
+                    $orderhistories->save();
+
+
                     // Lấy giỏ hàng từ session
                     $cart = session('cart', []);
 
@@ -387,6 +410,9 @@ class CheckoutController extends Controller
                             'code' => session('percent_discount', 0),
                         ]);
                     }
+
+                    session()->forget('percent_discount');
+                    Session::forget('order_data');
 
                     try {
                         Mail::to($order->email)->queue(new OrderConfirmationMail($order));
@@ -427,7 +453,7 @@ class CheckoutController extends Controller
                         'total' => $order->total
                     ]);
                     // DB::commit();
-                    Session::forget('order_data');
+
                     return redirect()->route('sites.success.payment');
                 } catch (Exception $e) {
                     dd($e->getMessage(), $e->getFile(), $e->getLine());
@@ -568,7 +594,6 @@ class CheckoutController extends Controller
 
 
 
-
     public function checkoutZaloPay(Request $request)
     {
         Session::put('order_data', $request->all());
@@ -639,99 +664,97 @@ class CheckoutController extends Controller
             return redirect()->away($result["order_url"]);
         }
     }
-    //     public function zalopayReturn(Request $request)
-    // {
-    //     $data = $request->all();
-    //     try {
-    //         $key2 = "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz";
-    //         $postdata = file_get_contents('php://input');
-    //         Log::info('ZaloPay Callback Raw Data:', ['data' => $postdata]);
+    public function zalopayReturn(Request $request)
+    {
+        $data = $request->all();
+        try {
+            $key2 = "kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz";
+            $postdata = file_get_contents('php://input');
+            Log::info('ZaloPay Callback Raw Data:', ['data' => $postdata]);
 
-    //         // Kiểm tra xem dữ liệu có hợp lệ không
-    //         $postdatajson = json_decode($postdata, true);
-    //         if (!$postdatajson) {
-    //             Log::error('Dữ liệu ZaloPay không hợp lệ:', ['data' => $postdata]);
-    //             return redirect()->route('sites.cart')->with('message', 'Dữ liệu từ ZaloPay không hợp lệ.');
-    //         }
+            // Kiểm tra xem dữ liệu có hợp lệ không
+            $postdatajson = json_decode($postdata, true);
+            if (!$postdatajson) {
+                Log::error('Dữ liệu ZaloPay không hợp lệ:', ['data' => $postdata]);
+                return redirect()->route('sites.cart')->with('message', 'Dữ liệu từ ZaloPay không hợp lệ.');
+            }
 
-    //         // Kiểm tra trường "data" có tồn tại trong callback hay không
-    //         if (!isset($postdatajson["data"])) {
-    //             Log::error('Trường "data" không tồn tại trong callback từ ZaloPay.', ['postdatajson' => $postdatajson]);
-    //             return redirect()->route('sites.cart')->with('message', 'Dữ liệu callback từ ZaloPay không hợp lệ.');
-    //         }
+            // Kiểm tra trường "data" có tồn tại trong callback hay không
+            if (!isset($postdatajson["data"])) {
+                Log::error('Trường "data" không tồn tại trong callback từ ZaloPay.', ['postdatajson' => $postdatajson]);
+                return redirect()->route('sites.cart')->with('message', 'Dữ liệu callback từ ZaloPay không hợp lệ.');
+            }
 
-    //         $mac = hash_hmac("sha256", $postdatajson["data"], $key2);
-    //         if ($mac !== $postdatajson["mac"]) {
-    //             Log::error('MAC không hợp lệ:', ['received' => $postdatajson["mac"], 'expected' => $mac]);
-    //             return redirect()->route('sites.cart')->with('message', 'Giao dịch thất bại: MAC không hợp lệ.');
-    //         }
+            $mac = hash_hmac("sha256", $postdatajson["data"], $key2);
+            if ($mac !== $postdatajson["mac"]) {
+                Log::error('MAC không hợp lệ:', ['received' => $postdatajson["mac"], 'expected' => $mac]);
+                return redirect()->route('sites.cart')->with('message', 'Giao dịch thất bại: MAC không hợp lệ.');
+            }
 
-    //         $datajson = json_decode($postdatajson["data"], true);
-    //         $app_trans_id = $datajson["app_trans_id"];
+            $datajson = json_decode($postdatajson["data"], true);
+            $app_trans_id = $datajson["app_trans_id"];
 
-    //         if (!Session::has('order_data')) {
-    //             Log::error('Không tìm thấy dữ liệu đơn hàng trong session.');
-    //             return redirect()->route('sites.cart')->with('message', 'Không tìm thấy dữ liệu đơn hàng.');
-    //         }
+            if (!Session::has('order_data')) {
+                Log::error('Không tìm thấy dữ liệu đơn hàng trong session.');
+                return redirect()->route('sites.cart')->with('message', 'Không tìm thấy dữ liệu đơn hàng.');
+            }
 
-    //         $data = Session::get('order_data');
-    //         Log::info('Dữ liệu đơn hàng lấy từ session:', $data);
+            $data = Session::get('order_data');
+            Log::info('Dữ liệu đơn hàng lấy từ session:', $data);
 
-    //         try {
-    //             $order = new Order();
-    //             $order->address = $data['address'];
-    //             $order->phone = $data['phone'];
-    //             $order->shipping_fee = $data['shipping_fee'];
-    //             $order->total = $data['total'];
-    //             $order->note = $data['note'];
-    //             $order->receiver_name = $data['receiver_name'];
-    //             $order->email = $data['email'];
-    //             $order->VAT = $data['VAT'];
-    //             $order->payment = 'ZaloPay';
-    //             $order->customer_id = $data['customer_id'];
-    //             $order->status = 'Đã thanh toán';
-    //             $order->transaction_id = $app_trans_id;
-    //             $order->save();
-    //             Log::info('Đơn hàng đã được lưu:', ['order_id' => $order->id]);
+            try {
+                $order = new Order();
+                $order->address = $data['address'];
+                $order->phone = $data['phone'];
+                $order->shipping_fee = $data['shipping_fee'];
+                $order->total = $data['total'];
+                $order->note = $data['note'];
+                $order->receiver_name = $data['receiver_name'];
+                $order->email = $data['email'];
+                $order->VAT = $data['VAT'];
+                $order->payment = 'ZaloPay';
+                $order->customer_id = $data['customer_id'];
+                $order->status = 'Đã thanh toán';
+                $order->transaction_id = $app_trans_id;
+                $order->save();
+                Log::info('Đơn hàng đã được lưu:', ['order_id' => $order->id]);
 
-    //             if (Session::has('cart') && count(Session::get('cart')) > 0) {
-    //                 foreach (Session::get('cart') as $item) {
-    //                     OrderDetail::create([
-    //                         'order_id' => $order->id,
-    //                         'product_id' => $item->id,
-    //                         'quantity' => $item->quantity,
-    //                         'price' => $item->price,
-    //                         'size_and_color' => $item->size . '-' . $item->color
-    //                     ]);
-    //                 }
-    //                 Session::forget('cart');
-    //             }
+                if (Session::has('cart') && count(Session::get('cart')) > 0) {
+                    foreach (Session::get('cart') as $item) {
+                        OrderDetail::create([
+                            'order_id' => $order->id,
+                            'product_id' => $item->id,
+                            'quantity' => $item->quantity,
+                            'price' => $item->price,
+                            'size_and_color' => $item->size . '-' . $item->color
+                        ]);
+                    }
+                    Session::forget('cart');
+                }
 
-    //             $orderDetails = OrderDetail::where('order_id', $order->id)->get();
-    //             foreach ($orderDetails as $detail) {
-    //                 [$size, $color] = explode('-', $detail->size_and_color);
-    //                 $variant = ProductVariant::where('product_id', $detail->product_id)
-    //                     ->where('size', trim($size))
-    //                     ->where('color', trim($color))
-    //                     ->first();
+                $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+                foreach ($orderDetails as $detail) {
+                    [$size, $color] = explode('-', $detail->size_and_color);
+                    $variant = ProductVariant::where('product_id', $detail->product_id)
+                        ->where('size', trim($size))
+                        ->where('color', trim($color))
+                        ->first();
 
-    //                 if ($variant) {
-    //                     $variant->stock -= $detail->quantity;
-    //                     $variant->save();
-    //                 }
-    //             }
+                    if ($variant) {
+                        $variant->stock -= $detail->quantity;
+                        $variant->save();
+                    }
+                }
 
-    //             Session::forget('order_data');
-    //             return redirect()->route('sites.cart')->with('message', 'Thanh toán thành công!');
-    //         } catch (Exception $e) {
-    //             Log::error('Lỗi khi lưu đơn hàng:', ['error' => $e->getMessage()]);
-    //             return redirect()->route('sites.cart')->with('message', 'Lỗi khi lưu đơn hàng: ' . $e->getMessage());
-    //         }
-    //     } catch (Exception $e) {
-    //         Log::error('Lỗi hệ thống:', ['error' => $e->getMessage()]);
-    //         return redirect()->route('sites.cart')->with('message', 'Lỗi hệ thống: ' . $e->getMessage());
-    //     }
-    // }
-
-
+                Session::forget('order_data');
+                return redirect()->route('sites.cart')->with('message', 'Thanh toán thành công!');
+            } catch (Exception $e) {
+                Log::error('Lỗi khi lưu đơn hàng:', ['error' => $e->getMessage()]);
+                return redirect()->route('sites.cart')->with('message', 'Lỗi khi lưu đơn hàng: ' . $e->getMessage());
+            }
+        } catch (Exception $e) {
+            Log::error('Lỗi hệ thống:', ['error' => $e->getMessage()]);
+            return redirect()->route('sites.cart')->with('message', 'Lỗi hệ thống: ' . $e->getMessage());
+        }
+    }
 }

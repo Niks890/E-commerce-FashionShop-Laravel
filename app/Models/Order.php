@@ -21,7 +21,8 @@ class Order extends Model
         'VAT',
         'payment',
         'customer_id',
-        'transaction_id'
+        'transaction_id',
+        'staff_delivery_id',
     ];
 
     public function customer()
@@ -37,5 +38,10 @@ class Order extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function staffDelivery()
+    {
+        return $this->belongsTo(Staff::class, 'staff_delivery_id');
     }
 }

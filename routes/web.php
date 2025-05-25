@@ -95,9 +95,10 @@ Route::group(['prefix' => '/'], function () {
     Route::get('/order-history', [CustomerController::class, 'getHistoryOrderOfCustomer'])->name('sites.getHistoryOrder')->middleware('customer');
     Route::get('/order-detail/{order}', [CustomerController::class, 'showOrderDetailOfCustomer'])->name('sites.showOrderDetailOfCustomer')->middleware('customer');
     Route::put('/cancel-order{id}', [CustomerController::class, 'cancelOrder'])->name('sites.cancelOrder')->middleware('customer');
+
     // Xuất hoá đơn PDF
     Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice');
-    Route::get('/order-tracking/{id?}', [OrderController::class, 'orderTracking'])->name('order.orderTracking');
+    Route::get('/order-tracking/{id}', [OrderController::class, 'orderTracking'])->name('order.orderTracking');
     // Xử lý thanh toán
     // Route::get('/checkout', [HomeController::class, 'checkout'])->name('sites.checkout')->middleware('auth:customer');
     Route::post('/payment', [CheckoutController::class, 'checkout'])->name('payment.checkout');
@@ -177,12 +178,15 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/search_order', [OrderController::class, 'search'])->name('order.search');
     Route::get('/search_order_approval', [OrderController::class, 'searchOrderApproval'])->name('order.searchOrderApproval');
     Route::get('/search_order_success', [OrderController::class, 'searchOrderSuccess'])->name('order.searchOrderSuccess');
-
     Route::get('/search_blog', [BlogController::class, 'search'])->name('blog.search');
     Route::get('/profile', [StaffController::class, 'profile'])->name('staff.profile');
+    // Xử lý đơn hàng
+    Route::put('/update-order-status-delivery/{id}', [OrderController::class, 'updateOrderStatusDelivery'])->name('order.updateOrderStatusDelivery');
     Route::get('/order-approval', [OrderController::class, 'orderApproval'])->name('order.approval');
     Route::get('/order_success', [OrderController::class, 'orderSuccess'])->name('order.orderSuccess');
-    Route::get('/tracking-order', [OrderController::class, 'orderTrackingAdmin'])->name('order.trackingOrder');
+    Route::get('/delivery-orders', [OrderController::class, 'manageDeliveryOrders'])->name('order.trackingOrder');
+    Route::get('/delivery-orders/search', [OrderController::class, 'manageDeliveryOrders'])->name('order.searchOrderTracking');
+Route::post('/admin/orders/update-status/{order}', [OrderController::class, 'updateOrderStatus'])->name('order.updateStatus');
     // Thong ke doanh thu va loi nhuan
     Route::group(['prefix' => '/revenue'], function () {
         Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay')->middleware('can:managers');

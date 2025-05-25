@@ -146,6 +146,8 @@ class HomeController extends Controller
 
         $colors = $productDetail->ProductVariants->pluck('color')->unique();
 
+        $totalSale = $productDetail->orderDetails()->distinct('order_id')->count();
+
 
         // Lấy danh sách bình luận của khách hàng
         $commentCustomers = DB::table('orders as o')
@@ -195,7 +197,7 @@ class HomeController extends Controller
         // Thêm sản phẩm vào mảng session để hiển thị ra sản phẩm đã xem
         $productRecent->addToProductRecent($productDetail);
 
-        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg'));
+        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale'));
     }
 
     public function successPayment()

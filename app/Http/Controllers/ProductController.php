@@ -128,14 +128,12 @@ class ProductController extends Controller
         return redirect()->route('product.index')->with('success', 'Thêm sản phẩm thành công');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Product $product)
-    {
-        $product = Product::find($product->id);
-        return view('sites.product.product_detail', compact('product'));
-    }
+    // public function show(Product $product)
+    // {
+    //     $product = Product::find($product->id);
+    //     // $totalSale = $product->orderDetails()->distinct('order_id')->count();
+    //     return view('sites.product.product_detail', compact('product'));
+    // }
 
     /**
      * Show the form for editing the specified resource.
@@ -148,9 +146,7 @@ class ProductController extends Controller
         return view('admin.product.edit', compact('product', 'cats', 'discounts', 'productVariants'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, Product $product, CloudinaryService $cloudinaryService)
     {
 
@@ -158,6 +154,7 @@ class ProductController extends Controller
             'name' => 'required|min:3|max:100|unique:products,product_name,' . $product->id,
             'price' => 'required|string',
             'status' => 'required',
+            'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|mimes:jpg,jpeg,gif,png,webp,avif',
             'image_variant.*' => 'sometimes|array',
             'image_variant.*.*' => 'sometimes|image|mimes:jpg,jpeg,png,gif,webp,avif|max:2048',
@@ -166,6 +163,7 @@ class ProductController extends Controller
 
         $messages = [
             'name.required' => 'Tên sản phẩm không được để trống.',
+            'category_id.required' => 'Vui lòng chọn danh mục.',
             'image.mimes' => 'Định dạng ảnh chính phải là *.jpg, *.jpeg, *.gif, *.png, *.webp, *.avif.',
             'image_variant.*.*.image' => 'Tệp tải lên cho biến thể phải là hình ảnh.',
             'image_variant.*.*.mimes' => 'Định dạng ảnh biến thể phải là *.jpg, *.jpeg, *.gif, *.png, *.webp, *.avif.',
@@ -176,6 +174,7 @@ class ProductController extends Controller
 
         $product->product_name = $data['name'];
         $product->price = $data['price'];
+        $product->category_id = $data['category_id'];
         $product->discount_id = $request->discount_id;
         $product->tags = $request->product_tags;
         $product->material = $request->material;
@@ -233,16 +232,12 @@ class ProductController extends Controller
         return redirect()->route('product.index')->with('success', 'Sửa thông tin sản phẩm thành công!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+
     public function destroy(Product $product)
     {
         $product->delete();
         return redirect()->back();
     }
 
-    /**
-     * Search Engine the specified resource from storage.
-     */
+
 }

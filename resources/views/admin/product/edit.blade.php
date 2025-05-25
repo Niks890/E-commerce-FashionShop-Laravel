@@ -88,7 +88,7 @@
         <div class="row g-3 mb-4 align-items-center">
             <div class="col-md-5">
                 <label class="form-label fw-semibold">Danh mục:</label>
-                <select class="form-select form-select-lg" name="category_id" disabled>
+                <select class="form-select form-select-lg" name="category_id">
                     @foreach ($cats as $cat)
                         <option value="{{ $cat->id }}" @selected($cat->id == $product->category_id)>{{ $cat->category_name }}</option>
                     @endforeach
@@ -119,7 +119,7 @@
 
         <div class="row g-3 mb-4">
             <div class="col-md-6">
-                <label class="form-label fw-semibold">Chất liệu:</label>
+                <label class="form-label fw-semibold">Chất liệu sản phẩm:</label>
                 <input type="text" name="material" class="form-control form-control-lg"
                     value="{{ $product->material }}">
                 @error('material')
@@ -127,9 +127,9 @@
                 @enderror
             </div>
             <div class="col-md-6">
-                <label class="form-label fw-semibold">Màu sắc:</label>
+                <label class="form-label fw-semibold">Những màu sắc hiện có của sản phẩm:</label>
                 <input type="text" name="color" class="form-control form-control-lg"
-                    value="{{ $productVariants[0]->color }}" disabled>
+                    value="{{ $productVariants->pluck('color')->unique()->implode(', ') }}" disabled>
             </div>
         </div>
 
@@ -348,13 +348,15 @@
         });
     </script> --}}
 
-    @section('js')
+@section('js')
     <script src="{{ asset('assets/js/plugin/bootstrap-tagsinput/bootstrap-tagsinput.min.js') }}"></script>
     <script>
         $(document).ready(function() {
             // Hàm kiểm tra file hợp lệ
             function isValidImage(file) {
-                const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"];
+                const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp",
+                    "image/avif"
+                ];
                 return file && validTypes.includes(file.type);
             }
 
@@ -379,7 +381,8 @@
             // Xử lý preview cho ảnh biến thể (multiple)
             $(".fileInput[multiple]").on("change", function(e) {
                 const files = e.target.files;
-                const variantId = $(this).attr('name').match(/\[(\d+)\]/)[1]; // Lấy ID biến thể từ tên input
+                const variantId = $(this).attr('name').match(/\[(\d+)\]/)[
+                    1]; // Lấy ID biến thể từ tên input
                 const previewContainer = $(`.preview-container-${variantId}`);
                 previewContainer.empty(); // Xóa preview cũ
 
@@ -391,15 +394,20 @@
                                 const imgElement = $('<img>')
                                     .attr('src', event.target.result)
                                     .addClass('me-2 mb-2 rounded shadow-sm')
-                                    .css({ 'height': '50px', 'width': '50px', 'object-fit': 'cover' });
+                                    .css({
+                                        'height': '50px',
+                                        'width': '50px',
+                                        'object-fit': 'cover'
+                                    });
                                 previewContainer.append(imgElement);
                             };
                             reader.readAsDataURL(file);
                         } else {
-                            alert('Tệp ' + file.name + ' không hợp lệ. Vui lòng chọn file ảnh hợp lệ.');
-                             $(e.target).val(""); // Xóa lựa chọn file nếu có file không hợp lệ
-                             previewContainer.empty();
-                             return false; // Dừng vòng lặp
+                            alert('Tệp ' + file.name +
+                                ' không hợp lệ. Vui lòng chọn file ảnh hợp lệ.');
+                            $(e.target).val(""); // Xóa lựa chọn file nếu có file không hợp lệ
+                            previewContainer.empty();
+                            return false; // Dừng vòng lặp
                         }
                     });
                 }

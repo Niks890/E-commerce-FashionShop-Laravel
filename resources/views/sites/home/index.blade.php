@@ -147,8 +147,8 @@
                         <div class="col-lg-3 col-md-6 col-sm-6 mix">
                             <div class="product__item">
                                 <div class="product__item__pic">
-                                    <img src="{{$itemRecent->image}}" class="set-bg" width="280"
-                                        height="280" alt="{{ $itemRecent->product_name }}">
+                                    <img src="{{ $itemRecent->image }}" class="set-bg" width="280" height="280"
+                                        alt="{{ $itemRecent->product_name }}">
                                     <span class="label name-discount bg-danger text-white">{{ $discountName }}</span>
                                     <ul class="product__hover">
                                         <li>
@@ -217,70 +217,70 @@
 
     <!-- Product RecommendationProduct For UserBase Content Filtering Section Begin -->
     @if ($userId != 0)
-    <section class="product spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <ul class="filter__controls">
-                        <li>Sản phẩm có thể bạn sẽ thích</li>
-                    </ul>
+        <section class="product spad">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="filter__controls">
+                            <li>Sản phẩm có thể bạn sẽ thích</li>
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-            <div class="row product__filter-ubcf" id="product-ubcf-container">
-                <script>
-                    let userIdCurrent = @json($userId);
-                    async function fetchProductUBCF() {
-                        try {
+                <div class="row product__filter-ubcf" id="product-ubcf-container">
+                    <script>
+                        let userIdCurrent = @json($userId);
+                        async function fetchProductUBCF() {
+                            try {
 
-                            let response = await fetch(`http://127.0.0.1:8000/api/recommend/user/${userIdCurrent}`);
-                            let data = await response.json();
-                            let products = data.data;
-                            // console.log(products);
+                                let response = await fetch(`http://127.0.0.1:8000/api/recommend/user/${userIdCurrent}`);
+                                let data = await response.json();
+                                let products = data.data;
+                                // console.log(products);
 
-                            let container = document.querySelector('#product-ubcf-container');
-                            container.innerHTML = "";
-                            let nameDiscount = "";
-                            products.forEach((product, index) => {
-                                let finalPrice;
-                                // console.log(product.discount.percent_discount, product.discount.id);
+                                let container = document.querySelector('#product-ubcf-container');
+                                container.innerHTML = "";
+                                let nameDiscount = "";
+                                products.forEach((product, index) => {
+                                    let finalPrice;
+                                    // console.log(product.discount.percent_discount, product.discount.id);
 
-                                if (product.discount && product.discount.id != null) {
-                                    finalPrice = product.price - (product.price * product.discount.percent_discount);
-                                    nameDiscount = product.discount.name;
-                                } else {
-                                    finalPrice = product.price ?? 0;
-                                     nameDiscount = "New";
-                                    // console.log(finalPrice);
-                                }
-
-                                let formattedPrice = new Intl.NumberFormat('vi-VN', {
-                                    style: 'currency',
-                                    currency: 'VND'
-                                }).format(finalPrice);
-
-                                // console.log(product);
-                                let totalStock = [];
-                                let addCartOrNone = [];
-                                product['product-variant'].map((variant) => {
-                                    totalStock[variant.product_id] = 0;
-                                })
-                                product['product-variant'].forEach((variant) => {
-                                    totalStock[variant.product_id] += variant.stock + 0;
-                                });
-                                product['product-variant'].map((variant) => {
-                                    if (totalStock[variant.product_id] == 0) {
-                                        addCartOrNone[variant.product_id] = false;
+                                    if (product.discount && product.discount.id != null) {
+                                        finalPrice = product.price - (product.price * product.discount.percent_discount);
+                                        nameDiscount = product.discount.name;
                                     } else {
-                                        addCartOrNone[variant.product_id] = true;
-                                    };
-                                })
+                                        finalPrice = product.price ?? 0;
+                                        nameDiscount = "New";
+                                        // console.log(finalPrice);
+                                    }
+
+                                    let formattedPrice = new Intl.NumberFormat('vi-VN', {
+                                        style: 'currency',
+                                        currency: 'VND'
+                                    }).format(finalPrice);
+
+                                    // console.log(product);
+                                    let totalStock = [];
+                                    let addCartOrNone = [];
+                                    product['product-variant'].map((variant) => {
+                                        totalStock[variant.product_id] = 0;
+                                    })
+                                    product['product-variant'].forEach((variant) => {
+                                        totalStock[variant.product_id] += variant.stock + 0;
+                                    });
+                                    product['product-variant'].map((variant) => {
+                                        if (totalStock[variant.product_id] == 0) {
+                                            addCartOrNone[variant.product_id] = false;
+                                        } else {
+                                            addCartOrNone[variant.product_id] = true;
+                                        };
+                                    })
 
 
 
-                                let productItem = document.createElement('div');
-                                productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
-                                productItem.innerHTML = `
+                                    let productItem = document.createElement('div');
+                                    productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
+                                    productItem.innerHTML = `
                                             <div class="product__item" id="product-list-home">
                                                   <div class="product__item__pic">
                                                         <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.name}">
@@ -299,12 +299,12 @@
                                                 <div class="product__item__text">
                                                     <h6>${product.name}</h6>` +
 
-                                    (addCartOrNone[product.id] > 0 ?
-                                        `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
-                                        `<span class=" badge badge-warning">Hết hàng</span>`)
+                                        (addCartOrNone[product.id] > 0 ?
+                                            `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
+                                            `<span class=" badge badge-warning">Hết hàng</span>`)
 
-                                    +
-                                    `<div class="rating">
+                                        +
+                                        `<div class="rating">
                                                         <i class="fa fa-star-o"></i>
                                                         <i class="fa fa-star-o"></i>
                                                         <i class="fa fa-star-o"></i>
@@ -326,22 +326,22 @@
                                                 </div>
                                             </div>
                                         `;
-                                container.appendChild(productItem);
-                                document.querySelectorAll('.name-ubcf').forEach(element => {
-                                if (element.textContent.trim() !== "New") {
-                                    element.classList.add('bg-danger', 'text-white');
-                                }
-                            });
-                            });
-                        } catch (error) {
-                            console.error("Lỗi API:", error);
+                                    container.appendChild(productItem);
+                                    document.querySelectorAll('.name-ubcf').forEach(element => {
+                                        if (element.textContent.trim() !== "New") {
+                                            element.classList.add('bg-danger', 'text-white');
+                                        }
+                                    });
+                                });
+                            } catch (error) {
+                                console.error("Lỗi API:", error);
+                            }
                         }
-                    }
-                    fetchProductUBCF();
-                </script>
+                        fetchProductUBCF();
+                    </script>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
     @endif
     <!-- RecommendationProduct For UserBase Content Filtering Section End -->
 
@@ -618,12 +618,24 @@
             @if (Session::has('cart') && count(Session::get('cart')) > 0)
                 @foreach (Session::get('cart') as $items)
                     <div class="cart-item d-flex align-items-center">
-                        <img src="{{ $items->image }}" alt="{{ $items->name }}"
-                            class="cart-item-image rounded">
+                        <img src="{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
                             <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
+                            {{-- @if (isset($item->size) || isset($item->color))
+                            <div class="cart-item-variants text-muted small">
+                                @if (isset($item->size))
+                                    <span>Size: {{ $item->size }}</span>
+                                @endif
+                                @if (isset($item->color))
+                                    @if (isset($item->size))
+                                        <span> | </span>
+                                    @endif
+                                    <span>Màu: {{ $item->color }}</span>
+                                @endif
+                            </div>
+                        @endif --}}
                         </div>
                         <span class="cart-item-quantity badge bg-danger ms-2">
                             {{ $items->quantity }}
