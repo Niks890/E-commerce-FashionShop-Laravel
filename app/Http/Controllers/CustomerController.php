@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderCancellationMail;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -10,6 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Session;
 
 class CustomerController extends Controller
@@ -132,39 +135,64 @@ class CustomerController extends Controller
         Session::put('auth', $request->auth);
     }
 
+
+
     public function getHistoryOrderOfCustomer()
     {
-        if (request()->has('query') && request()->query('query') != '') {
-            $query = request()->query('query');
+        if (Auth::guard('customer')->check()) {
+            $customer_id = Auth::guard('customer')->user()->id;
 
-            $historyOrder = DB::table('orders as o')
+            $query = DB::table('orders as o')
                 ->join('customers as c', 'o.customer_id', '=', 'c.id')
-                ->orderBy('o.id', 'ASC')
-                ->where('o.customer_id', Auth::guard('customer')->user()->id)
-                ->where(function ($q) use ($query) {
-                    if (is_numeric($query)) {
-                        $q->where('o.id', $query) // Tìm chính xác theo ID
-                            ->orWhere('o.phone', 'like', "$query"); // Tìm theo số điện thoại
-                    } else {
-                        $q->where('o.phone', 'like', "$query");
-                    }
-                })
-                ->select('o.*', 'c.name as customer_name')
-                ->paginate(5);
+                ->where('o.customer_id', $customer_id)
+                ->select('o.*', 'c.name as customer_name');
 
-            return view('sites.customer.order_history', compact('historyOrder'));
-        } else {
-            if (Auth::guard('customer')->check()) {
-                $customer_id = Auth::guard('customer')->user()->id;
-                $historyOrder = DB::table('orders as o')
-                    ->join('customers as c', 'o.customer_id', '=', 'c.id')
-                    ->orderBy('o.id', 'ASC')
-                    ->where('o.customer_id', $customer_id)
-                    ->select('o.*', 'c.name as customer_name')
-                    ->paginate(3);
+            // Lọc theo từ khóa tìm kiếm (ID hoặc số điện thoại)
+            if (request()->has('query') && request()->query('query') != '') {
+                $searchQuery = request()->query('query');
+                $query->where(function ($q) use ($searchQuery) {
+                    if (is_numeric($searchQuery)) {
+                        $q->where('o.id', $searchQuery)
+                            ->orWhere('o.phone', 'like', "%$searchQuery%");
+                    } else {
+                        $q->where('o.phone', 'like', "%$searchQuery%");
+                    }
+                });
             }
-            return view('sites.customer.order_history', compact('historyOrder'));
+
+            // Lọc theo trạng thái
+            if (request()->has('status') && request()->query('status') != '') {
+                $status = request()->query('status');
+                $query->where('o.status', $status);
+            }
+
+            // Lọc theo ngày
+            if (request()->has('date_from') && request()->query('date_from') != '') {
+                $dateFrom = request()->query('date_from');
+                $query->whereDate('o.created_at', '>=', $dateFrom);
+            }
+
+            if (request()->has('date_to') && request()->query('date_to') != '') {
+                $dateTo = request()->query('date_to');
+                $query->whereDate('o.created_at', '<=', $dateTo);
+            }
+
+            // Lấy danh sách trạng thái để hiển thị trong dropdown
+            $statusList = DB::table('orders')
+                ->where('customer_id', $customer_id)
+                ->select('status')
+                ->distinct()
+                ->pluck('status');
+
+            $historyOrder = $query->orderBy('o.id', 'DESC')->paginate(5);
+
+            // Giữ lại các tham số filter khi phân trang
+            $historyOrder->appends(request()->query());
+
+            return view('sites.customer.order_history', compact('historyOrder', 'statusList'));
         }
+
+        return redirect()->route('login');
     }
 
     public function showOrderDetailOfCustomer(Order $order)
@@ -182,44 +210,47 @@ class CustomerController extends Controller
     }
 
 
-    public function searchOrderHistory() {}
-
-
-
-
-
 
     public function cancelOrder(Request $request, $id)
-    {
-        try {
-            DB::beginTransaction();
+{
+    try {
+        DB::beginTransaction();
 
-            $order = Order::findOrFail($id);
-            $order->status = 'Đã huỷ đơn hàng';
-            $order->reason = $request->reason;
-            $order->save();
+        $order = Order::findOrFail($id);
+        $order->status = 'Đã huỷ đơn hàng';
+        $order->reason = $request->reason;
+        $order->save();
 
-            // Lấy danh sách chi tiết đơn hàng
-            $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+        // Lấy danh sách chi tiết đơn hàng
+        $orderDetails = OrderDetail::where('order_id', $order->id)->get();
 
-            // Cộng ngược lại số lượng vào kho
-            foreach ($orderDetails as $detail) {
-                $variant = ProductVariant::where('product_id', $detail->product_id)
-                    ->where('id', $detail->product_variant_id)
-                    ->lockForUpdate()
-                    ->first();
+        // Cộng ngược lại số lượng vào kho
+        foreach ($orderDetails as $detail) {
+            $variant = ProductVariant::where('product_id', $detail->product_id)
+                ->where('id', $detail->product_variant_id)
+                ->lockForUpdate()
+                ->first();
 
-                if ($variant) {
-                    $variant->stock += $detail->quantity;
-                    $variant->save();
-                }
+            if ($variant) {
+                $variant->stock += $detail->quantity;
+                $variant->save();
             }
-
-            DB::commit();
-            return response()->json(['message' => 'Hủy đơn hàng thành công!']);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
         }
+
+        // Gửi email xác nhận hủy đơn hàng
+        try {
+            Mail::to($order->email)->queue(new OrderCancellationMail($order));
+            Log::info('Email xác nhận hủy đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
+        } catch (\Exception $mailException) {
+            Log::error('Lỗi khi gửi email xác nhận hủy đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
+        }
+
+        DB::commit();
+        return response()->json(['message' => 'Hủy đơn hàng thành công!']);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Lỗi khi hủy đơn hàng ID: ' . $id . '. Lỗi: ' . $e->getMessage());
+        return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
     }
+}
 }

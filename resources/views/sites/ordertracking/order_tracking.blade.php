@@ -34,6 +34,44 @@
                                             <span>{{ date('d/m/Y - H:i', strtotime($dataOrder->created_at)) }}</span>
                                         </li>
                                         <li class="list-group-item d-flex justify-content-between px-0">
+                                            <span class="text-muted">Ngày giao dự kiến:</span>
+                                            @php
+                                                $orderDate = \Carbon\Carbon::parse($dataOrder->created_at);
+                                                $minDeliveryDate = $orderDate->copy()->addDays(3);
+                                                $maxDeliveryDate = $orderDate->copy()->addDays(5);
+
+                                                // Kiểm tra nếu đơn hàng đã hoàn thành
+                                                $isCompleted = in_array(strtolower($dataOrder->status ?? ''), [
+                                                    'hoàn thành', 'đã giao', 'completed', 'delivered'
+                                                ]);
+
+                                                // Tìm ngày giao thực tế từ lịch sử trạng thái
+                                                $actualDeliveryDate = null;
+                                                if($orderStatusHistory && $orderStatusHistory->count() > 0) {
+                                                    foreach($orderStatusHistory as $status) {
+                                                        if(in_array(strtolower($status->status), [
+                                                            'hoàn thành', 'đã giao', 'completed', 'delivered'
+                                                        ])) {
+                                                            $actualDeliveryDate = \Carbon\Carbon::parse($status->created_at);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            @endphp
+
+                                            @if($isCompleted && $actualDeliveryDate)
+                                                <span class="text-success fw-bold">
+                                                    <i class="fas fa-check-circle me-1"></i>
+                                                    Đã giao: {{ $actualDeliveryDate->format('d/m/Y') }}
+                                                </span>
+                                            @else
+                                                <span class="text-warning fw-bold">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ $minDeliveryDate->format('d/m/Y') }} - {{ $maxDeliveryDate->format('d/m/Y') }}
+                                                </span>
+                                            @endif
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between px-0">
                                             <span class="text-muted">Phương thức thanh toán:</span>
                                             <span>{{ $dataOrder->payment }}</span>
                                         </li>
@@ -83,6 +121,32 @@
                             <h6 class="card-title text-primary mb-4">
                                 <i class="fas fa-truck-fast me-2"></i>Tiến trình giao hàng
                             </h6>
+
+                            <!-- Delivery Estimation Alert -->
+                            @if(!$isCompleted)
+                            <div class="alert alert-info mb-4" role="alert">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <div>
+                                        <strong>Thời gian giao hàng dự kiến:</strong>
+                                        <br>
+                                        Từ {{ $minDeliveryDate->format('d/m/Y') }} đến {{ $maxDeliveryDate->format('d/m/Y') }}
+                                        @php
+                                            $now = \Carbon\Carbon::now();
+                                            $daysRemaining = $now->diffInDays($maxDeliveryDate, false);
+                                        @endphp
+                                        @if($daysRemaining > 0)
+                                            <small class="text-muted">(Còn khoảng {{ $daysRemaining }} ngày)</small>
+                                        @elseif($daysRemaining == 0)
+                                            <small class="text-warning">(Dự kiến giao trong hôm nay)</small>
+                                        @else
+                                            <small class="text-danger">(Đã quá thời gian dự kiến {{ abs($daysRemaining) }} ngày)</small>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
                             @if($orderStatusHistory && $orderStatusHistory->count() > 0)
                                 <div class="timeline">
                                     @foreach($orderStatusHistory as $status)
@@ -370,6 +434,13 @@
     .order-status-badge .badge {
         font-size: 14px;
         letter-spacing: 0.5px;
+    }
+
+    /* Alert styling for delivery estimation */
+    .alert-info {
+        background-color: #e3f2fd;
+        border-color: #bbdefb;
+        color: #1976d2;
     }
 
     @media (max-width: 768px) {

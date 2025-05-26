@@ -14,20 +14,102 @@
     <div class="container mt-4">
         <h3 class="mb-4 text-center">Lịch sử đơn hàng của bạn</h3>
 
-        <!-- Form tìm kiếm -->
-        <div class="row mb-3">
-            <div class="col-md-8 mx-auto">
-                <form method="GET" action="{{ route('sites.getHistoryOrder') }}">
-                    <div class="input-group">
-                        <input name="query" type="number" class="form-control"
-                            placeholder="Nhập ID đơn hàng hoặc số điện thoại...">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fa fa-search"></i> Tìm kiếm
-                        </button>
+        <!-- Form tìm kiếm và lọc -->
+<div class="card mb-4 shadow-sm">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <button class="btn btn-link w-100 text-start d-flex align-items-center text-dark text-decoration-none"
+                    type="button" data-bs-toggle="collapse"
+                    data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                <i class="fas fa-filter me-2"></i>
+                <span class="fw-semibold">Bộ lọc tìm kiếm</span>
+            </button>
+        </h5>
+    </div>
+    <div id="filterCollapse" class="collapse show">
+        <div class="card-body pt-3">
+            <form method="GET" action="{{ route('sites.getHistoryOrder') }}">
+                <div class="row g-3">
+                    <!-- Tìm kiếm theo ID hoặc SĐT -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="query" class="form-label mb-1">Tìm kiếm theo ID/SĐT:</label>
+                            <input name="query" id="query" type="text" class="form-control"
+                                placeholder="Nhập ID đơn hàng hoặc số điện thoại..."
+                                value="{{ request()->query('query') }}">
+                        </div>
                     </div>
-                </form>
-            </div>
+
+                    <!-- Lọc theo trạng thái -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <div>Lọc theo trạng thái:</div>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">-- Tất cả trạng thái --</option>
+                                @foreach($statusList as $status)
+                                    <option value="{{ $status }}"
+                                        {{ request()->query('status') == $status ? 'selected' : '' }}>
+                                        {{ $status }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Lọc theo ngày bắt đầu -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="date_from" class="form-label mb-1">Từ ngày:</label>
+                            <input name="date_from" id="date_from" type="date" class="form-control"
+                                value="{{ request()->query('date_from') }}">
+                        </div>
+                    </div>
+
+                    <!-- Lọc theo ngày kết thúc -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="date_to" class="form-label mb-1">Đến ngày:</label>
+                            <input name="date_to" id="date_to" type="date" class="form-control"
+                                value="{{ request()->query('date_to') }}">
+                        </div>
+                    </div>
+
+                    <!-- Nút hành động -->
+                    <div class="col-12 mt-2">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i> Tìm kiếm
+                            </button>
+                            <a href="{{ route('sites.getHistoryOrder') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-undo me-1"></i> Đặt lại
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
         </div>
+    </div>
+</div>
+        <!-- Hiển thị kết quả lọc -->
+        @if(request()->hasAny(['query', 'status', 'date_from', 'date_to']))
+            <div class="alert alert-info">
+                <i class="fa fa-info-circle"></i>
+                Đang hiển thị kết quả lọc
+                @if(request()->query('query'))
+                    - Tìm kiếm: "<strong>{{ request()->query('query') }}</strong>"
+                @endif
+                @if(request()->query('status'))
+                    - Trạng thái: "<strong>{{ request()->query('status') }}</strong>"
+                @endif
+                @if(request()->query('date_from'))
+                    - Từ ngày: "<strong>{{ request()->query('date_from') }}</strong>"
+                @endif
+                @if(request()->query('date_to'))
+                    - Đến ngày: "<strong>{{ request()->query('date_to') }}</strong>"
+                @endif
+                ({{ $historyOrder->total() }} kết quả)
+            </div>
+        @endif
 
         <!-- Bảng lịch sử đơn hàng -->
         <div class="table-responsive">
@@ -53,9 +135,17 @@
                             <td>{{ $item->phone }}</td>
                             <td>{{ number_format($item->total, 0, ',', '.') }} đ</td>
                             <td>
-                                <span id="status{{ $item->id }}" class="badge bg-warning">{{ $item->status }}</span>
+                                <span id="status{{ $item->id }}" class="badge
+                                    @if($item->status == 'Chờ xử lý') bg-warning
+                                    @elseif($item->status == 'Đã thanh toán' || $item->status == 'Giao hàng thành công') bg-success
+                                    @elseif($item->status == 'Đã huỷ đơn hàng') bg-danger
+                                    @elseif($item->status == 'Đang giao hàng' || $item->status == 'Đã xử lý') bg-info
+                                    @else bg-secondary
+                                    @endif">
+                                    {{ $item->status }}
+                                </span>
                             </td>
-                            <td>{{ $item->created_at }}</td>
+                            <td>{{ date('d/m/Y H:i', strtotime($item->created_at)) }}</td>
 
                             <td class="text-center" id="action{{ $item->id }}">
                                 <div class="d-flex justify-content-center action-buttons">
@@ -72,7 +162,7 @@
                                             onclick="openCancelModal({{ $item->id }})">
                                             <i class="fa fa-times"></i> Hủy
                                         </button>
-                                    @elseif ($item->status === 'Đã thanh toán')
+                                    @elseif ($item->status === 'Đã thanh toán' || $item->status === 'Giao hàng thành công')
                                         <button type="button" class="btn btn-sm btn-success ms-2"
                                             onclick="openSidebar({{ $item->id }})">
                                             <i class="fa fa-comments"></i>
@@ -80,8 +170,6 @@
                                     @endif
                                 </div>
                             </td>
-
-
                         </tr>
                     @endforeach
                     @if ($historyOrder->isEmpty())
@@ -141,14 +229,37 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
-    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css"> --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="{{ asset('client/css/order-history.css') }}">
+    <style>
+        .card-header .btn-link {
+            text-decoration: none;
+            color: #495057;
+        }
+        .badge {
+            font-size: 0.75em;
+        }
+        .alert-info {
+            border-left: 4px solid #17a2b8;
+        }
+
+        .form-group {
+    margin-bottom: 1rem;
+}
+.form-label {
+    font-weight: 500;
+    color: #495057;
+}
+.card-header {
+    padding: 0.75rem 1.25rem;
+}
+.btn-outline-secondary {
+    border-color: #dee2e6;
+}
+    </style>
 @endsection
 
-
 @section('js')
-    {{-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> --}}
     @if (Session::has('success'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
@@ -186,7 +297,7 @@
                 },
                 success: function(response) {
                     showToast('success', response.message);
-                    $("#status" + currentOrderId).text("Đã hủy");
+                    $("#status" + currentOrderId).text("Đã hủy").removeClass('bg-warning').addClass('bg-danger');
                     $("#action" + currentOrderId).html(`
                         <div class="action-buttons">
                             <a href="{{ route('sites.showOrderDetailOfCustomer', '') }}/${currentOrderId}"
@@ -207,6 +318,13 @@
         $(document).ready(function() {
             $('.btn-close-modal').on("click", function() {
                 $("#cancelOrderModal").modal("hide");
+            });
+
+            // Auto set date_to to today if date_from is selected but date_to is empty
+            $('#date_from').on('change', function() {
+                if ($(this).val() && !$('#date_to').val()) {
+                    $('#date_to').val(new Date().toISOString().split('T')[0]);
+                }
             });
         });
     </script>
@@ -273,7 +391,7 @@
                             const productContent = `
                             <div class="d-flex w-100 p-2 rounded shadow-sm align-items-center" style="background-color: #f8f9fa; gap: 20px;">
                                 <div class="image-wrapper" style="flex-shrink: 0;">
-                                    <img src="uploads/${rating.image}" alt="Sản phẩm" class="product-image">
+                                    <img src="${rating.image}" alt="Sản phẩm" width="100" class="product-image">
                                 </div>
                                 <div class="product-info ms-3" style="flex-grow: 1;">
                                     <h6 class="product-name-comment fw-bold mb-1">${rating.product_name}</h6>

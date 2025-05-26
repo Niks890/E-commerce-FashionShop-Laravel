@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OrderConfirmationMail;
+use App\Mail\OrderDeliverySuccessMail;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderStatusHistory;
@@ -239,7 +240,7 @@ class OrderController extends Controller
             ->count();
 
         $totalSuccessCount = $deliveredCount + $paidCount;
-          $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+        $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
             ->selectRaw('COUNT(orders.id) AS delivery_count')
             ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
             ->where('staff.position', 'Nhân viên giao hàng')
@@ -342,7 +343,7 @@ class OrderController extends Controller
 
         $totalSuccessCount = $deliveredCount + $paidCount;
 
-                $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
+        $employeesWithDeliveryCount = Staff::select('staff.id AS staff_id', 'staff.name AS staff_name')
             ->selectRaw('COUNT(orders.id) AS delivery_count')
             ->leftJoin('orders', 'staff.id', '=', 'orders.staff_delivery_id')
             ->where('staff.position', 'Nhân viên giao hàng')
@@ -717,6 +718,11 @@ class OrderController extends Controller
                     'order_id' => $order->id,
                     'status' => $newStatus,
                 ]);
+
+                // Gửi email khi đơn hàng thành công
+                if ($newStatus === 'Giao hàng thành công') {
+                    $this->sendDeliverySuccessEmail($order);
+                }
             });
 
             return redirect()->back()->with('success', 'Cập nhật trạng thái đơn hàng thành công!');
@@ -727,62 +733,72 @@ class OrderController extends Controller
         }
     }
 
+    protected function sendDeliverySuccessEmail($order)
+    {
+        try {
+            $order->load(['orderDetails.Product', 'orderDetails.ProductVariant']);
+            Mail::to($order->email)->queue(new OrderDeliverySuccessMail($order));
+            Log::info('Email xác nhận giao hàng thành công đã gửi cho khách hàng: ' . $order->email . ' - Đơn hàng ID: ' . $order->id);
+        } catch (\Exception $e) {
+            Log::error('Lỗi khi gửi email xác nhận giao hàng thành công: ' . $e->getMessage() . ' - Đơn hàng ID: ' . $order->id);
+        }
+    }
+
 
 
 
     public function orderTracking($orderId)
-{
-    // Lấy thông tin đơn hàng cơ bản
-    $order = DB::table('orders as o')
-        ->join('customers as c', 'o.customer_id', '=', 'c.id')
-        ->where('o.id', $orderId)
-        ->select(
-            'o.*',
-            'c.name as customer_name',
-            'c.phone as customer_phone',
-            'c.address as customer_address'
-        )
-        ->first();
+    {
+        // Lấy thông tin đơn hàng cơ bản
+        $order = DB::table('orders as o')
+            ->join('customers as c', 'o.customer_id', '=', 'c.id')
+            ->where('o.id', $orderId)
+            ->select(
+                'o.*',
+                'c.name as customer_name',
+                'c.phone as customer_phone',
+                'c.address as customer_address'
+            )
+            ->first();
 
-    if (!$order) {
-        abort(404, 'Đơn hàng không tồn tại');
+        if (!$order) {
+            abort(404, 'Đơn hàng không tồn tại');
+        }
+
+        // Lấy chi tiết sản phẩm trong đơn hàng
+        $orderDetails = DB::table('order_details as od')
+            ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
+            ->where('od.order_id', $orderId)
+            ->select(
+                'od.*',
+                'p.product_name',
+                'p.image as product_image',
+                'pv.size',
+                'pv.color'
+            )
+            ->get();
+
+        // Gắn orderDetails vào order object
+        $order->orderDetails = $orderDetails;
+
+        // Sử dụng thông tin từ customer thay vì order nếu order không có
+        $order->phone = $order->phone ?? $order->customer_phone;
+        $order->address = $order->address ?? $order->customer_address;
+
+        // Lấy lịch sử trạng thái đơn hàng (timeline)
+        $orderStatusHistory = OrderStatusHistory::where('order_id', $orderId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Lấy thông tin nhân viên giao hàng (nếu có)
+        $deliveryPerson = Order::with(['staffDelivery:id,name,phone,sex,status,avatar'])
+            ->find($orderId);
+
+        return view('sites.ordertracking.order_tracking', [
+            'dataOrder' => $order,
+            'orderStatusHistory' => $orderStatusHistory,
+            'deliveryPerson' => $deliveryPerson
+        ]);
     }
-
-    // Lấy chi tiết sản phẩm trong đơn hàng
-    $orderDetails = DB::table('order_details as od')
-        ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
-        ->join('products as p', 'p.id', '=', 'pv.product_id')
-        ->where('od.order_id', $orderId)
-        ->select(
-            'od.*',
-            'p.product_name',
-            'p.image as product_image',
-            'pv.size',
-            'pv.color'
-        )
-        ->get();
-
-    // Gắn orderDetails vào order object
-    $order->orderDetails = $orderDetails;
-
-    // Sử dụng thông tin từ customer thay vì order nếu order không có
-    $order->phone = $order->phone ?? $order->customer_phone;
-    $order->address = $order->address ?? $order->customer_address;
-
-    // Lấy lịch sử trạng thái đơn hàng (timeline)
-    $orderStatusHistory = OrderStatusHistory::where('order_id', $orderId)
-        ->orderBy('created_at', 'asc')
-        ->get();
-
-    // Lấy thông tin nhân viên giao hàng (nếu có)
-    $deliveryPerson = Order::with(['staffDelivery:id,name,phone,sex,status,avatar'])
-        ->find($orderId);
-
-    return view('sites.ordertracking.order_tracking', [
-        'dataOrder' => $order,
-        'orderStatusHistory' => $orderStatusHistory,
-        'deliveryPerson' => $deliveryPerson
-    ]);
 }
-}
-
