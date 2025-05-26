@@ -9,6 +9,26 @@ use Illuminate\Support\Facades\DB;
 
 class RecommendationController extends Controller
 {
+
+
+    // Tóm tắt ví dụ User-Based Collaborative Filtering
+    // Dữ liệu mẫu:
+    // Đơn hàng:
+    // User 1 mua sản phẩm 101, 102
+    // User 2 mua sản phẩm 101, 103
+    // User 3 mua sản phẩm 102, 104
+    // Các bước thực hiện khi đề xuất cho User 1:
+    // Tính độ tương đồng:
+    // User 1 vs User 2: 1 sản phẩm chung (101) → Độ tương đồng = 1/3 ≈ 0.33
+    // User 1 vs User 3: 1 sản phẩm chung (102) → Độ tương đồng = 1/3 ≈ 0.33
+    // Chọn neighbors (giả sử k=2):
+    // Top 2 người dùng tương đồng: User 2 và User 3 (cùng điểm 0.33)
+    // Đề xuất sản phẩm:
+    // Từ User 2: sản phẩm 103 (user 1 chưa mua)
+    // Từ User 3: sản phẩm 104 (user 1 chưa mua)
+    // → Đề xuất: [103, 104]
+    // Kết quả cuối cùng:
+    // Hệ thống sẽ trả về thông tin chi tiết của sản phẩm 103 và 104 (còn hoạt động) để đề xuất cho User 1.
     public function userBased(int $userId)
     {
         // Copy toàn bộ nội dung hàm userCFRecommend vào đây
@@ -76,8 +96,8 @@ class RecommendationController extends Controller
         // dd($recommendationProductIds);
 
         $products = Product::with('Discount', 'ProductVariants')
-        ->whereIn('id', $recommendationProductIds)
-        ->where('status', 1)->paginate(8);
+            ->whereIn('id', $recommendationProductIds)
+            ->where('status', 1)->paginate(8);
         $productResource = ProductResource::collection($products);
         return $this->apiStatus($productResource, 200, 1, 'ok');
     }
@@ -282,6 +302,74 @@ class RecommendationController extends Controller
         $recommendedProductIds = array_keys($similarityScores);
 
         $products = Product::whereIn('id', $recommendedProductIds)->select('id')->get();
+
+        return response()->json($products);
+    }
+
+
+    // cosine ubcf nâng cao
+    public function userBasedEnhanced(int $userId)
+    {
+        // Lấy dữ liệu tổng hợp
+        $data = DB::table('order_details')
+            ->join('orders', 'order_details.order_id', '=', 'orders.id')
+            ->leftJoin('reviews', function ($join) {
+                $join->on('reviews.product_id', '=', 'order_details.product_id')
+                    ->on('reviews.customer_id', '=', 'orders.customer_id');
+            })
+            ->select(
+                'orders.customer_id',
+                'order_details.product_id',
+                DB::raw('count(*) as quantity'),
+                DB::raw('COALESCE(AVG(reviews.rating), 3) as avg_rating'),
+                DB::raw('MAX(orders.created_at) as last_purchased_at')
+            )
+            ->groupBy('orders.customer_id', 'order_details.product_id')
+            ->get();
+
+        // Tính toán trọng số tổng hợp
+        $userProducts = [];
+        foreach ($data as $item) {
+            $daysAgo = now()->diffInDays($item->last_purchased_at);
+            $timeWeight = exp(-$daysAgo / 30); // Hàm phân rã theo thời gian
+            $ratingWeight = $item->avg_rating / 5; // Chuẩn hóa rating về 0-1
+
+            $combinedWeight = $item->quantity * $ratingWeight * $timeWeight;
+            $userProducts[(int)$item->customer_id][(int)$item->product_id] = $combinedWeight;
+        }
+
+        // Tìm neighbors dựa trên cosine similarity
+        $getNearestNeighbors = function (int $userId, array $userProducts, int $k = 3) {
+            $currentUserVector = $userProducts[$userId];
+            $similarities = [];
+            foreach ($userProducts as $otherUserId => $productsVector) {
+                if ($otherUserId == $userId) continue;
+                $similarities[$otherUserId] = $this->cosineSimilarity($currentUserVector, $productsVector);
+            }
+            arsort($similarities);
+            return array_slice($similarities, 0, $k, true);
+        };
+
+        $neighbors = $getNearestNeighbors($userId, $userProducts, 3);
+        $currentUserProducts = $userProducts[$userId];
+        $recommendationScores = [];
+
+        foreach ($neighbors as $neighborId => $similarity) {
+            $neighborProducts = $userProducts[$neighborId];
+            foreach ($neighborProducts as $productId => $quantity) {
+                if (isset($currentUserProducts[$productId])) continue; // đã mua rồi
+                if (!isset($recommendationScores[$productId])) {
+                    $recommendationScores[$productId] = 0;
+                }
+                $recommendationScores[$productId] += $similarity * $quantity;
+            }
+        }
+
+        arsort($recommendationScores);
+
+        $recommendationProductIds = array_keys($recommendationScores);
+
+        $products = Product::whereIn('id', $recommendationProductIds)->select('id')->get();
 
         return response()->json($products);
     }

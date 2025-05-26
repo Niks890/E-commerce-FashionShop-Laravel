@@ -596,4 +596,97 @@
         max-width: 80%;
         /* Or adjust as needed */
     }
+
+
+    /* Quick Reply Buttons CSS */
+    .quick-replies {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .quick-reply-btn {
+        background: white;
+        border: 2px solid #e9ecef;
+        color: #495057;
+        padding: 12px 16px;
+        border-radius: 25px;
+        text-align: left;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+    }
+
+    .quick-reply-btn:hover {
+        background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .quick-reply-btn i {
+        margin-right: 10px;
+        width: 18px;
+        font-size: 16px;
+    }
+
+    /* Animation for quick replies */
+    .quick-reply-btn {
+        animation: slideInUp 0.5s ease-out;
+        animation-fill-mode: both;
+    }
+
+    .quick-reply-btn:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .quick-reply-btn:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .quick-reply-btn:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .quick-reply-btn:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+    .quick-reply-btn:nth-child(5) {
+        animation-delay: 0.5s;
+    }
+
+    .quick-reply-btn:nth-child(6) {
+        animation-delay: 0.6s;
+    }
+
+
+     .topic-guide {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .topic-guide h5 {
+            margin: 0 0 10px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .topic-guide p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 14px;
+        }
 </style>

@@ -61,135 +61,78 @@ class ChatBotApiController extends Controller
     //     ]);
     // }
 
-    public function chatbot()
-    {
-        return view('sites.chatbotRedis.chatbot');
-    }
+    // public function chatbot()
+    // {
+    //     return view('sites.chatbotRedis.chatbot');
+    // }
+
+    //  **************Flow xử lý tin nhắn***************
+    //  User Message -> Special Cases Check  -> [Nếu không match] → Lấy lịch sử từ Redis
+    //      -> Check threshold → [Nếu > 50] → Tóm tắt -> Xây dựng Multi-turn Prompt
+    //        -> call api tới Ollama AI -> Xử lý Response -> Lưu vào Redis(list string) ->Return JSON Response
 
     protected $defaultPrompt = "
-                Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam. Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
-                ### THÔNG TIN CỬA HÀNG:
-                - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
-                - Chính sách đổi trả: 30 ngày
-                - Phương thức thanh toán: COD, VNPay, Momo, ZaloPay
-                - Size áo/quần: XS, S, M, L, XL, XXL
+        Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam. Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
+        ### THÔNG TIN CỬA HÀNG:
+        - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
+        - Chính sách đổi trả: 30 ngày
+        - Phương thức thanh toán: COD, VNPay, Momo, ZaloPay
+        - Size áo/quần: XS, S, M, L, XL, XXL
 
-                ### HƯỚNG DẪN PHẢN HỒI:
-                1. Khi hỏi về sản phẩm:
-                - Kiểm tra database trước
-                - Nếu không tìm thấy, đề xuất sản phẩm tương tự (áo/quần/phụ kiện)
-                - Cung cấp thông tin chi tiết: chất liệu, size, màu sắc, giá
-                - Kèm link sản phẩm khi có thể
+        ### HƯỚNG DẪN PHẢN HỒI:
+        1. Khi hỏi về sản phẩm:
+        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có
+        - Cung cấp thông tin chi tiết: chất liệu, size, màu sắc, giá
+        - So sánh, tư vấn dựa trên sản phẩm đã biết
+        - Kèm link sản phẩm khi có thể
 
-                2. Khi hỏi về chính sách:
-                - Đổi trả: 30 ngày, điều kiện sản phẩm nguyên tag
-                - Thanh toán: COD hoặc ví điện tử
-                - Vận chuyển: Miễn phí đơn >500k
+        2. Tương tác thông minh:
+        - Khi khách hỏi 'cái nào đẹp hơn' → So sánh các sản phẩm đã show
+        - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context
+        - Khi hỏi về size → Dựa vào sản phẩm đã đề cập
+        - Gợi ý combo, phối đồ từ các sản phẩm có sẵn
 
-                3. Hỗ trợ mua hàng:
-                - Hướng dẫn thêm vào giỏ hàng
-                - Hỗ trợ thanh toán
-                - Theo dõi đơn hàng (cung cấp form mẫu)
+        ### LIÊN KẾT QUAN TRỌNG:
+        - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
+        - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
+        - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
+        - Hướng dẫn chọn size: <a href='http://127.0.0.1:8000/size-guide'>Size Guide</a>
+        ";
 
-                4. Tư vấn thời trang:
-                - Gợi ý phối đồ theo mùa/dịp
-                - Tư vấn size phù hợp với chiều cao/cân nặng
-                - Xu hướng thời trang hiện tại
-
-                5. Xử lý phản hồi:
-                - Khen ngợi: Cảm ơn và tương tác tích cực
-                - Phàn nàn: Xin lỗi và đề xuất giải pháp
-                - Từ ngữ không phù hợp: Nhắc nhở nhẹ nhàng
-
-                ### LIÊN KẾT QUAN TRỌNG:
-                - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
-                - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
-                - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
-                - Hướng dẫn chọn size: <a href='http://127.0.0.1:8000/size-guide'>Size Guide</a>
-
-                ### LƯU Ý:
-                - Luôn giữ thái độ tích cực
-                - Không tiết lộ thông tin cá nhân khách hàng
-                - Chuyển sang nhân viên khi không xử lý được
-                ";
-
-
-
-
-
-    // Hàm tóm tắt lịch sử chat
-    protected function summarizeHistory(array $historyMessages): string
-    {
-        $textToSummarize = "";
-        foreach ($historyMessages as $msg) {
-            $role = strtoupper($msg->role);
-            $text = $msg->message;
-            $textToSummarize .= "$role: $text\n";
-        }
-
-        $summaryPrompt = "Hãy tóm tắt ngắn gọn cuộc hội thoại mua sắm thời trang này thành 3-4 câu, tập trung vào:
-                        - Sản phẩm khách quan tâm
-                        - Vấn đề khách gặp phải
-                        - Giải pháp đã đề xuất
-                        - Trạng thái đơn hàng (nếu có)
-                        Nội dung:\n" . $textToSummarize;
-        $payload = [
-            'model' => 'gemma3:4b',
-            'prompt' => $summaryPrompt,
-            'stream' => false,
-        ];
-
-        $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
-
-        if (!$response->successful()) {
-            return '';
-        }
-
-        $data = $response->json();
-        $summary = $data['response'] ?? '';
-
-        return trim($summary);
-    }
-
-
-
-    // Hàm xử lý gửi tin nhắn (*******)
     public function sendMessage(Request $request)
     {
-        $userId = 'user_gemma3_newway'; // Có thể thay bằng Auth::id()
+        $userId = 'user_gemma3_newway';
         $userMessage = $request->input('message');
         $historyKey = "chat_history:$userId";
+        $productContextKey = "product_context:$userId"; // Key mới cho product context
         $maxMessages = 50;
-        $summarizeThreshold = 50; // Khi số tin nhắn vượt ngưỡng thì tóm tắt
+        $summarizeThreshold = 50;
 
-
-        $specialResponse = $this->handleSpecialCases($userMessage);
+        // Kiểm tra special cases trước
+        $specialResponse = $this->handleSpecialCases($userMessage, $userId);
         if ($specialResponse) {
             return response()->json([
                 'reply_data' => $specialResponse,
-                'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? '' // Thêm fallback
+                'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
             ]);
         }
 
-        // Bước 1: Lấy toàn bộ lịch sử chat hiện tại trong Redis
+        // Lấy và xử lý lịch sử chat
         $historyRaw = Redis::lrange($historyKey, 0, -1);
         $history = array_map('json_decode', $historyRaw);
 
-        // Bước 2: Nếu số lượng tin nhắn vượt quá ngưỡng, tóm tắt lịch sử cũ
+        // Tóm tắt nếu cần
         if (count($history) >= $summarizeThreshold) {
-            // Lấy 40 tin nhắn đầu tiên để tóm tắt
             $toSummarize = array_slice($history, 0, 40);
             $summaryText = $this->summarizeHistory($toSummarize);
 
             if ($summaryText) {
-                // Xóa phần đã tóm tắt khỏi lịch sử, giữ lại 10 tin nhắn mới nhất + 1 tin nhắn tóm tắt dạng system
                 $history = array_slice($history, 40);
                 array_unshift($history, (object)[
                     'role' => 'system',
                     'message' => $summaryText
                 ]);
 
-                // Xóa toàn bộ key cũ và lưu lại lịch sử mới đã tóm tắt vào Redis
                 Redis::del($historyKey);
                 foreach ($history as $item) {
                     Redis::rpush($historyKey, json_encode($item));
@@ -197,45 +140,17 @@ class ChatBotApiController extends Controller
             }
         }
 
-        // Bước 3: Lấy lại 20 tin nhắn cuối để tạo prompt multi-turn
+        // Lấy 20 tin nhắn cuối
         $recentRaw = Redis::lrange($historyKey, -20, -1);
         $recentHistory = array_map('json_decode', $recentRaw);
 
-        // Prompt mặc định cố định, không đổi trong suốt phiên
-        $defaultSystemPrompt = $this->defaultPrompt;
-        // $defaultSystemPrompt = "Bạn là chatbot hỗ trợ khách hàng TST Fashion Shop, vui vẻ và thân thiện.";
+        // Xây dựng system prompt với product context
+        $fullSystemPrompt = $this->buildSystemPromptWithProductContext($userId);
 
-        // Tách riêng phần tóm tắt (system) nếu có trong lịch sử chat
-        $systemMsg = '';
-        $chatPrompt = '';
-        foreach ($recentHistory as $item) {
-            if ($item->role === 'system') {
-                if (!empty($systemMsg)) {
-                    $systemMsg .= "\n" . $item->message;
-                } else {
-                    $systemMsg = $item->message;
-                }
-                continue;
-            }
+        // Xây dựng chat prompt
+        $chatPrompt = $this->buildChatPrompt($recentHistory, $fullSystemPrompt, $userMessage);
 
-            if (in_array($item->role, ['user', 'assistant'])) {
-                $role = strtoupper($item->role);
-                $message = $item->message;
-                $chatPrompt .= "$role: $message\n";
-            }
-        }
-
-        // Kết hợp prompt mặc định + tóm tắt lịch sử chat (nếu có)
-        $fullSystemPrompt = $defaultSystemPrompt;
-        if (!empty($systemMsg)) {
-            $fullSystemPrompt .= "\nTóm tắt lịch sử chat trước đây: " . $systemMsg;
-        }
-
-        // Xây dựng prompt gửi cho AI
-        $chatPrompt = "SYSTEM: $fullSystemPrompt\n" . $chatPrompt;
-        $chatPrompt .= "USER: $userMessage\nASSISTANT:";
-
-        // Bước 4: Gửi prompt tới Ollama
+        // Gửi tới AI
         $payload = [
             'model' => 'gemma3:4b',
             'prompt' => $chatPrompt,
@@ -249,28 +164,76 @@ class ChatBotApiController extends Controller
         }
 
         $data = $response->json();
-
-        // Xử lý loại bỏ chữ "ASSISTANT:" nếu AI trả lời có phần này
         $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
         $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
 
-        // Bước 5: Lưu tin nhắn user và AI vào Redis
+        // Lưu tin nhắn vào history
         Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
         Redis::rpush($historyKey, json_encode(['role' => 'assistant', 'message' => $reply]));
-
-        // Giữ lại tối đa $maxMessages tin nhắn
         Redis::ltrim($historyKey, -$maxMessages, -1);
-
-        // Có thể đặt TTL key để tự động xoá sau 1 ngày (tuỳ nhu cầu)
         Redis::expire($historyKey, 60 * 60 * 24);
 
-        return response()->json([
-            'reply' => $reply
-        ]);
+        return response()->json(['reply' => $reply]);
     }
 
-    // Hàm xử lý trường hợp đặc biệt
-    protected function handleSpecialCases(string $message): ?array
+    // Hàm xây dựng system prompt với product context
+    protected function buildSystemPromptWithProductContext(string $userId): string
+    {
+        $productContextKey = "product_context:$userId";
+        $productContextRaw = Redis::lrange($productContextKey, 0, -1);
+
+        $fullSystemPrompt = $this->defaultPrompt;
+
+        if (!empty($productContextRaw)) {
+            $productContext = array_map('json_decode', $productContextRaw);
+            $contextText = "\n\n### SAN PHẨM ĐÃ THẢO LUẬN TRONG PHIÊN:\n";
+
+            foreach ($productContext as $item) {
+                $contextText .= "- {$item->name}: {$item->price} - {$item->link}\n";
+                if (!empty($item->details)) {
+                    $contextText .= "  Chi tiết: {$item->details}\n";
+                }
+            }
+            $contextText .= "\nHãy sử dụng thông tin này để tư vấn, so sánh và gợi ý cho khách hàng.\n";
+
+            $fullSystemPrompt .= $contextText;
+        }
+
+        return $fullSystemPrompt;
+    }
+
+    // Hàm xây dựng chat prompt
+    protected function buildChatPrompt(array $recentHistory, string $systemPrompt, string $userMessage): string
+    {
+        $systemMsg = '';
+        $chatPrompt = '';
+
+        foreach ($recentHistory as $item) {
+            if ($item->role === 'system') {
+                $systemMsg .= (!empty($systemMsg) ? "\n" : '') . $item->message;
+                continue;
+            }
+
+            if (in_array($item->role, ['user', 'assistant'])) {
+                $role = strtoupper($item->role);
+                $message = $item->message;
+                $chatPrompt .= "$role: $message\n";
+            }
+        }
+
+        $fullSystemPrompt = $systemPrompt;
+        if (!empty($systemMsg)) {
+            $fullSystemPrompt .= "\nTóm tắt lịch sử chat trước đây: " . $systemMsg;
+        }
+
+        $chatPrompt = "SYSTEM: $fullSystemPrompt\n" . $chatPrompt;
+        $chatPrompt .= "USER: $userMessage\nASSISTANT:";
+
+        return $chatPrompt;
+    }
+
+    // Hàm xử lý trường hợp đặc biệt - ĐƯỢC CẬP NHẬT
+    protected function handleSpecialCases(string $message, string $userId): ?array
     {
         $message = mb_strtolower(trim($message));
 
@@ -299,36 +262,218 @@ class ChatBotApiController extends Controller
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
         }
 
-        if (str_contains($message, 'sản phẩm') || str_contains($message, 'áo') || str_contains($message, 'quần')) {
-            $category = null;
-            if (str_contains($message, 'áo')) {
-                $category = 'áo';
-            } elseif (str_contains($message, 'quần')) {
-                $category = 'quần';
-            }
-            // Có thể thêm logic phức tạp hơn để phân tích category từ tin nhắn
-
-            $products = $this->getProductRecommendations($category);
+        // XỬ LÝ SẢN PHẨM - ĐƯỢC CẬP NHẬT VỚI KEYWORD MATCHING THÔNG MINH
+        $productKeywords = $this->detectProductKeywords($message);
+        if (!empty($productKeywords)) {
+            $products = $this->getProductRecommendations($productKeywords['category'], $productKeywords['keywords']);
             if (!empty($products)) {
-                return $this->formatProductResponse($products); // Hàm này đã trả về array
+                // LƯU SẢN PHẨM VÀO REDIS CONTEXT
+                $this->saveProductsToContext($userId, $products, $message);
+
+                return $this->formatProductResponse($products);
             } else {
-                return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm phù hợp với yêu cầu của bạn. Bạn có muốn xem tất cả sản phẩm không?"];
+                return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm '{$productKeywords['matched_term']}' phù hợp. Bạn có muốn xem các sản phẩm tương tự không?"];
             }
         }
-        return null; // Trả về null nếu không có trường hợp đặc biệt nào
+
+        return null;
     }
 
-
-    // Xử lý sản phẩm
-    protected function getProductRecommendations(?string $category = null): array
+    // HÀM MỚI: Phát hiện từ khóa sản phẩm thông minh
+    protected function detectProductKeywords(string $message): array
     {
-        $query = Product::with('category')->select('product_name', 'price', 'slug', 'image'); // Chọn các trường bạn muốn lấy
+        $message = mb_strtolower(trim($message));
 
+        // Định nghĩa từ khóa sản phẩm chi tiết
+        $productMap = [
+            // Áo sơ mi
+            'áo sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
+            'sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
+            'áo sơ mi linen' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'linen']],
+            'áo sơ mi cotton' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'cotton']],
+
+            // Áo thun
+            'áo thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
+            'áo tshirt' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
+            'áo t-shirt' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
+            'thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt']],
+
+            // Áo polo
+            'áo polo' => ['category' => 'áo polo', 'keywords' => ['polo']],
+            'polo' => ['category' => 'áo polo', 'keywords' => ['polo']],
+
+            // Áo khoác
+            'áo khoác' => ['category' => 'áo khoác', 'keywords' => ['khoác', 'jacket']],
+            'jacket' => ['category' => 'áo khoác', 'keywords' => ['khoác', 'jacket']],
+
+            // Quần
+            'quần jean' => ['category' => 'quần', 'keywords' => ['jean', 'jeans']],
+            'quần jeans' => ['category' => 'quần', 'keywords' => ['jean', 'jeans']],
+            'quần tây' => ['category' => 'quần', 'keywords' => ['tây', 'trousers']],
+            'quần short' => ['category' => 'quần', 'keywords' => ['short', 'shorts']],
+            'quần' => ['category' => 'quần', 'keywords' => ['pants', 'trousers']],
+
+            // Tổng quát
+            'áo' => ['category' => 'áo', 'keywords' => ['shirt', 'top']],
+        ];
+
+        // Tìm kiếm exact match trước (ưu tiên từ khóa dài hơn)
+        $sortedKeys = array_keys($productMap);
+        usort($sortedKeys, function ($a, $b) {
+            return strlen($b) - strlen($a); // Sắp xếp từ dài đến ngắn
+        });
+
+        foreach ($sortedKeys as $keyword) {
+            if (str_contains($message, $keyword)) {
+                return [
+                    'category' => $productMap[$keyword]['category'],
+                    'keywords' => $productMap[$keyword]['keywords'],
+                    'matched_term' => $keyword
+                ];
+            }
+        }
+
+        // Kiểm tra từ khóa chung
+        if (str_contains($message, 'sản phẩm') || str_contains($message, 'hàng')) {
+            return [
+                'category' => null,
+                'keywords' => [],
+                'matched_term' => 'sản phẩm'
+            ];
+        }
+
+        return [];
+    }
+    protected function saveProductsToContext(string $userId, array $products, string $userQuery): void
+    {
+        $productContextKey = "product_context:$userId";
+
+        foreach ($products as $product) {
+            $contextItem = [
+                'name' => $product['name'],
+                'price' => $product['price'],
+                'link' => $product['link'],
+                'image' => $product['image'],
+                'query' => $userQuery, // Lưu câu hỏi gốc
+                'timestamp' => time(),
+                'details' => $this->extractProductDetails($product) // Thêm chi tiết nếu có
+            ];
+
+            // Kiểm tra xem sản phẩm đã tồn tại chưa
+            if (!$this->isProductInContext($userId, $product['name'])) {
+                Redis::rpush($productContextKey, json_encode($contextItem));
+            }
+        }
+
+        // Giới hạn số lượng sản phẩm trong context (tối đa 20)
+        Redis::ltrim($productContextKey, -20, -1);
+
+        // Set TTL cho product context (2 giờ)
+        Redis::expire($productContextKey, 60 * 60 * 2);
+    }
+
+    // HÀM MỚI: Kiểm tra sản phẩm đã có trong context chưa
+    protected function isProductInContext(string $userId, string $productName): bool
+    {
+        $productContextKey = "product_context:$userId";
+        $contextRaw = Redis::lrange($productContextKey, 0, -1);
+
+        foreach ($contextRaw as $itemRaw) {
+            $item = json_decode($itemRaw);
+            if ($item && $item->name === $productName) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // HÀM MỚI: Trích xuất chi tiết sản phẩm
+    protected function extractProductDetails(array $product): string
+    {
+        // Có thể mở rộng để lấy thêm thông tin từ database
+        $details = [];
+
+        // Phân tích từ tên sản phẩm
+        $name = mb_strtolower($product['name']);
+
+        if (str_contains($name, 'cotton')) {
+            $details[] = 'chất liệu cotton';
+        }
+        if (str_contains($name, 'basic')) {
+            $details[] = 'thiết kế basic';
+        }
+        if (str_contains($name, 'polo')) {
+            $details[] = 'dáng polo';
+        }
+
+        return implode(', ', $details);
+    }
+
+    // Các hàm khác giữ nguyên...
+    protected function summarizeHistory(array $historyMessages): string
+    {
+        $textToSummarize = "";
+        foreach ($historyMessages as $msg) {
+            $role = strtoupper($msg->role);
+            $text = $msg->message;
+            $textToSummarize .= "$role: $text\n";
+        }
+
+        $summaryPrompt = "Hãy tóm tắt ngắn gọn cuộc hội thoại mua sắm thời trang này thành 3-4 câu, tập trung vào:
+                        - Sản phẩm khách quan tâm
+                        - Vấn đề khách gặp phải
+                        - Giải pháp đã đề xuất
+                        - Trạng thái đơn hàng (nếu có)
+                        Nội dung:\n" . $textToSummarize;
+
+        $payload = [
+            'model' => 'gemma3:4b',
+            'prompt' => $summaryPrompt,
+            'stream' => false,
+        ];
+
+        $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
+
+        if (!$response->successful()) {
+            return '';
+        }
+
+        $data = $response->json();
+        return trim($data['response'] ?? '');
+    }
+
+    protected function getProductRecommendations(?string $category = null, array $keywords = []): array
+    {
+        $query = Product::with('category')->select('product_name', 'price', 'slug', 'image');
+
+        // Nếu có category cụ thể
         if ($category) {
-            $query->whereHas('category', function ($q) use ($category) {
-                $q->where('category_name', 'like', '%' . $category . '%');
+            $query->where(function ($q) use ($category, $keywords) {
+                // Kiểm tra theo category name
+                $q->whereHas('category', function ($subQ) use ($category) {
+                    $subQ->where('category_name', 'like', '%' . $category . '%');
+                });
+
+                // Hoặc kiểm tra theo product name với keywords
+                if (!empty($keywords)) {
+                    $q->orWhere(function ($subQ) use ($keywords) {
+                        foreach ($keywords as $keyword) {
+                            $subQ->orWhere('product_name', 'like', '%' . $keyword . '%');
+                        }
+                    });
+                }
             });
         }
+        // Nếu chỉ có keywords mà không có category
+        elseif (!empty($keywords)) {
+            $query->where(function ($q) use ($keywords) {
+                foreach ($keywords as $keyword) {
+                    $q->orWhere('product_name', 'like', '%' . $keyword . '%');
+                }
+            });
+        }
+
         $dbProducts = $query->limit(5)->get();
 
         $formattedProducts = [];
@@ -344,18 +489,15 @@ class ChatBotApiController extends Controller
         return $formattedProducts;
     }
 
-
     protected function formatProductResponse(array $products): array
     {
-        // Thay vì trả về một chuỗi, bây giờ chúng ta sẽ trả về một mảng chứa thông tin sản phẩm
-        // để frontend có thể render tùy chỉnh.
         $productData = [];
         foreach ($products as $product) {
             $productData[] = [
                 'name' => $product['name'],
                 'price' => $product['price'],
                 'link' => $product['link'],
-                'image_url' => $product['image'], // Thêm URL ảnh
+                'image_url' => $product['image'],
             ];
         }
 
@@ -367,58 +509,3 @@ class ChatBotApiController extends Controller
         ];
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// DEMO
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
