@@ -1,39 +1,35 @@
-@can('managers')
-    @extends('admin.master')
+{{-- resources/views/admin/customer/index.blade.php --}}
 
-    @section('title', 'Danh sách khách hàng')
+@extends('admin.master')
+
+@section('title', 'Danh sách khách hàng')
 
 @section('content')
     <div class="container mt-4">
         <h3 class="mb-3">Danh sách khách hàng</h3>
 
-        <!-- Form tìm kiếm và lọc -->
         <div class="card mb-4">
             <div class="card-body">
                 <form method="GET" action="{{ route('customer.index') }}">
                     <div class="row g-3">
-                        <!-- Thanh tìm kiếm -->
                         <div class="col-md-4">
                             <label for="search" class="form-label">Tìm kiếm</label>
                             <input type="text" class="form-control" id="search" name="search"
                                 value="{{ request('search') }}" placeholder="Tìm theo tên, email, số điện thoại...">
                         </div>
 
-                        <!-- Lọc từ ngày -->
                         <div class="col-md-2">
                             <label for="from_date" class="form-label">Từ ngày</label>
                             <input type="date" class="form-control" id="from_date" name="from_date"
                                 value="{{ request('from_date') }}">
                         </div>
 
-                        <!-- Lọc đến ngày -->
                         <div class="col-md-2">
                             <label for="to_date" class="form-label">Đến ngày</label>
                             <input type="date" class="form-control" id="to_date" name="to_date"
                                 value="{{ request('to_date') }}">
                         </div>
 
-                        <!-- Lọc theo số đơn hàng -->
                         <div class="col-md-2">
                             <label for="order_count" class="form-label">Số đơn hàng</label>
                             <select class="form-select" id="order_count" name="order_count">
@@ -49,7 +45,6 @@
                             </select>
                         </div>
 
-                        <!-- Sắp xếp theo đơn hàng -->
                         <div class="col-md-2">
                             <label for="order_sort" class="form-label">Sắp xếp</label>
                             <select class="form-select" id="order_sort" name="order_sort">
@@ -61,7 +56,6 @@
                             </select>
                         </div>
 
-                        <!-- Lọc theo voucher -->
                         <div class="col-md-2">
                             <label for="voucher_status" class="form-label">Voucher</label>
                             <select class="form-select" id="voucher_status" name="voucher_status">
@@ -75,7 +69,6 @@
                             </select>
                         </div>
 
-                        <!-- Nút tìm kiếm và reset -->
                         <div class="col-md-12 d-flex justify-content-center gap-2 mt-3">
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-search"></i> Tìm kiếm
@@ -89,8 +82,7 @@
             </div>
         </div>
 
-        <!-- Hiển thị kết quả tìm kiếm -->
-        @if (request()->hasAny(['search', 'from_date', 'to_date', 'order_count']))
+        @if (request()->hasAny(['search', 'from_date', 'to_date', 'order_count', 'voucher_status']))
             <div class="alert alert-info">
                 <strong>Kết quả tìm kiếm:</strong>
                 Tìm thấy {{ $customers->total() }} khách hàng
@@ -125,7 +117,7 @@
                         <th>Avatar</th>
                         <th>Ngày tạo</th>
                         <th>Số đơn hàng</th>
-                        {{-- <th>Voucher đã tặng</th> --}}
+                        <th>Voucher đã tặng</th>
                         <th class="text-center">Hành động</th>
                     </tr>
                 </thead>
@@ -149,17 +141,74 @@
                             <td>
                                 <span class="badge bg-success">{{ $customer->orders_count ?? 0 }}</span>
                             </td>
-                            {{-- <td>
-                                    @if ($customer->vouchers_count > 0)
-                                        <span class="badge bg-info">{{ $customer->vouchers_count }} voucher</span>
-                                    @else
-                                        <span class="badge bg-secondary">Chưa có</span>
-                                    @endif
-                                </td> --}}
+                            <td>
+                                @if ($customer->voucherUsages->count() > 0)
+                                    <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                                        data-bs-target="#vouchersModal{{ $customer->id }}">
+                                        {{ $customer->voucherUsages->count() }} voucher
+                                    </button>
+
+                                    <div class="modal fade" id="vouchersModal{{ $customer->id }}" tabindex="-1"
+                                        aria-labelledby="vouchersModalLabel{{ $customer->id }}" aria-hidden="true">
+                                        <div class="modal-dialog modal-lg">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="vouchersModalLabel{{ $customer->id }}">
+                                                        Voucher đã tặng cho {{ $customer->name }}
+                                                    </h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                        aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    @if ($customer->voucherUsages->isNotEmpty())
+                                                        <ul class="list-group">
+                                                            @foreach ($customer->voucherUsages as $usage)
+                                                                <li class="list-group-item">
+                                                                    <strong>Mã:</strong>
+                                                                    {{ $usage->voucher->vouchers_code }} <br>
+                                                                    <strong>Mô tả:</strong>
+                                                                    {{ $usage->voucher->vouchers_description }} <br>
+                                                                    <strong>Ngày tặng:</strong>
+                                                                    {{ $usage->created_at->format('d/m/Y H:i') }} <br>
+                                                                    <strong>Ngày hết hạn:</strong>
+                                                                    @if ($usage->expiry_date)
+                                                                        <span
+                                                                            class="badge bg-warning">{{ \Carbon\Carbon::parse($usage->expiry_date)->format('d/m/Y H:i') }}</span>
+                                                                    @else
+                                                                        <span class="badge bg-secondary">Không có thời
+                                                                            hạn</span>
+                                                                    @endif
+                                                                    <br>
+                                                                    <strong>Trạng thái:</strong>
+                                                                    @if ($usage->used_at)
+                                                                        <span class="badge bg-success">Đã sử dụng lúc:
+                                                                            {{ \Carbon\Carbon::parse($usage->used_at)->format('d/m/Y H:i') }}</span>
+                                                                    @elseif ($usage->expiry_date && \Carbon\Carbon::parse($usage->expiry_date)->isPast())
+                                                                        <span class="badge bg-danger">Đã hết hạn</span>
+                                                                    @else
+                                                                        <span class="badge bg-primary">Chưa sử dụng</span>
+                                                                    @endif
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    @else
+                                                        <p>Không có voucher nào được tặng cho khách hàng này.</p>
+                                                    @endif
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary"
+                                                        data-bs-dismiss="modal">Đóng</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="badge bg-secondary">Chưa có</span>
+                                @endif
+                            </td>
                             <td class="text-center">
-                                <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal"
-                                    data-bs-target="#voucherModal" data-customer-id="{{ $customer->id }}"
-                                    data-customer-name="{{ $customer->name }}">
+                                <button type="button" class="btn btn-sm btn-success send-voucher-btn"
+                                    data-customer-id="{{ $customer->id }}" data-customer-name="{{ $customer->name }}">
                                     <i class="fas fa-gift"></i> Tặng voucher
                                 </button>
                             </td>
@@ -182,220 +231,119 @@
         </div>
     </div>
 
-    <!-- Modal tặng voucher -->
-    <div class="modal fade" id="voucherModal" tabindex="-1" aria-labelledby="voucherModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title" id="voucherModalLabel">
-                        <i class="fas fa-gift me-2"></i>Tặng voucher cho khách hàng
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="voucherForm">
-                        <input type="hidden" id="customerId" name="customer_id">
+    <div id="voucherFormContainer" class="d-none">
+        <div class="card mt-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-gift me-2"></i>Tặng voucher cho: <span id="selectedCustomerName"></span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="voucherForm" action="{{ route('customer.sendVoucher') }}" method="POST">
+                    @csrf
+                    <input type="hidden" id="customerId" name="customer_id">
 
-                        <!-- Thông tin khách hàng -->
-                        <div class="alert alert-info">
-                            <h6><i class="fas fa-user me-2"></i>Khách hàng:</h6>
-                            <p class="mb-0" id="customerName"></p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="voucher_id" class="form-label">Chọn voucher <span
+                                    class="text-danger">*</span></label>
+                            <select class="form-select" id="voucher_id" name="voucher_id" required>
+                                <option value="">-- Chọn voucher --</option>
+                                @foreach ($vouchers as $voucher)
+                                    <option value="{{ $voucher->id }}">
+                                        {{ $voucher->vouchers_code }} - {{ $voucher->vouchers_description }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
+                    </div>
 
-                        <div class="row">
-                            <!-- Loại voucher -->
-                            <div class="col-md-6">
-                                <label for="voucherType" class="form-label">Loại voucher <span
-                                        class="text-danger">*</span></label>
-                                <select class="form-select" id="voucherType" name="voucher_type" required>
-                                    <option value="">Chọn loại voucher</option>
-                                    <option value="discount_percent">Giảm giá theo %</option>
-                                    <option value="discount_amount">Giảm giá theo số tiền</option>
-                                    <option value="free_shipping">Miễn phí vận chuyển</option>
-                                    <option value="buy_get_free">Mua X tặng Y</option>
-                                </select>
-                            </div>
+                    <div class="mt-3">
+                        <label for="message" class="form-label">Lời nhắn (nếu có)</label>
+                        <textarea class="form-control" id="message" name="message" rows="2"></textarea>
+                    </div>
 
-                            <!-- Giá trị voucher -->
-                            <div class="col-md-6">
-                                <label for="voucherValue" class="form-label">Giá trị <span
-                                        class="text-danger">*</span></label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="voucherValue" name="voucher_value"
-                                        placeholder="Nhập giá trị" required>
-                                    <span class="input-group-text" id="valueUnit">%</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <!-- Giá trị đơn hàng tối thiểu -->
-                            <div class="col-md-6">
-                                <label for="minOrderValue" class="form-label">Đơn hàng tối thiểu</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="minOrderValue" name="min_order_value"
-                                        placeholder="0">
-                                    <span class="input-group-text">VNĐ</span>
-                                </div>
-                            </div>
-
-                            <!-- Giá trị giảm tối đa -->
-                            <div class="col-md-6">
-                                <label for="maxDiscount" class="form-label">Giảm tối đa</label>
-                                <div class="input-group">
-                                    <input type="number" class="form-control" id="maxDiscount" name="max_discount"
-                                        placeholder="Không giới hạn">
-                                    <span class="input-group-text">VNĐ</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row mt-3">
-                            <!-- Ngày bắt đầu -->
-                            <div class="col-md-6">
-                                <label for="startDate" class="form-label">Ngày bắt đầu <span
-                                        class="text-danger">*</span></label>
-                                <input type="datetime-local" class="form-control" id="startDate" name="start_date"
-                                    required>
-                            </div>
-
-                            <!-- Ngày kết thúc -->
-                            <div class="col-md-6">
-                                <label for="endDate" class="form-label">Ngày kết thúc <span
-                                        class="text-danger">*</span></label>
-                                <input type="datetime-local" class="form-control" id="endDate" name="end_date"
-                                    required>
-                            </div>
-                        </div>
-
-                        <!-- Số lần sử dụng -->
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label for="usageLimit" class="form-label">Số lần sử dụng</label>
-                                <input type="number" class="form-control" id="usageLimit" name="usage_limit"
-                                    placeholder="1" value="1" min="1">
-                            </div>
-
-                            <!-- Trạng thái -->
-                            <div class="col-md-6">
-                                <label for="status" class="form-label">Trạng thái</label>
-                                <select class="form-select" id="status" name="status">
-                                    <option value="active">Kích hoạt</option>
-                                    <option value="inactive">Tạm dừng</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Mô tả -->
-                        <div class="mt-3">
-                            <label for="description" class="form-label">Mô tả voucher</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                placeholder="Nhập mô tả chi tiết về voucher..."></textarea>
-                        </div>
-
-                        <!-- Ghi chú -->
-                        <div class="mt-3">
-                            <label for="note" class="form-label">Ghi chú</label>
-                            <textarea class="form-control" id="note" name="note" rows="2" placeholder="Ghi chú thêm..."></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-1"></i>Hủy
-                    </button>
-                    <button type="button" class="btn btn-success" id="sendVoucherBtn">
-                        <i class="fas fa-paper-plane me-1"></i>Tặng voucher
-                    </button>
-                </div>
+                    <div class="mt-3 d-flex justify-content-end gap-2">
+                        <button type="button" class="btn btn-secondary" id="cancelVoucherBtn">
+                            <i class="fas fa-times me-1"></i> Hủy
+                        </button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-paper-plane me-1"></i> Gửi voucher
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const voucherModal = document.getElementById('voucherModal');
-            const voucherType = document.getElementById('voucherType');
-            const valueUnit = document.getElementById('valueUnit');
-            const sendVoucherBtn = document.getElementById('sendVoucherBtn');
+            const voucherFormContainer = document.getElementById('voucherFormContainer');
+            const sendVoucherBtns = document.querySelectorAll('.send-voucher-btn');
+            const cancelVoucherBtn = document.getElementById('cancelVoucherBtn');
 
-            // Xử lý khi mở modal
-            voucherModal.addEventListener('show.bs.modal', function(event) {
-                const button = event.relatedTarget;
-                const customerId = button.getAttribute('data-customer-id');
-                const customerName = button.getAttribute('data-customer-name');
+            // Xử lý khi click nút tặng voucher
+            sendVoucherBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const customerId = this.getAttribute('data-customer-id');
+                    const customerName = this.getAttribute('data-customer-name');
 
-                document.getElementById('customerId').value = customerId;
-                document.getElementById('customerName').textContent = customerName;
-            });
+                    // Đặt giá trị cho form
+                    document.getElementById('customerId').value = customerId;
+                    document.getElementById('selectedCustomerName').textContent = customerName;
 
-            // Thay đổi đơn vị khi chọn loại voucher
-            voucherType.addEventListener('change', function() {
-                const selectedType = this.value;
-                if (selectedType === 'discount_percent') {
-                    valueUnit.textContent = '%';
-                } else if (selectedType === 'discount_amount') {
-                    valueUnit.textContent = 'VNĐ';
-                } else if (selectedType === 'free_shipping') {
-                    valueUnit.textContent = 'VNĐ';
-                } else {
-                    valueUnit.textContent = '';
-                }
-            });
+                    // Hiển thị form
+                    voucherFormContainer.classList.remove('d-none');
 
-            // Xử lý gửi voucher (chỉ UI)
-            sendVoucherBtn.addEventListener('click', function() {
-                // Validation cơ bản
-                const form = document.getElementById('voucherForm');
-                const requiredFields = form.querySelectorAll('[required]');
-                let isValid = true;
-
-                requiredFields.forEach(field => {
-                    if (!field.value.trim()) {
-                        field.classList.add('is-invalid');
-                        isValid = false;
-                    } else {
-                        field.classList.remove('is-invalid');
-                    }
+                    // Cuộn đến form
+                    voucherFormContainer.scrollIntoView({
+                        behavior: 'smooth'
+                    });
                 });
-
-                if (isValid) {
-                    // Hiển thị loading
-                    this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Đang gửi...';
-                    this.disabled = true;
-
-                    // Giả lập gửi voucher (chỉ UI)
-                    setTimeout(() => {
-                        alert('Đã tặng voucher thành công!');
-
-                        // Reset form và đóng modal
-                        form.reset();
-                        const modal = bootstrap.Modal.getInstance(voucherModal);
-                        modal.hide();
-
-                        // Reset button
-                        this.innerHTML = '<i class="fas fa-paper-plane me-1"></i>Tặng voucher';
-                        this.disabled = false;
-                    }, 1500);
-                } else {
-                    alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
-                }
             });
 
-            // Reset validation khi đóng modal
-            voucherModal.addEventListener('hidden.bs.modal', function() {
-                const form = document.getElementById('voucherForm');
-                form.reset();
-                form.querySelectorAll('.is-invalid').forEach(field => {
-                    field.classList.remove('is-invalid');
-                });
+            // Xử lý khi click hủy
+            cancelVoucherBtn.addEventListener('click', function() {
+                voucherFormContainer.classList.add('d-none');
+            });
+
+            // Xử lý submit form
+            document.getElementById('voucherForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const form = this;
+                const submitBtn = form.querySelector('button[type="submit"]');
+
+                // Hiển thị loading
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang gửi...';
+                submitBtn.disabled = true;
+
+                // Gửi form bằng AJAX
+                fetch(form.action, {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Đã gửi voucher thành công!');
+                            window.location.reload();
+                        } else {
+                            alert('Có lỗi xảy ra: ' + (data.message || 'Vui lòng thử lại sau'));
+                            submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Gửi voucher';
+                            submitBtn.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        alert('Có lỗi xảy ra: ' + error);
+                        submitBtn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Gửi voucher';
+                        submitBtn.disabled = false;
+                    });
             });
         });
     </script>
-
 @endsection
-@else
-{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
-@endcan

@@ -148,8 +148,6 @@
         </div>
     </div>
 
-    <!--Modal Thêm khuyến mãi-->
-
     <!-- Modal Xem chi tiết -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -161,7 +159,7 @@
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    <div class="row mb-4">
                         <div class="col-md-4 text-center">
                             <i class="fas fa-tags text-primary" style="font-size: 60px;"></i>
                         </div>
@@ -176,6 +174,28 @@
                             <p><strong>Trạng thái:</strong> <span id="promo-status" class="fw-bold badge-info"></span></p>
                         </div>
                     </div>
+
+                    <!-- Add this new section for products -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h5 class="fw-bold mb-3 border-bottom pb-2">Sản phẩm áp dụng</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover" id="products-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Hình ảnh</th>
+                                            <th>Tên sản phẩm</th>
+                                            <th>Giá gốc</th>
+                                            <th>Giá sau KM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="products-list">
+                                        <!-- Products will be inserted here by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer justify-content-center">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i
@@ -184,7 +204,6 @@
             </div>
         </div>
     </div>
-    <!-- Modal Xem chi tiết -->
 
 @endsection
 
@@ -192,6 +211,28 @@
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
     <link rel="stylesheet" href="{{ asset('assets/css/modal.css') }}" />
+
+    <style>
+        /* Add this to your modal.css or message.css */
+        #products-table {
+            font-size: 0.9rem;
+        }
+
+        #products-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        #products-table img {
+            object-fit: cover;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
+
 @endsection
 
 @section('js')
@@ -212,17 +253,50 @@
 
     <script>
         $(document).ready(function() {
+            // $(".btn-detail").click(function(event) {
+            //     event.preventDefault();
+            //     let row = $(this).closest("tr");
+            //     let promoId = row.find("td:first").text().trim();
+            //     $.ajax({
+            //         url: `http://127.0.0.1:8000/api/discount/${promoId}`, //url, type, datatype, success,
+            //         type: "GET",
+            //         dataType: "json",
+            //         success: function(response) {
+            //             if (response.status_code === 200) {
+            //                 let promo = response.data;
+            //                 $("#promo-id").text(promo.id);
+            //                 $("#promo-name").text(promo.name);
+            //                 $("#promo-percent").text((parseFloat(promo.percent_discount) *
+            //                     100) + "%");
+            //                 $("#promo-start").text(new Date(promo.start_date).toLocaleString(
+            //                     'vi-VN'));
+            //                 $("#promo-end").text(new Date(promo.end_date).toLocaleString(
+            //                     'vi-VN')); //text->h1,..h7, p, span,...
+            //                 $("#promo-status").text(promo.status);
+            //                 $("#detailModal").modal("show");
+            //                 // console.log(response);
+            //             } else {
+            //                 alert("Không thể lấy dữ liệu chi tiết!");
+            //             }
+            //         },
+            //         error: function() {
+            //             alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+            //         }
+            //     });
+            // });
+
             $(".btn-detail").click(function(event) {
                 event.preventDefault();
                 let row = $(this).closest("tr");
                 let promoId = row.find("td:first").text().trim();
                 $.ajax({
-                    url: `http://127.0.0.1:8000/api/discount/${promoId}`, //url, type, datatype, success,
+                    url: `http://127.0.0.1:8000/api/discount/${promoId}`,
                     type: "GET",
                     dataType: "json",
                     success: function(response) {
                         if (response.status_code === 200) {
                             let promo = response.data;
+                            // Set basic discount info
                             $("#promo-id").text(promo.id);
                             $("#promo-name").text(promo.name);
                             $("#promo-percent").text((parseFloat(promo.percent_discount) *
@@ -230,10 +304,45 @@
                             $("#promo-start").text(new Date(promo.start_date).toLocaleString(
                                 'vi-VN'));
                             $("#promo-end").text(new Date(promo.end_date).toLocaleString(
-                                'vi-VN')); //text->h1,..h7, p, span,...
+                                'vi-VN'));
                             $("#promo-status").text(promo.status);
+
+                            // Clear previous products
+                            $("#products-list").empty();
+
+                            // Add products to the table
+                            if (promo.products && promo.products.length > 0) {
+                                promo.products.forEach(function(product) {
+                                    const discountedPrice = product.price * (1 - promo
+                                        .percent_discount);
+                                    const productRow = `
+                                <tr>
+                                    <td>
+                                        ${product.image ?
+                                            `<img src="${product.image}" alt="${product.product_name}" class="img-thumbnail" style="width: 50px; height: 50px;">` :
+                                            '<i class="fas fa-box-open fa-2x text-muted"></i>'}
+                                    </td>
+                                    <td>${product.product_name}</td>
+                                    <td>${product.price.toLocaleString('vi-VN')}đ</td>
+                                    <td class="text-danger fw-bold">
+                                        ${discountedPrice.toLocaleString('vi-VN')}đ
+                                    </td>
+                                </tr>
+                            `;
+                                    $("#products-list").append(productRow);
+                                });
+                            } else {
+                                $("#products-list").append(`
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Không có sản phẩm nào trong chương trình khuyến mãi này
+                                </td>
+                            </tr>
+                        `);
+                            }
+
                             $("#detailModal").modal("show");
-                            // console.log(response);
                         } else {
                             alert("Không thể lấy dữ liệu chi tiết!");
                         }

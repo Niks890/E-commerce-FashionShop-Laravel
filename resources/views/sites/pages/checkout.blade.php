@@ -134,8 +134,7 @@
                                             <ul class="checkout__total__products">
                                                 <li>{{ $index++ }}.
                                                     {{ Str::words($items->name, 10) }}<span>{{ number_format($items->price, 0, ',', '.') . ' đ' }}</span>
-                                                    <img src="{{$items->image}}" width="50"
-                                                        alt="">
+                                                    <img src="{{ $items->image }}" width="50" alt="">
                                                     <h6>Số lượng: {{ $items->quantity }}</h6>
                                                     <h6>Size: {{ $items->size }}</h6>
                                                     <h6>Màu: {{ $items->color }}</h6>
@@ -215,6 +214,55 @@
         document.addEventListener('DOMContentLoaded', function() {
             const totalAmount = {{ $total }};
 
+
+            const emailInput = document.querySelector('input[name="email"]');
+            const phoneInput = document.querySelector('input[name="phone"]');
+            const checkoutForm = document.getElementById('checkout-form');
+
+            // Tạo các phần tử hiển thị lỗi
+            let emailError = document.createElement('small');
+            emailError.classList.add('text-danger', 'email-error');
+            emailInput.parentNode.appendChild(emailError);
+
+            let phoneError = document.createElement('small');
+            phoneError.classList.add('text-danger', 'phone-error');
+            phoneInput.parentNode.appendChild(phoneError);
+
+
+            // Hàm validate email
+            function validateEmail() {
+                const email = emailInput.value;
+                const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Regex cơ bản cho email
+                if (!emailPattern.test(email)) {
+                    emailError.textContent = 'Email không hợp lệ. Vui lòng nhập đúng định dạng email.';
+                    emailInput.classList.add('is-invalid'); // Thêm class để đổi màu border đỏ
+                    return false;
+                } else {
+                    emailError.textContent = '';
+                    emailInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+
+            // Hàm validate số điện thoại
+            function validatePhone() {
+                const phone = phoneInput.value;
+                // Regex cho số điện thoại Việt Nam (10 hoặc 11 số, bắt đầu bằng 0)
+                const phonePattern = /^(0|\+84)[3|5|7|8|9][0-9]{8,9}$/;
+                if (!phonePattern.test(phone)) {
+                    phoneError.textContent =
+                        'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 hoặc 11 số).';
+                    phoneInput.classList.add('is-invalid');
+                    return false;
+                } else {
+                    phoneError.textContent = '';
+                    phoneInput.classList.remove('is-invalid');
+                    return true;
+                }
+            }
+            emailInput.addEventListener('input', validateEmail);
+            phoneInput.addEventListener('input', validatePhone);
+
             // console.log('Total amount:', totalAmount); // Debug log
 
             if (totalAmount > 2000000) {
@@ -256,6 +304,15 @@
         document.getElementById('checkout-form').addEventListener('submit', function(event) {
             event.preventDefault(); // Ngăn chặn form submit mặc định
 
+
+
+            const isEmailValid = validateEmail();
+            const isPhoneValid = validatePhone();
+
+            if (!isEmailValid || !isPhoneValid) {
+                event.preventDefault(); // Ngăn chặn submit nếu có lỗi
+                alert('Vui lòng kiểm tra lại thông tin email và số điện thoại.');
+            }
             // Kiểm tra lại tổng tiền trước khi submit
             const totalAmount = {{ $total }};
             let paymentMethod = document.querySelector('input[name="payment"]:checked');
@@ -292,22 +349,20 @@
         });
 
 
-    // document.addEventListener('DOMContentLoaded', function () {
-    //     const checkbox = document.getElementById('use-fixed-address');
-    //     const addressInput = document.getElementById('address-input');
-    //     const fixedAddress = document.getElementById('fixed-address').value;
+        // document.addEventListener('DOMContentLoaded', function () {
+        //     const checkbox = document.getElementById('use-fixed-address');
+        //     const addressInput = document.getElementById('address-input');
+        //     const fixedAddress = document.getElementById('fixed-address').value;
 
-    //     checkbox.addEventListener('change', function () {
-    //         if (this.checked) {
-    //             addressInput.value = fixedAddress;
-    //             addressInput.readOnly = true;
-    //         } else {
-    //             addressInput.value = '';
-    //             addressInput.readOnly = false;
-    //         }
-    //     });
-    // });
-
-
+        //     checkbox.addEventListener('change', function () {
+        //         if (this.checked) {
+        //             addressInput.value = fixedAddress;
+        //             addressInput.readOnly = true;
+        //         } else {
+        //             addressInput.value = '';
+        //             addressInput.readOnly = false;
+        //         }
+        //     });
+        // });
     </script>
 @endsection

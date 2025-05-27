@@ -58,6 +58,11 @@
                             <td class="text-center">
                                 <form method="post" action="{{ route('category.destroy', $model->id) }}">
                                     @csrf @method('DELETE')
+                                    {{-- Nút xem sản phẩm thuộc danh mục --}}
+                                    <a class="btn btn-sm btn-info btn-view-products" href="#"
+                                        data-id="{{ $model->id }}">
+                                        <i class="fa fa-eye pe-2"></i>Xem
+                                    </a>
                                     <a class="btn btn-sm btn-primary" href="{{ route('category.edit', $model->id) }}"><i
                                             class="fa fa-edit pe-2"></i>Sửa</a>
                                     <button class="btn btn-sm btn-danger"
@@ -74,6 +79,41 @@
         </div>
     </div>
     {{ $data->links() }}
+
+
+    <!-- Modal hiển thị sản phẩm -->
+    {{-- <div class="modal fade" id="productsModal" tabindex="-1" role="dialog" aria-labelledby="productsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="productsModalLabel">Sản phẩm thuộc danh mục</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Số lượng</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Nội dung sản phẩm sẽ được load bằng AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div> --}}
 @endsection
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
@@ -83,6 +123,46 @@
     @if (Session::has('success') || Session::has('error'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
+
+    {{-- <script>
+        $(document).ready(function() {
+            $('.btn-view-products').click(function(e) {
+                e.preventDefault();
+                var categoryId = $(this).data('id');
+
+                $('#productsModal').modal('show');
+
+                // Sử dụng route API
+                $.get('/api/categories/' + categoryId + '/products', function(response) {
+                    var html = '';
+                    var products = response.data.products;
+                    console.log(products);
+
+                    if (products.length > 0) {
+                        $.each(products, function(key, product) {
+                            html += '<tr>' +
+                                '<td>' + product.id + '</td>' +
+                                '<td>' + product.product_name + '</td>' +
+                                '<td>' + product.price.toLocaleString() + ' VNĐ</td>' +
+                                '<td>' + (product.status == 1 ? 'Hiển thị' : 'Ẩn') +
+                                '</td>' +
+                                '</tr>';
+                        });
+                    } else {
+                        html =
+                            '<tr><td colspan="5" class="text-center">Không có sản phẩm nào trong danh mục này</td></tr>';
+                    }
+
+                    $('#productsTableBody').html(html);
+                    $('#productsModalLabel').text('Sản phẩm thuộc danh mục: ' + response.data
+                        .category_name);
+                }).fail(function() {
+                    $('#productsTableBody').html(
+                        '<tr><td colspan="5" class="text-center">Lỗi khi tải dữ liệu</td></tr>');
+                });
+            });
+        });
+    </script> --}}
 @endsection
 @else
 {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}

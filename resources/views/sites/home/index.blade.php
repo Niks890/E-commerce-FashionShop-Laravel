@@ -149,7 +149,11 @@
                                 <div class="product__item__pic">
                                     <img src="{{ $itemRecent->image }}" class="set-bg" width="280" height="280"
                                         alt="{{ $itemRecent->product_name }}">
-                                    <span class="label name-discount bg-danger text-white">{{ $discountName }}</span>
+                                    <span
+                                        class="label name-discount bg-danger {{ $discountName == 'New' ? 'text-dark bg-white' : '' }}">
+                                        {{ $discountName }}
+                                    </span>
+
                                     <ul class="product__hover">
                                         <li>
                                             <a href="{{ url('add-to-wishlist/' . $itemRecent->id) }}"

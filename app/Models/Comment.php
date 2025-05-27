@@ -15,6 +15,7 @@ class Comment extends Model
         'product_id',
         'customer_id',
         'order_id',
+        'status'
     ];
 
     public function product()

@@ -168,6 +168,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             'comment' => CommentController::class
         ]
     );
+    Route::get('/categories/{category}/products-modal', [CategoryController::class, 'showProductsInModal'])->name('category.products.modal');
+    Route::post('/customers/send-voucher', [CustomerController::class, 'sendVoucher'])->name('customer.sendVoucher');
     Route::put('/staff/{staff}/update', [StaffController::class, 'update_staff'])->name('staff.update_staff');
     Route::get('/add_extra', [InventoryController::class, 'add_extra'])->name('inventory.add_extra');
     Route::post('/post_add_extra', [InventoryController::class, 'post_add_extra'])->name('inventory.post_add_extra');

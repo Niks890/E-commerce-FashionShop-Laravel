@@ -13,6 +13,7 @@ class Discount extends Model
     protected $fillable = [
         'name',
         'percent_discount',
+        'code',
         'start_date',
         'end_date',
         'status'
@@ -42,11 +43,6 @@ class Discount extends Model
                 $discount->status = 'inactive';
                 $discount->saveQuietly(); // saveQuietly() để tránh lặp vô hạn sự kiện retrieved
             }
-            // Bạn có thể thêm logic để tự động kích hoạt nếu muốn:
-            // else if ($discount->start_date <= $now && $discount->end_date >= $now && $discount->status === 'inactive') {
-            //     $discount->status = 'active';
-            //     $discount->saveQuietly();
-            // }
         });
     }
 

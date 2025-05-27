@@ -32,7 +32,7 @@ Route::get('discount/{id}', [ApiController::class, 'discount'])->name('api.disco
 Route::get('discount-code/{code}', [ApiController::class, 'getDiscountByCode'])->name('api.getDiscountByCode');
 
 Route::get('category', [ApiController::class, 'categories'])->name('api.categories');
-
+// Route::get('/categories/{id}/products', [App\Http\Controllers\CategoryController::class, 'apiProducts']);
 Route::get('product', [ApiController::class, 'products'])->name('api.products');
 Route::get('product-client', [ApiController::class, 'getProductsClient'])->name('api.getProductsClient');
 Route::get('product/{id}', [ApiController::class, 'product'])->name('api.product');

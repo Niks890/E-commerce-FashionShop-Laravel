@@ -13,9 +13,9 @@ return new class extends Migration
     {
         Schema::create('vouche_usages', function (Blueprint $table) {
             $table->increments('id');
-            $table->unsignedInteger('voucher_id');
-            $table->unsignedInteger('order_id');
-            $table->unsignedInteger('customer_id');
+            $table->unsignedInteger('voucher_id')->nullable();
+            $table->unsignedInteger('order_id')->nullable();
+            $table->unsignedInteger('customer_id')->nullable();
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->foreign('voucher_id')->references('id')->on('vouchers');
             $table->foreign('order_id')->references('id')->on('orders');

@@ -12,6 +12,7 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Staff;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -33,10 +34,12 @@ class ApiController extends Controller
         $discounts = Discount::orderBy('id', 'ASC')->get();
         return $this->apiStatus($discounts, 200, $discounts->count(), 'ok');
     }
-
     public function discount($id)
     {
-        $discount = Discount::find($id);
+        $discount = Discount::with(['products' => function ($query) {
+            $query->select('id', 'product_name', 'price', 'image', 'discount_id');
+        }])->find($id);
+
         if ($discount) {
             return $this->apiStatus($discount, 200, 1, 'ok');
         }
@@ -65,49 +68,49 @@ class ApiController extends Controller
 
 
 
-// public function inventories(Request $request)
-// {
-//     $query = Inventory::with([
-//         'Staff',
-//         'Provider',
-//         'InventoryDetails.Product.Category',
-//         'InventoryDetails.Product.ProductVariants'
-//     ])->orderBy('id', 'DESC');
+    // public function inventories(Request $request)
+    // {
+    //     $query = Inventory::with([
+    //         'Staff',
+    //         'Provider',
+    //         'InventoryDetails.Product.Category',
+    //         'InventoryDetails.Product.ProductVariants'
+    //     ])->orderBy('id', 'DESC');
 
-//     // Thêm điều kiện tìm kiếm nếu có tham số 'query' trong request
-//     if ($request->has('query') && !empty($request->input('query'))) {
-//         $searchTerm = $request->input('query');
-//         $query->where(function ($q) use ($searchTerm) {
-//             // Tìm kiếm theo ID phiếu nhập (chính xác)
-//             $q->where('id', $searchTerm)
-//               // Tìm kiếm theo tên nhân viên (gần đúng)
-//               ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
-//                   $subQuery->where('name', 'like', '%' . $searchTerm . '%');
-//               })
-//               // THÊM ĐIỀU KIỆN NÀY ĐỂ TÌM KIẾM THEO TÊN SẢN PHẨM
-//               ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
-//                   $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
-//               });
-//         });
-//     }
+    //     // Thêm điều kiện tìm kiếm nếu có tham số 'query' trong request
+    //     if ($request->has('query') && !empty($request->input('query'))) {
+    //         $searchTerm = $request->input('query');
+    //         $query->where(function ($q) use ($searchTerm) {
+    //             // Tìm kiếm theo ID phiếu nhập (chính xác)
+    //             $q->where('id', $searchTerm)
+    //               // Tìm kiếm theo tên nhân viên (gần đúng)
+    //               ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
+    //                   $subQuery->where('name', 'like', '%' . $searchTerm . '%');
+    //               })
+    //               // THÊM ĐIỀU KIỆN NÀY ĐỂ TÌM KIẾM THEO TÊN SẢN PHẨM
+    //               ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
+    //                   $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
+    //               });
+    //         });
+    //     }
 
-//     $inventories = $query->paginate(10);
+    //     $inventories = $query->paginate(10);
 
-//     return response()->json([
-//         'status_code' => 200,
-//         'data' => InventoryResource::collection($inventories),
-//         'pagination' => [
-//             'current_page' => $inventories->currentPage(),
-//             'last_page' => $inventories->lastPage(),
-//             'total' => $inventories->total(),
-//             'per_page' => $inventories->perPage(),
-//             'next_page_url' => $inventories->nextPageUrl(),
-//             'prev_page_url' => $inventories->previousPageUrl(),
-//         ],
-//     ]);
-// }
+    //     return response()->json([
+    //         'status_code' => 200,
+    //         'data' => InventoryResource::collection($inventories),
+    //         'pagination' => [
+    //             'current_page' => $inventories->currentPage(),
+    //             'last_page' => $inventories->lastPage(),
+    //             'total' => $inventories->total(),
+    //             'per_page' => $inventories->perPage(),
+    //             'next_page_url' => $inventories->nextPageUrl(),
+    //             'prev_page_url' => $inventories->previousPageUrl(),
+    //         ],
+    //     ]);
+    // }
 
- public function inventories(Request $request)
+    public function inventories(Request $request)
     {
         $query = Inventory::with([
             'Staff',
@@ -122,14 +125,14 @@ class ApiController extends Controller
             $query->where(function ($q) use ($searchTerm) {
                 // Tìm kiếm theo ID phiếu nhập (chính xác)
                 $q->where('id', $searchTerm)
-                  // Tìm kiếm theo tên nhân viên (gần đúng)
-                  ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
-                      $subQuery->where('name', 'like', '%' . $searchTerm . '%');
-                  })
-                  // Tìm kiếm theo tên sản phẩm (gần đúng)
-                  ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
-                      $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
-                  });
+                    // Tìm kiếm theo tên nhân viên (gần đúng)
+                    ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('name', 'like', '%' . $searchTerm . '%');
+                    })
+                    // Tìm kiếm theo tên sản phẩm (gần đúng)
+                    ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
+                        $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
+                    });
             });
         }
 
@@ -177,41 +180,6 @@ class ApiController extends Controller
         }
     }
 
-    // public function inventoriesSearch(Request $request)
-    // {
-    //     $query = Inventory::with([
-    //         'Staff',
-    //         'Provider',
-    //         'InventoryDetails.Product.Category',
-    //         'InventoryDetails.Product.ProductVariants'
-    //     ]);
-
-    //     if ($request->has('id')) {
-    //         $query->where('id', $request->id);
-    //     }
-
-    //     if ($request->has('staff_name')) {
-    //         $query->whereHas('Staff', function ($q) use ($request) {
-    //             $q->where('name', 'like', '%' . $request->staff_name . '%');
-    //         });
-    //     }
-
-    //     $inventories = $query->paginate(10);
-
-    //     return response()->json([
-    //         'status_code' => 200,
-    //         'message' => 'Thành công',
-    //         'data' => InventoryResource::collection($inventories),
-    //         'pagination' => [
-    //             'current_page' => $inventories->currentPage(),
-    //             'last_page' => $inventories->lastPage(),
-    //             'total' => $inventories->total(),
-    //             'per_page' => $inventories->perPage(),
-    //             'next_page_url' => $inventories->nextPageUrl(),
-    //             'prev_page_url' => $inventories->previousPageUrl(),
-    //         ]
-    //     ]);
-    // }
 
 
     public function inventoryDetail($id)
@@ -256,31 +224,14 @@ class ApiController extends Controller
 
     public function getProductsClient()
     {
-        $products = Product::with('Discount', 'ProductVariants')->orderBy('id', 'ASC')->where('status', 1)->get();
+        $products = Product::with('Discount', 'ProductVariants')
+            ->orderBy('id', 'ASC')->where('status', 1)->get();
         return $this->apiStatus($products, 200, $products->count(), 'ok');
     }
 
-    // public function getProductsClient()
-    // {
-    //     $products = Product::with('Discount', 'ProductVariants')
-    //         ->orderBy('id', 'ASC')
-    //         ->paginate(10); // mỗi trang 10 sản phẩm, bạn tùy chỉnh số này
-
-    //     // Bạn có thể trả về cả dữ liệu phân trang đầy đủ để frontend biết tổng số trang, trang hiện tại, ...
-    //     return response()->json([
-    //         'status' => 'success',
-    //         'data' => $products->items(),
-    //         'current_page' => $products->currentPage(),
-    //         'last_page' => $products->lastPage(),
-    //         'per_page' => $products->perPage(),
-    //         'total' => $products->total(),
-    //     ], 200);
-    // }
-
-
     public function product($id)
     {
-        $products = Product::with('Category', 'ProductVariants')->find($id);
+        $products = Product::with('Category', 'ProductVariants', 'Discount')->find($id);
         $productResource = new ProductResource($products);
         if ($productResource) {
             return $this->apiStatus($productResource, 200, 1, 'ok');
@@ -301,25 +252,25 @@ class ApiController extends Controller
         return $this->apiStatus($productVariants, 200, $productVariants->count(), 'ok');
     }
 
-    // public function test($id){
-    //     $data = DB::table('orders as o')
-    //     ->join('customers as c', 'o.customer_id', '=', 'c.id')
-    //     ->join('order_details as od', 'o.id', '=', 'od.order_id')
-    //     ->join('products as p', 'p.id', '=', 'od.product_id')
-    //     ->join('product_variants as pv', 'pv.product_id', '=', 'p.id')
-    //     ->where('o.id', $id)
-    //     ->select('o.*', 'c.name as customer_name', 'p.product_name as product_name', 'pv.size', 'pv.color', 'od.quantity', 'od.price')
-    //     ->get();
-    //     return $this->apiStatus($data, 200, 1, 'ok');
-    // }
+
 
 
     public function getProductDiscount()
     {
-        $products = Product::with('Discount', 'ProductVariants')->whereNotNull('discount_id')->where('status', 1)->paginate(5);
+        $now = Carbon::now();
+        $products = Product::with('Discount', 'ProductVariants')
+            ->whereHas('Discount', function ($query) use ($now) {
+                $query->where('status', 'active')
+                    ->whereDate('start_date', '<=', $now)
+                    ->whereDate('end_date', '>=', $now);
+            })
+            ->where('status', 1)
+            ->paginate(5);
         $productResource = ProductResource::collection($products);
         return $this->apiStatus($productResource, 200, 1, 'ok');
     }
+
+
 
     public function blogDetail($id)
     {

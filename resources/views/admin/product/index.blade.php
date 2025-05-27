@@ -70,7 +70,25 @@
                             <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
                         </select>
                     </div>
+
+
+                    {{-- Bộ lọc Khuyến mãi MỚI --}}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <label for="promotion_status" class="form-label">Khuyến mãi</label>
+                        <select name="promotion_status" id="promotion_status" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="has_promotion"
+                                {{ request('promotion_status') == 'has_promotion' ? 'selected' : '' }}>Có khuyến mãi
+                            </option>
+                            <option value="no_promotion"
+                                {{ request('promotion_status') == 'no_promotion' ? 'selected' : '' }}>
+                                Không có khuyến mãi</option>
+                        </select>
+                    </div>
                 </div>
+
+
+
 
                 {{-- Hàng mới cho các nút chức năng --}}
                 <div class="row g-2 mt-3 justify-content-end"> {{-- Thêm mt-3 để tạo khoảng cách với hàng trên --}}
@@ -99,8 +117,10 @@
                             <th>ID</th>
                             <th>Tên</th>
                             <th>Danh mục</th>
+                            <th>Giá Gốc / Khuyến mãi</th>
                             <th>Giá</th>
                             <th>Trạng thái</th>
+                            <th>Khuyến mãi</th>
                             <th>Ngày thêm</th>
                             <th>Ảnh</th>
                             <th class="text-center">Hành động</th>
@@ -112,11 +132,30 @@
                                 <td>{{ $model->id }}</td>
                                 <td>{{ $model->product_name }}</td>
                                 <td>{{ $model->category->category_name }}</td>
+                                <td>
+                                    @if ($model->has_active_discount)
+                                        <s class="text-muted">{{ number_format($model->price, 0, ',', '.') }} đ</s><br>
+                                        <span
+                                            class="text-danger fw-bold">{{ number_format($model->discounted_price, 0, ',', '.') }}
+                                            đ</span>
+                                    @else
+                                        {{ number_format($model->price, 0, ',', '.') }} đ
+                                    @endif
+                                </td>
                                 <td>{{ number_format($model->price, 0, ',', '.') }} đ</td>
                                 <td>
                                     <span class="badge bg-{{ $model->status == 1 ? 'success' : 'secondary' }}">
                                         {{ $model->status == 1 ? 'Hiển thị' : 'Ẩn' }}
                                     </span>
+                                </td>
+                                <td>
+                                    @if ($model->has_active_discount)
+                                        <span class="badge bg-warning">Có KM
+                                            ({{ $model->discount->percent_discount * 100 }}%)
+                                        </span>
+                                    @else
+                                        <span class="badge bg-info">KM đã hết hạn hoặc không có</span>
+                                    @endif
                                 </td>
                                 <td>{{ $model->created_at->format('d/m/Y') }}</td>
                                 <td><img src="{{ $model->image }}" alt="" width="45" class="rounded">
@@ -239,7 +278,7 @@
     <script>
         $(document).ready(function() {
             // Tự động submit form khi thay đổi danh mục, giá hoặc trạng thái
-            $('#category, #price_range, #status').on('change', function() {
+            $('#category, #price_range, #status, #promotion_status').on('change', function() {
                 $('#filterForm').submit();
             });
 
@@ -249,6 +288,7 @@
                 $('#category').val(''); // Đặt lại danh mục về "Tất cả"
                 $('#price_range').val(''); // Đặt lại giá về "Tất cả"
                 $('#status').val(''); // Đặt lại trạng thái về "Tất cả"
+                $('#promotion_status').val('');
                 $('#filterForm').submit(); // Gửi lại form để xóa tất cả các bộ lọc
             });
 
@@ -265,7 +305,29 @@
                             $("#product-id").text(p.id);
                             $("#product-name").text(p.name);
                             $("#product-brand").text(p.brand);
-                            $("#product-price").text(p.price);
+                            let priceHtml = '';
+                            // console.log(p.discount);
+                            if (p.discount && p.discount.status === 'active') {
+                                // Chuyển đổi ngày tháng từ API sang đối tượng Date để so sánh
+                                const startDate = new Date(p.discount.start_date);
+                                const endDate = new Date(p.discount.end_date);
+                                const now = new Date();
+
+                                if (now >= startDate && now <= endDate) {
+                                    let originalPrice = p.price;
+                                    let discountPercentage = p.discount.percent_discount;
+                                    let discountedPrice = originalPrice - (originalPrice *
+                                        discountPercentage);
+
+                                    priceHtml =
+                                        `<s class="text-muted">${originalPrice.toLocaleString('vi-VN')} đ</s><br><span class="text-danger fw-bold">${discountedPrice.toLocaleString('vi-VN')} đ</span>`;
+                                } else {
+                                    priceHtml = `${p.price.toLocaleString('vi-VN')} đ`;
+                                }
+                            } else {
+                                priceHtml = `${p.price.toLocaleString('vi-VN')} đ`;
+                            }
+                            $("#product-price").html(priceHtml);
                             $("#product-image").attr("src", `${p.image}`);
                             $("#product-description").text(p.description);
                             $("#category-name").text(p.category.name);

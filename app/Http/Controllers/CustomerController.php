@@ -3,10 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OrderCancellationMail;
+use App\Mail\VoucherMail;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -260,68 +263,16 @@ class CustomerController extends Controller
 
     //ADMIN CUSTOMER
 
-    // public function index(Request $request)
-    // {
-    //     $query = Customer::query();
-
-    //     // Đếm số đơn hàng cho mỗi khách hàng
-    //     $query->withCount('orders');
-
-    //     // Tìm kiếm theo tên, email, số điện thoại
-    //     if ($request->filled('search')) {
-    //         $search = $request->get('search');
-    //         $query->where(function ($q) use ($search) {
-    //             $q->where('name', 'LIKE', "%{$search}%")
-    //                 ->orWhere('email', 'LIKE', "%{$search}%")
-    //                 ->orWhere('phone', 'LIKE', "%{$search}%");
-    //         });
-    //     }
-
-    //     // Lọc theo ngày tạo
-    //     if ($request->filled('from_date')) {
-    //         $query->whereDate('created_at', '>=', $request->get('from_date'));
-    //     }
-
-    //     if ($request->filled('to_date')) {
-    //         $query->whereDate('created_at', '<=', $request->get('to_date'));
-    //     }
-
-    //     // Lọc theo số đơn hàng
-    //     if ($request->filled('order_count')) {
-    //         $orderCount = $request->get('order_count');
-
-    //         switch ($orderCount) {
-    //             case '0':
-    //                 $query->having('orders_count', '=', 0);
-    //                 break;
-    //             case '1-5':
-    //                 $query->having('orders_count', '>=', 1)
-    //                     ->having('orders_count', '<=', 5);
-    //                 break;
-    //             case '6-10':
-    //                 $query->having('orders_count', '>=', 6)
-    //                     ->having('orders_count', '<=', 10);
-    //                 break;
-    //             case '11+':
-    //                 $query->having('orders_count', '>', 10);
-    //                 break;
-    //         }
-    //     }
-
-    //     // Sắp xếp và phân trang
-    //     $customers = $query->orderBy('id', 'DESC')->paginate(5);
-
-    //     return view('admin.customer.index', compact('customers'));
-    // }
-
-
     public function index(Request $request)
     {
         $query = Customer::query();
 
+        // Eager load mối quan hệ voucherUsages và lồng voucher bên trong
+        // Điều này giúp bạn lấy tất cả voucher đã tặng cho mỗi khách hàng
+        $query->with(['voucherUsages.voucher']);
+
         // Đếm số đơn hàng và voucher cho mỗi khách hàng
-        // $query->withCount(['orders', 'vouchers']);
-        $query->withCount(['orders']);
+        $query->withCount(['orders', 'voucherUsages']);
 
         // Tìm kiếm theo tên, email, số điện thoại
         if ($request->filled('search')) {
@@ -342,7 +293,7 @@ class CustomerController extends Controller
             $query->whereDate('created_at', '<=', $request->get('to_date'));
         }
 
-        // Lọc theo số đơn hàng
+        // Lọc theo số đơn hàng (giữ nguyên)
         if ($request->filled('order_count')) {
             $orderCount = $request->get('order_count');
 
@@ -364,32 +315,78 @@ class CustomerController extends Controller
             }
         }
 
-        // // Lọc theo voucher đã tặng
-        // if ($request->filled('voucher_status')) {
-        //     $voucherStatus = $request->get('voucher_status');
+        // Lọc theo voucher đã tặng: Đã sửa lại để dùng `voucherUsages_count`
+        if ($request->filled('voucher_status')) {
+            $voucherStatus = $request->get('voucher_status');
 
-        //     if ($voucherStatus === 'has_voucher') {
-        //         $query->having('vouchers_count', '>', 0);
-        //     } elseif ($voucherStatus === 'no_voucher') {
-        //         $query->having('vouchers_count', '=', 0);
-        //     }
-        // }
+            if ($voucherStatus === 'has_voucher') {
+                $query->having('voucher_usages_count', '>', 0);
+            } elseif ($voucherStatus === 'no_voucher') {
+                $query->having('voucher_usages_count', '=', 0);
+            }
+        }
 
-        // Sắp xếp theo số đơn hàng
+
+        // Sắp xếp theo số đơn hàng (giữ nguyên)
         if ($request->filled('order_sort')) {
             $orderSort = $request->get('order_sort');
 
             if ($orderSort === 'most_orders') {
-                $query->orderBy('orders_count', 'DESC')->paginate(5);
+                $query->orderBy('orders_count', 'DESC');
             } elseif ($orderSort === 'least_orders') {
-                $query->orderBy('orders_count', 'ASC')->paginate(5);
+                $query->orderBy('orders_count', 'ASC');
             }
         } else {
-            $query->orderBy('id', 'DESC')->paginate(5);
+            $query->orderBy('id', 'DESC');
         }
 
         $customers = $query->paginate(5);
 
-        return view('admin.customer.index', compact('customers'));
+        // Load danh sách voucher có sẵn (giữ nguyên)
+        $vouchers = Voucher::where('vouchers_start_date', '<=', now())->where('vouchers_end_date', '>=', now())->get();
+
+        return view('admin.customer.index', compact('customers', 'vouchers'));
+    }
+
+
+    public function sendVoucher(Request $request)
+    {
+        $request->validate([
+            'customer_id' => 'required|exists:customers,id',
+            'voucher_id' => 'required|exists:vouchers,id',
+            'message' => 'nullable|string|max:500', // Thêm validation cho lời nhắn
+        ]);
+
+        try {
+            $customer = Customer::findOrFail($request->customer_id);
+            $voucher = Voucher::findOrFail($request->voucher_id);
+            $expiryDate = $voucher->vouchers_end_date;
+
+            VoucherUsage::create([
+                'customer_id' => $customer->id,
+                'voucher_id' => $voucher->id,
+                'order_id' => null,
+                'used_at' => null,
+            ]);
+
+            // Gửi email thông tin voucher cho khách hàng
+            Mail::to($customer->email)->send(new VoucherMail($customer, $voucher, $request->input('message'), $expiryDate));
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã tặng và gửi email voucher thành công'
+            ]);
+        } catch (\Exception $e) {
+            // Log lỗi để dễ dàng debug
+            Log::error('Lỗi khi gửi voucher: ' . $e->getMessage(), [
+                'customer_id' => $request->customer_id,
+                'voucher_id' => $request->voucher_id,
+                'trace' => $e->getTraceAsString(), // Thêm trace để debug chi tiết hơn
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi xử lý: ' . $e->getMessage()
+            ]);
+        }
     }
 }

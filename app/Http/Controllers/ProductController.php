@@ -14,26 +14,17 @@ use Illuminate\Support\Facades\Gate;
 
 class ProductController extends Controller
 {
-    // public function __construct()
-    // {
-    //     if (!Gate::allows('salers')) {
-    //         return abort(403);
-    //     }
-    // }
 
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        $data = Product::orderBy('id', 'DESC')->paginate(5);
+        $data = Product::with('discount')->orderBy('id', 'DESC')->paginate(5);
         $categories = Category::all();
         return view('admin.product.index', compact('data', 'categories'));
     }
 
     public function search(Request $request)
     {
-        $query = Product::query();
+        $query = Product::with('discount');
 
         // Lọc theo tên sản phẩm
         if ($request->filled('query')) {
@@ -72,21 +63,22 @@ class ProductController extends Controller
             $query->where('status', $status);
         }
 
+        // Lọc theo trạng thái khuyến mãi MỚI
+        if ($request->filled('promotion_status')) {
+            $promotionStatus = $request->input('promotion_status');
+            if ($promotionStatus === 'has_promotion') {
+                $query->whereNotNull('discount_id'); // Sản phẩm có discount_id (có khuyến mãi)
+            } elseif ($promotionStatus === 'no_promotion') {
+                $query->whereNull('discount_id'); // Sản phẩm không có discount_id (không có khuyến mãi)
+            }
+        }
+
         $data = $query->paginate(5)->appends($request->except('page')); // Giữ lại các tham số lọc khi phân trang
         $categories = Category::all(); // Lấy tất cả danh mục để hiển thị trong bộ lọc
 
         return view('admin.product.index', compact('data', 'categories'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        $cats = Category::all();
-        // dd($cats);
-        return view('admin.product.create', compact('cats'));
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -128,12 +120,7 @@ class ProductController extends Controller
         return redirect()->route('product.index')->with('success', 'Thêm sản phẩm thành công');
     }
 
-    // public function show(Product $product)
-    // {
-    //     $product = Product::find($product->id);
-    //     // $totalSale = $product->orderDetails()->distinct('order_id')->count();
-    //     return view('sites.product.product_detail', compact('product'));
-    // }
+
 
     /**
      * Show the form for editing the specified resource.
@@ -141,7 +128,7 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         $cats = Category::all();
-        $discounts = Discount::all();
+        $discounts = Discount::where('status', 'active')->get();
         $productVariants = ProductVariant::with('ImageVariants')->where('product_id', $product->id)->get();
         return view('admin.product.edit', compact('product', 'cats', 'discounts', 'productVariants'));
     }
