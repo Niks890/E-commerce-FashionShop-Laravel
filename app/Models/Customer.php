@@ -37,4 +37,9 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(Comment::class);
     }
+
+    public function voucherUsages()
+    {
+        return $this->hasMany(VoucherUsage::class);
+    }
 }

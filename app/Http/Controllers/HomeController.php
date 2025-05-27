@@ -161,6 +161,8 @@ class HomeController extends Controller
                     ->on('r.order_id', '=', 'o.id');
             })
             ->where('p.slug', $slug)
+            ->where('r.status', 1)
+            ->orderBy('r.created_at', 'desc')
             ->select(
                 'o.id as order_id',
                 'r.*',

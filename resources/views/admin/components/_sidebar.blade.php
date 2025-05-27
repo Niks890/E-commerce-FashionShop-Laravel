@@ -44,11 +44,6 @@
                                         <span class="sub-item">Thông tin Danh mục</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê thông tin về danh mục</span>
-                                    </a>
-                                </li>
                             </ul>
                         </div>
                     </li>
@@ -101,11 +96,6 @@
                                         <span class="sub-item">Đơn hàng đã hoàn thành</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê thông tin về đơn hàng</span>
-                                    </a>
-                                </li>
                             </ul>
                         </div>
                     </li>
@@ -127,11 +117,6 @@
                                         <span class="sub-item">Thông tin Voucher</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê thống tin về khuyến mái</span>
-                                    </a>
-                                </li>
                             </ul>
                         </div>
                     </li>
@@ -146,13 +131,8 @@
                         <div class="collapse" id="base999">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="{{route('order.trackingOrder')}}">
+                                    <a href="{{ route('order.trackingOrder') }}">
                                         <span class="sub-item">Đơn hàng đang giao</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê đơn hàng đã giao</span>
                                     </a>
                                 </li>
                             </ul>
@@ -255,19 +235,14 @@
                         <div class="collapse" id="base9999">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê đánh giá của người dùng</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">
+                                    <a href="{{ route('comment.index') }}">
                                         <span class="sub-item">Lọc/Ẩn đánh giá</span>
                                     </a>
                                 </li>
                             </ul>
                         </div>
                     </li>
-                      <li class="nav-item">
+                    <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base66666">
                             <i class="fas fa-users"></i>
                             <p>Quản lý Khách Hàng</p>
@@ -276,12 +251,7 @@
                         <div class="collapse" id="base66666">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê lượng mua của khách hàng</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">
+                                    <a href="{{ route('customer.index') }}">
                                         <span class="sub-item">Top khách hàng mua nhiều</span>
                                     </a>
                                 </li>

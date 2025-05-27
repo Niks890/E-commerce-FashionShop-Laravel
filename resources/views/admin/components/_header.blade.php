@@ -43,13 +43,11 @@
                     </ul>
                 </li>
                 <li class="nav-item topbar-icon dropdown hidden-caret">
-                    <a class="nav-link dropdown-toggle" href="javascript:void(0);" id="messageDropdown"
-                        role="button" data-bs-toggle="dropdown" aria-haspopup="true"
-                        aria-expanded="false">
+                    <a class="nav-link dropdown-toggle" href="javascript:void(0);" id="messageDropdown" role="button"
+                        data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fa fa-envelope"></i>
                     </a>
-                    <ul class="dropdown-menu messages-notif-box animated fadeIn"
-                        aria-labelledby="messageDropdown">
+                    <ul class="dropdown-menu messages-notif-box animated fadeIn" aria-labelledby="messageDropdown">
                         <li>
                             <div class="dropdown-title d-flex justify-content-between align-items-center">
                                 Tin nhắn
@@ -61,7 +59,8 @@
                                 <div class="notif-center">
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png"
+                                                alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jimmy Denis</span>
@@ -71,7 +70,8 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png"
+                                                alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Chad</span>
@@ -81,7 +81,8 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png"
+                                                alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Jhon Doe</span>
@@ -93,7 +94,8 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png"
+                                                alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="subject">Talha</span>
@@ -148,7 +150,8 @@
                                     </a>
                                     <a href="javascript:void(0);">
                                         <div class="notif-img">
-                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png" alt="Ảnh đại diện" />
+                                            <img src="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1747743499/blog_images/file_xyoqqa.png"
+                                                alt="Ảnh đại diện" />
                                         </div>
                                         <div class="notif-content">
                                             <span class="block">
@@ -246,7 +249,8 @@
                     <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="javascript:void(0);"
                         aria-expanded="false">
                         <div class="avatar-sm">
-                            <img src="{{$staff->avatar ?? asset('assets/img/profile.jpg')}} " alt="..." class="avatar-img rounded-circle" />
+                            <img src="{{ $staff->avatar ?? asset('assets/img/profile.jpg') }} " alt="..."
+                                class="avatar-img rounded-circle" />
                         </div>
                         <span class="profile-username">
                             <span class="op-7">Xin chào,</span>
@@ -258,8 +262,8 @@
                             <li>
                                 <div class="user-box">
                                     <div class="avatar-lg">
-                                        <img src="{{$staff->avatar ?? asset('assets/img/profile.jpg')}} " alt="ảnh đại diện"
-                                            class="avatar-img rounded" />
+                                        <img src="{{ $staff->avatar ?? asset('assets/img/profile.jpg') }} "
+                                            alt="ảnh đại diện" class="avatar-img rounded" />
                                     </div>
                                     <div class="u-text">
                                         <h4>{{ auth()->user()->name }}</h4>
@@ -272,9 +276,6 @@
                             <li>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ route('staff.profile') }}">Hồ sơ của tôi</a>
-                                <a class="dropdown-item" href="javascript:void(0);">Hộp thư đến</a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item" href="javascript:void(0);">Cài đặt tài khoản</a>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="{{ route('admin.logout') }}">Đăng xuất</a>
                             </li>

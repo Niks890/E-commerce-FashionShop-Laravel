@@ -44,4 +44,9 @@ class Order extends Model
     {
         return $this->belongsTo(Staff::class, 'staff_delivery_id');
     }
+
+    public function voucherUsages()
+    {
+        return $this->hasMany(VoucherUsage::class);
+    }
 }

@@ -6,6 +6,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatBotApiController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
@@ -163,6 +164,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             'staff' => StaffController::class,
             'blog' => BlogController::class,
             'voucher' => VoucherController::class,
+            'customer' => CustomerController::class,
+            'comment' => CommentController::class
         ]
     );
     Route::put('/staff/{staff}/update', [StaffController::class, 'update_staff'])->name('staff.update_staff');

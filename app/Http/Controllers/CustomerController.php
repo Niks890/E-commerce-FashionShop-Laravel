@@ -212,45 +212,184 @@ class CustomerController extends Controller
 
 
     public function cancelOrder(Request $request, $id)
-{
-    try {
-        DB::beginTransaction();
+    {
+        try {
+            DB::beginTransaction();
 
-        $order = Order::findOrFail($id);
-        $order->status = 'Đã huỷ đơn hàng';
-        $order->reason = $request->reason;
-        $order->save();
+            $order = Order::findOrFail($id);
+            $order->status = 'Đã huỷ đơn hàng';
+            $order->reason = $request->reason;
+            $order->save();
 
-        // Lấy danh sách chi tiết đơn hàng
-        $orderDetails = OrderDetail::where('order_id', $order->id)->get();
+            // Lấy danh sách chi tiết đơn hàng
+            $orderDetails = OrderDetail::where('order_id', $order->id)->get();
 
-        // Cộng ngược lại số lượng vào kho
-        foreach ($orderDetails as $detail) {
-            $variant = ProductVariant::where('product_id', $detail->product_id)
-                ->where('id', $detail->product_variant_id)
-                ->lockForUpdate()
-                ->first();
+            // Cộng ngược lại số lượng vào kho
+            foreach ($orderDetails as $detail) {
+                $variant = ProductVariant::where('product_id', $detail->product_id)
+                    ->where('id', $detail->product_variant_id)
+                    ->lockForUpdate()
+                    ->first();
 
-            if ($variant) {
-                $variant->stock += $detail->quantity;
-                $variant->save();
+                if ($variant) {
+                    $variant->stock += $detail->quantity;
+                    $variant->save();
+                }
+            }
+
+            // Gửi email xác nhận hủy đơn hàng
+            try {
+                Mail::to($order->email)->queue(new OrderCancellationMail($order));
+                Log::info('Email xác nhận hủy đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
+            } catch (\Exception $mailException) {
+                Log::error('Lỗi khi gửi email xác nhận hủy đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
+            }
+
+            DB::commit();
+            return response()->json(['message' => 'Hủy đơn hàng thành công!']);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi khi hủy đơn hàng ID: ' . $id . '. Lỗi: ' . $e->getMessage());
+            return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
+        }
+    }
+
+
+
+
+
+    //ADMIN CUSTOMER
+
+    // public function index(Request $request)
+    // {
+    //     $query = Customer::query();
+
+    //     // Đếm số đơn hàng cho mỗi khách hàng
+    //     $query->withCount('orders');
+
+    //     // Tìm kiếm theo tên, email, số điện thoại
+    //     if ($request->filled('search')) {
+    //         $search = $request->get('search');
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('name', 'LIKE', "%{$search}%")
+    //                 ->orWhere('email', 'LIKE', "%{$search}%")
+    //                 ->orWhere('phone', 'LIKE', "%{$search}%");
+    //         });
+    //     }
+
+    //     // Lọc theo ngày tạo
+    //     if ($request->filled('from_date')) {
+    //         $query->whereDate('created_at', '>=', $request->get('from_date'));
+    //     }
+
+    //     if ($request->filled('to_date')) {
+    //         $query->whereDate('created_at', '<=', $request->get('to_date'));
+    //     }
+
+    //     // Lọc theo số đơn hàng
+    //     if ($request->filled('order_count')) {
+    //         $orderCount = $request->get('order_count');
+
+    //         switch ($orderCount) {
+    //             case '0':
+    //                 $query->having('orders_count', '=', 0);
+    //                 break;
+    //             case '1-5':
+    //                 $query->having('orders_count', '>=', 1)
+    //                     ->having('orders_count', '<=', 5);
+    //                 break;
+    //             case '6-10':
+    //                 $query->having('orders_count', '>=', 6)
+    //                     ->having('orders_count', '<=', 10);
+    //                 break;
+    //             case '11+':
+    //                 $query->having('orders_count', '>', 10);
+    //                 break;
+    //         }
+    //     }
+
+    //     // Sắp xếp và phân trang
+    //     $customers = $query->orderBy('id', 'DESC')->paginate(5);
+
+    //     return view('admin.customer.index', compact('customers'));
+    // }
+
+
+    public function index(Request $request)
+    {
+        $query = Customer::query();
+
+        // Đếm số đơn hàng và voucher cho mỗi khách hàng
+        // $query->withCount(['orders', 'vouchers']);
+        $query->withCount(['orders']);
+
+        // Tìm kiếm theo tên, email, số điện thoại
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                    ->orWhere('email', 'LIKE', "%{$search}%")
+                    ->orWhere('phone', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // Lọc theo ngày tạo
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->get('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->get('to_date'));
+        }
+
+        // Lọc theo số đơn hàng
+        if ($request->filled('order_count')) {
+            $orderCount = $request->get('order_count');
+
+            switch ($orderCount) {
+                case '0':
+                    $query->having('orders_count', '=', 0);
+                    break;
+                case '1-5':
+                    $query->having('orders_count', '>=', 1)
+                        ->having('orders_count', '<=', 5);
+                    break;
+                case '6-10':
+                    $query->having('orders_count', '>=', 6)
+                        ->having('orders_count', '<=', 10);
+                    break;
+                case '11+':
+                    $query->having('orders_count', '>', 10);
+                    break;
             }
         }
 
-        // Gửi email xác nhận hủy đơn hàng
-        try {
-            Mail::to($order->email)->queue(new OrderCancellationMail($order));
-            Log::info('Email xác nhận hủy đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
-        } catch (\Exception $mailException) {
-            Log::error('Lỗi khi gửi email xác nhận hủy đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
+        // // Lọc theo voucher đã tặng
+        // if ($request->filled('voucher_status')) {
+        //     $voucherStatus = $request->get('voucher_status');
+
+        //     if ($voucherStatus === 'has_voucher') {
+        //         $query->having('vouchers_count', '>', 0);
+        //     } elseif ($voucherStatus === 'no_voucher') {
+        //         $query->having('vouchers_count', '=', 0);
+        //     }
+        // }
+
+        // Sắp xếp theo số đơn hàng
+        if ($request->filled('order_sort')) {
+            $orderSort = $request->get('order_sort');
+
+            if ($orderSort === 'most_orders') {
+                $query->orderBy('orders_count', 'DESC')->paginate(5);
+            } elseif ($orderSort === 'least_orders') {
+                $query->orderBy('orders_count', 'ASC')->paginate(5);
+            }
+        } else {
+            $query->orderBy('id', 'DESC')->paginate(5);
         }
 
-        DB::commit();
-        return response()->json(['message' => 'Hủy đơn hàng thành công!']);
-    } catch (\Exception $e) {
-        DB::rollBack();
-        Log::error('Lỗi khi hủy đơn hàng ID: ' . $id . '. Lỗi: ' . $e->getMessage());
-        return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
+        $customers = $query->paginate(5);
+
+        return view('admin.customer.index', compact('customers'));
     }
-}
 }
