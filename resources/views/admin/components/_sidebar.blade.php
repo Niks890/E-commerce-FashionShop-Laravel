@@ -175,12 +175,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê tồn kho</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">
+                                    <a href="{{ route('admin.revenueInventoryDatetime') }}">
                                         <span class="sub-item">Thống kê chi phí nhập hàng</span>
                                     </a>
                                 </li>

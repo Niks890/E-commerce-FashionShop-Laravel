@@ -207,6 +207,10 @@ Route::post('/admin/orders/update-status/{order}', [OrderController::class, 'upd
         Route::get('/revenue-best-seller-product/export-excel', [RevenueProductController::class, 'exportExcel'])->name('admin.revenueProductBestSeller.exportExcel')->middleware('can:managers');
         Route::get('/revenue-best-seller-product-month-year', [RevenueProductController::class, 'revenueProductBestSellerMonthYear'])->name('admin.revenueProductBestSellerMonthYear')->middleware('can:managers');
         Route::get('/revenue-inventory', [RevenueInventoryController::class, 'revenueInventory'])->name('admin.revenueInventory')->middleware('can:managers');
+
+        Route::get('/revenue-inventory-datetime', [RevenueInventoryController::class, 'revenueInventoryDatetime'])->name('admin.revenueInventoryDatetime')->middleware('can:managers');
+        Route::get('/revenue-inventory-datetime/export-pdf', [RevenueInventoryController::class, 'exportPdf'])->name('admin.revenueInventoryDatetime.exportPdf')->middleware('can:managers');
+        Route::get('/revenue-inventory-datetime/export-excel', [RevenueInventoryController::class, 'exportExcel'])->name('admin.revenueInventoryDatetime.exportExcel')->middleware('can:managers');
     });
 });
 
