@@ -42,21 +42,29 @@
 
 
                     <div class="quick-replies">
-                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun nam">
+                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
                             <i class="fas fa-tshirt"></i>
-                            Áo thun nam
+                            Áo thun
                         </button>
-                        <button class="quick-reply-btn" data-message="Có áo sơ mi nữ nào đẹp không?">
+                        <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
                             <i class="fas fa-user-tie"></i>
-                            Áo sơ mi nữ
+                            Áo sơ mi
                         </button>
-                        <button class="quick-reply-btn" data-message="Quần jean nam size nào có sẵn?">
+                        <button class="quick-reply-btn" data-message="Quần jean có mẫu nào?">
                             <i class="fas fa-user"></i>
-                            Quần jean nam
+                            Quần jean
                         </button>
-                        <button class="quick-reply-btn" data-message="Váy đầm cho nữ có những mẫu nào?">
+                        <button class="quick-reply-btn" data-message="Quần cotton có mẫu nào?">
+                            <i class="fas fa-user"></i>
+                            Quần cotton
+                        </button>
+                        <button class="quick-reply-btn" data-message="Áo hoddie có những mẫu nào?">
                             <i class="fas fa-female"></i>
-                            Váy đầm nữ
+                            Áo hoddie
+                        </button>
+                        <button class="quick-reply-btn" data-message="Áo Polo có những mẫu nào?">
+                            <i class="fas fa-female"></i>
+                            Áo Polo
                         </button>
                         <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
                             <i class="fas fa-tags"></i>
@@ -278,6 +286,7 @@
 
 
 
+
             function appendBotMessage(data) {
                 // Debug: hiển thị toàn bộ dữ liệu nhận được
                 // console.log('Raw data received:', data);
@@ -298,31 +307,74 @@
                 if (typeof data === 'string') {
                     messageContent.innerHTML = data.replace(/\n/g, '<br>');
                 } else if (typeof data === 'object') {
-                    // Trường hợp response từ handleSpecialCases
-                    if (data.content) {
-                        messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
+                    // Trường hợp response từ handleSpecialCases với ảnh size
+                    if (data.type === 'text_with_image' && data.image_url) {
+                        messageContent.innerHTML = `
+                <div>${data.content.replace(/\n/g, '<br>')}</div>
+                <div class="mt-2 text-center">
+                    <img src="${data.image_url}" alt="Bảng size áo"
+                         class="img-fluid rounded border shadow-sm"
+                         style="max-width: 100%; max-height: 300px; object-fit: contain;">
+                </div>
+                <div class="mt-2">
+                    <a href="http://127.0.0.1:8000/size-guide" target="_blank"
+                       class="text-primary text-decoration-none">
+                       <i class="fas fa-external-link-alt"></i> Xem hướng dẫn chọn size chi tiết
+                    </a>
+                </div>
+            `;
                     }
-                    // Trường hợp product list
-                    else if (data.type === 'product_list') {
+                    // Trường hợp response từ handleSpecialCases thông thường
+                    else if (data.content) {
+                        messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
+                    } else if (data.type === 'product_list') {
+                        console.log(data);
                         let html = `<strong>${data.intro_message}</strong><br><br>`;
                         data.products.forEach(product => {
+                            let priceHtml = `<span class="product-price">${product.price}</span>`;
+                            let discountBadge = '';
+
+                            if (product.has_discount) {
+                                priceHtml = `
+                                <span class="product-price text-danger fw-bold">${product.price}</span>
+                                <span class="text-decoration-line-through text-muted ms-2">${product.original_price}</span>
+                            `;
+
+                                discountBadge = `
+                                <div class="mt-1">
+                                    <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
+                                    ${product.discount_code ? `<span class="badge bg-success ms-1">Mã: ${product.discount_code}</span>` : ''}
+                                </div>
+                            `;
+                            }
+
                             html += `
-                    <div class="product-card mb-2 d-flex align-items-center">
-                        <a href="${product.link}" target="_blank" class="text-decoration-none text-dark">
-                            <img src="${product.image_url}" alt="${escapeHtml(product.name)}" class="product-image rounded me-3">
-                        </a>
-                        <div class="product-info flex-grow-1">
-                            <a href="${product.link}" target="_blank" class="product-name text-decoration-none text-primary fw-bold">${escapeHtml(product.name)}</a><br>
-                            <span class="product-price text-danger">${product.price}</span>
-                        </div>
-                    </div>`;
+                                <div class="product-card mb-3 p-2 border rounded">
+                                    <div class="d-flex align-items-center">
+                                        <a href="${product.link}" target="_blank" class="text-decoration-none text-dark">
+                                            <img src="${product.image_url}" alt="${escapeHtml(product.name)}"
+                                                class="product-image rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                        </a>
+                                        <div class="product-info flex-grow-1">
+                                            <a href="${product.link}" target="_blank"
+                                            class="product-name text-decoration-none text-primary fw-bold d-block mb-1">
+                                            ${escapeHtml(product.name)}
+                                            </a>
+                                            <div class="price-container">
+                                                ${priceHtml}
+                                                ${discountBadge}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
                         });
-                        html += `<br>${data.outro_message}`;
+                        html += `<div class="mt-2">${data.outro_message}</div>`;
                         messageContent.innerHTML = html;
                     }
+
                     // Fallback cho các trường hợp khác
                     else {
-                        // console.error('Unsupported data format:', data);
+                        console.error('Unsupported data format:', data);
                         messageContent.innerHTML = "Xin lỗi, có lỗi xảy ra khi xử lý tin nhắn.";
                     }
                 }

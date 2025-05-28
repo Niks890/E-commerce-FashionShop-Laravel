@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Redis;
 
 class ChatBotApiController extends Controller
 {
-
+    // https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg
     // CÁCH CŨ DÙNG CONTEXT
     // public function sendMessage(Request $request)
     // {
@@ -96,9 +96,11 @@ class ChatBotApiController extends Controller
         - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
         - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
         - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
-        - Hướng dẫn chọn size: <a href='http://127.0.0.1:8000/size-guide'>Size Guide</a>
+        - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
         ";
 
+
+    // Hàm xử lý gửi tin nhắn
     public function sendMessage(Request $request)
     {
         $userId = 'user_gemma3_newway';
@@ -232,7 +234,7 @@ class ChatBotApiController extends Controller
         return $chatPrompt;
     }
 
-    // Hàm xử lý trường hợp đặc biệt - ĐƯỢC CẬP NHẬT
+    // Hàm xử lý trường hợp đặc biệt
     protected function handleSpecialCases(string $message, string $userId): ?array
     {
         $message = mb_strtolower(trim($message));
@@ -249,14 +251,17 @@ class ChatBotApiController extends Controller
 
         // Hỏi về khuyến mãi
         if (str_contains($message, 'khuyến mãi') || str_contains($message, 'giảm giá') || str_contains($message, 'sale')) {
-            return ['type' => 'text', 'content' => "Hiện đang có chương trình giảm 20% cho áo thun và 15% cho quần jeans. Bạn có thể xem chi tiết tại <a href='http://127.0.0.1:8000/promotions'>đây</a>."];
+            return ['type' => 'text', 'content' => "Hiện đang có chương trình cho một số sản phẩm . Bạn có thể xem chi tiết tại <a href='http://127.0.0.1:8000/shop'>đây</a>."];
         }
 
         // Hỏi về hướng dẫn chọn size
-        if (str_contains($message, 'chọn size') || str_contains($message, 'hướng dẫn size')) {
-            return ['type' => 'text', 'content' => "Bạn có thể tham khảo hướng dẫn chọn size tại <a href='http://127.0.0.1:8000/size-guide'>đây</a>. Hoặc cho mình biết chiều cao/cân nặng để tư vấn cụ thể nhé!"];
+        if (str_contains($message, 'size') || str_contains($message, 'kích thước') || str_contains($message, 'cỡ')) {
+            return [
+                'type' => 'text_with_image',
+                'content' => "Dưới đây là bảng size áo tham khảo của TST Fashion. Bạn có thể cho mình biết chiều cao/cân nặng để tư vấn size phù hợp nhé!",
+                'image_url' => 'https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'
+            ];
         }
-
         // Từ ngữ không phù hợp
         if (preg_match('/\b(xấu|dở|tệ|chán|đểu|ngu)\b/u', $message)) {
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
@@ -344,6 +349,8 @@ class ChatBotApiController extends Controller
 
         return [];
     }
+
+    // Lưu context của sản phẩm vào redis
     protected function saveProductsToContext(string $userId, array $products, string $userQuery): void
     {
         $productContextKey = "product_context:$userId";
@@ -352,27 +359,25 @@ class ChatBotApiController extends Controller
             $contextItem = [
                 'name' => $product['name'],
                 'price' => $product['price'],
+                'original_price' => $product['original_price'] ?? null,
+                'discount_percent' => $product['discount_percent'] ?? null,
                 'link' => $product['link'],
-                'image' => $product['image'],
-                'query' => $userQuery, // Lưu câu hỏi gốc
+                'image' => $product['image_url'] ?? $product['image'],
+                'query' => $userQuery,
                 'timestamp' => time(),
-                'details' => $this->extractProductDetails($product) // Thêm chi tiết nếu có
+                'details' => $this->extractProductDetails($product)
             ];
 
-            // Kiểm tra xem sản phẩm đã tồn tại chưa
             if (!$this->isProductInContext($userId, $product['name'])) {
                 Redis::rpush($productContextKey, json_encode($contextItem));
             }
         }
 
-        // Giới hạn số lượng sản phẩm trong context (tối đa 20)
         Redis::ltrim($productContextKey, -20, -1);
-
-        // Set TTL cho product context (2 giờ)
         Redis::expire($productContextKey, 60 * 60 * 2);
     }
 
-    // HÀM MỚI: Kiểm tra sản phẩm đã có trong context chưa
+    //Kiểm tra sản phẩm đã có trong context chưa
     protected function isProductInContext(string $userId, string $productName): bool
     {
         $productContextKey = "product_context:$userId";
@@ -388,7 +393,7 @@ class ChatBotApiController extends Controller
         return false;
     }
 
-    // HÀM MỚI: Trích xuất chi tiết sản phẩm
+   // Trích xuất chi tiết sản phẩm
     protected function extractProductDetails(array $product): string
     {
         // Có thể mở rộng để lấy thêm thông tin từ database
@@ -410,7 +415,7 @@ class ChatBotApiController extends Controller
         return implode(', ', $details);
     }
 
-    // Các hàm khác giữ nguyên...
+    // Tóm tắt lịch sử chat
     protected function summarizeHistory(array $historyMessages): string
     {
         $textToSummarize = "";
@@ -443,10 +448,17 @@ class ChatBotApiController extends Controller
         return trim($data['response'] ?? '');
     }
 
+
+    // hàm xử lý sản phẩm
     protected function getProductRecommendations(?string $category = null, array $keywords = []): array
     {
-        $query = Product::with('category')->select('product_name', 'price', 'slug', 'image');
+        $now = now(); // Lấy thời gian hiện tại để kiểm tra khuyến mãi
 
+        $query = Product::with(['category', 'discount' => function ($query) use ($now) {
+            $query->where('status', 'active')
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now);
+        }])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id');
         // Nếu có category cụ thể
         if ($category) {
             $query->where(function ($q) use ($category, $keywords) {
@@ -475,20 +487,51 @@ class ChatBotApiController extends Controller
         }
 
         $dbProducts = $query->limit(5)->get();
-
         $formattedProducts = [];
         foreach ($dbProducts as $product) {
+            $price = $product->price;
+            $originalPrice = null;
+            $discountPercent = null;
+            $discountCode = null;
+
+            // Kiểm tra khuyến mãi hợp lệ
+            if (
+                $product->relationLoaded('discount') &&
+                $product->discount &&
+                $product->discount->status === 'active' &&
+                $now->between($product->discount->start_date, $product->discount->end_date)
+            ) {
+
+                $originalPrice = $price;
+                $discountPercent = $product->discount->percent_discount;
+                $discountCode = $product->discount->code;
+                $price = $price * (1 - $discountPercent);
+            }
+
             $formattedProducts[] = [
                 'name' => $product->product_name,
-                'price' => number_format($product->price, 0, ',', '.') . 'đ',
+                'price' => $this->formatPrice($price),
+                'original_price' => $originalPrice ? $this->formatPrice($originalPrice) : null,
+                'discount_percent' => $discountPercent,
+                'discount_code' => $discountCode,
+                'discount_name' => $product->discount->name ?? null,
                 'link' => '/product/' . $product->slug,
-                'image' => $product->image
+                'image' => $product->image,
+                'has_discount' => !is_null($discountPercent)
             ];
         }
 
         return $formattedProducts;
     }
 
+    // Định dạng tiền
+    protected function formatPrice($price)
+    {
+        return number_format($price, 0, ',', '.') . 'đ';
+    }
+
+
+    // Định dạng sản phẩm trên giao diện
     protected function formatProductResponse(array $products): array
     {
         $productData = [];
@@ -496,8 +539,13 @@ class ChatBotApiController extends Controller
             $productData[] = [
                 'name' => $product['name'],
                 'price' => $product['price'],
+                'original_price' => $product['original_price'] ?? null,
+                'discount_percent' => $product['discount_percent'] ?? null,
+                'discount_code' => $product['discount_code'] ?? null,
+                'discount_name' => $product['discount_name'] ?? null,
                 'link' => $product['link'],
                 'image_url' => $product['image'],
+                'has_discount' => $product['has_discount'] ?? false
             ];
         }
 

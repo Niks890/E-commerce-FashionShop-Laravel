@@ -668,28 +668,51 @@
 
 
 
-     .topic-guide {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            text-align: center;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
-        }
+    .topic-guide {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 20px;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
 
-        .topic-guide h5 {
-            margin: 0 0 10px 0;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
+    .topic-guide h5 {
+        margin: 0 0 10px 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
 
-        .topic-guide p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 14px;
-        }
+    .topic-guide p {
+        margin: 0;
+        opacity: 0.9;
+        font-size: 14px;
+    }
+
+
+
+    /* .variant-info {
+        color: #666;
+        font-size: 0.8rem;
+    }
+
+    .color-group {
+        margin-right: 10px;
+    }
+
+    .color-group strong {
+        color: #333;
+    }
+
+    .more-products-btn {
+        transition: all 0.3s ease;
+    }
+
+    .more-products-btn:hover {
+        transform: translateY(-2px);
+    } */
 </style>
