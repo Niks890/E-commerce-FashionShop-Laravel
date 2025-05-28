@@ -37,10 +37,7 @@ class RecommendationController extends Controller
             ->select('orders.customer_id', 'order_details.product_id')
             ->distinct()
             ->get();
-
-
         // dd($orderItems);
-
 
         $userProducts = $orderItems->groupBy('customer_id')->mapWithKeys(function ($items, $key) {
             return [(int)$key => $items->pluck('product_id')->unique()->toArray()];
@@ -169,6 +166,10 @@ class RecommendationController extends Controller
         return Product::whereIn('id', $recommendedProductIds)->select('id')->get();
     }
 
+
+
+
+    // COSINE SIMILARITY
     private function cosineSimilarity(array $vecA, array $vecB): float
     {
         $dotProduct = 0;
@@ -305,7 +306,6 @@ class RecommendationController extends Controller
 
         return response()->json($products);
     }
-
 
     // cosine ubcf nâng cao
     public function userBasedEnhanced(int $userId)

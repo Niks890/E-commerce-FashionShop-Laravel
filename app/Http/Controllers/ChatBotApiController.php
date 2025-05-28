@@ -9,7 +9,39 @@ use Illuminate\Support\Facades\Redis;
 
 class ChatBotApiController extends Controller
 {
-    // https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg
+
+
+// **************** Luồng xử lý chính trong ChatBotApiController có thể tóm tắt ngắn gọn như sau **************
+    // Nhận tin nhắn từ user:
+    // Lấy message từ request
+    // Xác định user ID
+    // Xử lý các trường hợp đặc biệt:
+    // Kiểm tra yêu cầu "xem thêm sản phẩm" → trả về sản phẩm mới nếu có
+    // Xử lý các câu hỏi đặc biệt (giờ mở cửa, size, khuyến mãi...) → trả về câu trả lời có sẵn
+    // Xử lý tin nhắn thông thường:
+    // Lấy lịch sử chat từ Redis
+    // Tóm tắt lịch sử nếu quá dài (>50 tin)
+    // Xây dựng prompt với context sản phẩm (nếu có)
+    // Gửi yêu cầu đến AI (Ollama)
+    // Xử lý phản hồi từ AI:
+    // Lưu tin nhắn mới vào lịch sử Redis
+    // Trả về kết quả cho người dùng
+    // Xử lý sản phẩm
+    // Phát hiện từ khóa sản phẩm → tìm kiếm sản phẩm phù hợp
+    // Lưu context sản phẩm vào Redis
+    // Trả về danh sách sản phẩm dạng card
+    // Các chức năng chính:
+    // Hỗ trợ đa tương tác (chat, sản phẩm)
+    // Duy trì ngữ cảnh cuộc hội thoại
+    // Tự động tóm tắt khi hội thoại dài
+
+    //  **************Flow xử lý tin nhắn***************
+    //  User Message -> Special Cases Check  -> [Nếu không match] → Lấy lịch sử từ Redis
+    //      -> Check threshold → [Nếu > 50] → Tóm tắt -> Xây dựng Multi-turn Prompt
+    //        -> call api tới Ollama AI -> Xử lý Response -> Lưu vào Redis(list string) ->Return JSON Response
+
+
+    // https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg --size guide
     // CÁCH CŨ DÙNG CONTEXT
     // public function sendMessage(Request $request)
     // {
@@ -66,11 +98,7 @@ class ChatBotApiController extends Controller
     //     return view('sites.chatbotRedis.chatbot');
     // }
 
-    //  **************Flow xử lý tin nhắn***************
-    //  User Message -> Special Cases Check  -> [Nếu không match] → Lấy lịch sử từ Redis
-    //      -> Check threshold → [Nếu > 50] → Tóm tắt -> Xây dựng Multi-turn Prompt
-    //        -> call api tới Ollama AI -> Xử lý Response -> Lưu vào Redis(list string) ->Return JSON Response
-
+    // PROMPT MẶC ĐỊNH
     protected $defaultPrompt = "
         Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam. Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
         ### THÔNG TIN CỬA HÀNG:
@@ -103,12 +131,24 @@ class ChatBotApiController extends Controller
     // Hàm xử lý gửi tin nhắn
     public function sendMessage(Request $request)
     {
+        // KEY USER CÓ THỂ THAY ĐỔI BẰNG AUTH
         $userId = 'user_gemma3_newway';
         $userMessage = $request->input('message');
+        // KEY HISTORY_CHAT TRONG REDIS
         $historyKey = "chat_history:$userId";
-        $productContextKey = "product_context:$userId"; // Key mới cho product context
-        $maxMessages = 50;
+        // KEY PRODUCT_CONTEXT TRONG REDIS
+        $productContextKey = "product_context:$userId";
+        $maxMessages = 50; // GIỚ HẠN TIN NHẮN
         $summarizeThreshold = 50;
+
+        // Xử lý hỏi thêm
+        $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
+        if ($moreProductsResponse) {
+            return response()->json([
+                'reply_data' => $moreProductsResponse,
+                'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
+            ]);
+        }
 
         // Kiểm tra special cases trước
         $specialResponse = $this->handleSpecialCases($userMessage, $userId);
@@ -119,7 +159,7 @@ class ChatBotApiController extends Controller
             ]);
         }
 
-        // Lấy và xử lý lịch sử chat
+        // Lấy và xử lý lịch sử chat vào redis
         $historyRaw = Redis::lrange($historyKey, 0, -1);
         $history = array_map('json_decode', $historyRaw);
 
@@ -176,6 +216,72 @@ class ChatBotApiController extends Controller
         Redis::expire($historyKey, 60 * 60 * 24);
 
         return response()->json(['reply' => $reply]);
+    }
+
+
+    // Xử lý hỏi thêm sản phẩm
+    protected function handleMoreProductsRequest(string $message, string $userId): ?array
+    {
+        $message = mb_strtolower(trim($message));
+
+        // Kiểm tra các từ khóa yêu cầu xem thêm
+        $moreKeywords = ['xem thêm', 'mẫu khác', 'còn không', 'khác đi', 'khác không', 'nữa không', 'nữa đi'];
+        $isMoreRequest = false;
+
+        foreach ($moreKeywords as $keyword) {
+            if (str_contains($message, $keyword)) {
+                $isMoreRequest = true;
+                break;
+            }
+        }
+
+        if (!$isMoreRequest) {
+            return null;
+        }
+
+        // Lấy context sản phẩm trước đó từ Redis
+        $productContextKey = "product_context:$userId";
+        $contextRaw = Redis::lrange($productContextKey, 0, -1);
+
+        if (empty($contextRaw)) {
+            return null;
+        }
+
+        // Lấy sản phẩm cuối cùng được thảo luận
+        $lastProduct = json_decode(end($contextRaw));
+        $lastQuery = $lastProduct->query ?? '';
+
+        // Nếu không có query trước đó thì không xử lý
+        if (empty($lastQuery)) {
+            return null;
+        }
+
+        // Phát hiện lại từ khóa sản phẩm từ query trước đó
+        $productKeywords = $this->detectProductKeywords($lastQuery);
+
+        if (empty($productKeywords)) {
+            return null;
+        }
+
+        // Lấy thêm sản phẩm tương tự (tăng limit lên để lấy nhiều hơn)
+        $products = $this->getProductRecommendations(
+            $productKeywords['category'],
+            $productKeywords['keywords'],
+            10, // Tăng số lượng sản phẩm lấy ra
+            5   // Offset bằng số sản phẩm đã hiển thị trước đó
+        );
+
+        if (!empty($products)) {
+            // Lưu sản phẩm mới vào context (ghi đè lên cũ)
+            $this->saveProductsToContext($userId, $products, $lastQuery);
+
+            return $this->formatProductResponse($products, true);
+        }
+
+        return [
+            'type' => 'text',
+            'content' => "Hiện mình không tìm thấy thêm sản phẩm nào tương tự. Bạn có muốn xem sản phẩm khác không ạ?"
+        ];
     }
 
     // Hàm xây dựng system prompt với product context
@@ -280,11 +386,10 @@ class ChatBotApiController extends Controller
                 return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm '{$productKeywords['matched_term']}' phù hợp. Bạn có muốn xem các sản phẩm tương tự không?"];
             }
         }
-
         return null;
     }
 
-    // HÀM MỚI: Phát hiện từ khóa sản phẩm thông minh
+    // Phát hiện từ khóa sản phẩm thông minh
     protected function detectProductKeywords(string $message): array
     {
         $message = mb_strtolower(trim($message));
@@ -393,7 +498,7 @@ class ChatBotApiController extends Controller
         return false;
     }
 
-   // Trích xuất chi tiết sản phẩm
+    // Trích xuất chi tiết sản phẩm
     protected function extractProductDetails(array $product): string
     {
         // Có thể mở rộng để lấy thêm thông tin từ database
@@ -449,8 +554,8 @@ class ChatBotApiController extends Controller
     }
 
 
-    // hàm xử lý sản phẩm
-    protected function getProductRecommendations(?string $category = null, array $keywords = []): array
+    // Hàm xử lý sản phẩm
+    protected function getProductRecommendations(?string $category = null, array $keywords = [],  int $limit = 5,  int $offset = 0): array
     {
         $now = now(); // Lấy thời gian hiện tại để kiểm tra khuyến mãi
 
@@ -486,7 +591,8 @@ class ChatBotApiController extends Controller
             });
         }
 
-        $dbProducts = $query->limit(5)->get();
+        // $dbProducts = $query->limit(5)->get();
+        $dbProducts = $query->offset($offset)->limit($limit)->get();
         $formattedProducts = [];
         foreach ($dbProducts as $product) {
             $price = $product->price;
@@ -532,7 +638,7 @@ class ChatBotApiController extends Controller
 
 
     // Định dạng sản phẩm trên giao diện
-    protected function formatProductResponse(array $products): array
+    protected function formatProductResponse(array $products, bool $isMoreRequest = false): array
     {
         $productData = [];
         foreach ($products as $product) {
@@ -551,7 +657,9 @@ class ChatBotApiController extends Controller
 
         return [
             'type' => 'product_list',
-            'intro_message' => "Mình xin gợi ý một số sản phẩm dành cho bạn:",
+            'intro_message' => $isMoreRequest
+                ? "Dưới đây là thêm một số sản phẩm tương tự dành cho bạn:"
+                : "Mình xin gợi ý một số sản phẩm dành cho bạn:",
             'products' => $productData,
             'outro_message' => "\nBạn muốn xem chi tiết sản phẩm nào ạ?",
         ];

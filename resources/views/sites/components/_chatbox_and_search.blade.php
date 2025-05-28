@@ -125,12 +125,8 @@
             const chatboxInput = document.getElementById("chatbox-input");
             const chatboxSend = document.getElementById("chatbox-send");
             const closeChatbot = document.querySelector(".btn-close-chatbot");
-
             const modalElement = document.getElementById("chatbox-modal");
             const modal = new bootstrap.Modal(modalElement);
-
-
-
 
             document.addEventListener("click", function(event) {
                 if (event.target.closest(".quick-reply-btn")) {
@@ -145,13 +141,12 @@
                         }, 150);
 
                         // Gọi hàm sendMessage với nội dung từ button
-                        // (Giả sử bạn đã có hàm sendMessage() và chatboxInput)
                         if (typeof sendMessage === 'function' && typeof chatboxInput !== 'undefined') {
                             chatboxInput.value = message;
                             sendMessage();
                         } else {
                             // Demo: hiển thị message được chọn
-                            console.log("Message selected:", message);
+                            // console.log("Message selected:", message);
                             alert("Đã chọn: " + message);
                         }
                     }
@@ -288,7 +283,6 @@
 
 
             function appendBotMessage(data) {
-                // Debug: hiển thị toàn bộ dữ liệu nhận được
                 // console.log('Raw data received:', data);
 
                 const botMessageContainer = document.createElement("div");
@@ -337,7 +331,7 @@
                             if (product.has_discount) {
                                 priceHtml = `
                                 <span class="product-price text-danger fw-bold">${product.price}</span>
-                                <span class="text-decoration-line-through text-muted ms-2">${product.original_price}</span>
+                                <span class=" text-muted ms-2" style="text-decoration:  line-through;">${product.original_price}</span>
                             `;
 
                                 discountBadge = `
