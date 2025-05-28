@@ -294,10 +294,174 @@ public function exportExcelMonth(Request $request)
         return view('admin.revenuestatistics.revenue-year.index', compact('year', 'total'));
     }
 
-    public function profitYear()
+    // public function profitYear()
+    // {
+    //     // khó điên truy vấn dữ liệu
+    //     $profitYear = Order::selectRaw('YEAR(created_at) AS nam, SUM(total) AS doanhthu')
+    //         ->where('status', 'Đã thanh toán')
+    //         ->groupByRaw('YEAR(created_at)')
+    //         ->orderByRaw('YEAR(created_at)')
+    //         ->get()
+    //         ->map(function ($order) {
+    //             $chiphi = Inventory::whereYear('created_at', $order->nam)->sum('total');
+    //             return [
+    //                 'nam' => $order->nam,
+    //                 'doanhthu' => $order->doanhthu,
+    //                 'chiphi' => $chiphi ?? 0,
+    //                 'loiNhuan' => $order->doanhthu - ($chiphi ?? 0),
+    //             ];
+    //         });
+
+    //     // Chuẩn bị dữ liệu cho biểu đồ
+    //     $nam = $profitYear->pluck('nam')->map(fn($y) => "Năm $y")->toArray();
+    //     $loiNhuan = $profitYear->pluck('loiNhuan')->toArray();
+
+    //     return view('admin.revenuestatistics.profit.index', compact('nam', 'loiNhuan'));
+    // }
+
+
+
+
+    public function profitYear(Request $request)
     {
-        // khó điên truy vấn dữ liệu
-        $profitYear = Order::selectRaw('YEAR(created_at) AS nam, SUM(total) AS doanhthu')
+        // Lấy các tham số lọc từ request
+        $filterType = $request->get('filter_type', 'year'); // year, month, date_range
+        $fromDate = $request->get('from_date');
+        $toDate = $request->get('to_date');
+        $selectedMonth = $request->get('selected_month');
+        $selectedYear = $request->get('selected_year', date('Y'));
+
+        // Khởi tạo query cơ bản
+        $orderQuery = Order::where('status', 'Đã thanh toán');
+        $inventoryQuery = Inventory::query();
+
+        $labels = [];
+        $profitData = [];
+
+        switch ($filterType) {
+            case 'date_range':
+                if ($fromDate && $toDate) {
+                    // Lọc theo khoảng ngày
+                    $profitData = $this->getProfitByDateRange($fromDate, $toDate);
+                    $labels = $profitData->pluck('label')->toArray();
+                } else {
+                    // Mặc định lấy 30 ngày gần nhất
+                    $fromDate = now()->subDays(30)->format('Y-m-d');
+                    $toDate = now()->format('Y-m-d');
+                    $profitData = $this->getProfitByDateRange($fromDate, $toDate);
+                    $labels = $profitData->pluck('label')->toArray();
+                }
+                break;
+
+            case 'month':
+                if ($selectedMonth && $selectedYear) {
+                    // Lọc theo tháng cụ thể
+                    $profitData = $this->getProfitByMonth($selectedYear, $selectedMonth);
+                    $labels = $profitData->pluck('label')->toArray();
+                } else {
+                    // Lấy 12 tháng của năm hiện tại
+                    $profitData = $this->getProfitByMonthsInYear($selectedYear);
+                    $labels = $profitData->pluck('label')->toArray();
+                }
+                break;
+
+            case 'year':
+            default:
+                // Lọc theo năm
+                $profitData = $this->getProfitByYear();
+                $labels = $profitData->pluck('label')->toArray();
+                break;
+        }
+
+        $loiNhuan = $profitData->pluck('loiNhuan')->toArray();
+
+        // Lấy danh sách năm để hiển thị trong dropdown
+        $availableYears = Order::selectRaw('DISTINCT YEAR(created_at) as year')
+            ->orderBy('year', 'desc')
+            ->pluck('year');
+
+        return view('admin.revenuestatistics.profit.index', compact(
+            'labels',
+            'loiNhuan',
+            'profitData',
+            'filterType',
+            'fromDate',
+            'toDate',
+            'selectedMonth',
+            'selectedYear',
+            'availableYears'
+        ));
+    }
+
+    private function getProfitByDateRange($fromDate, $toDate)
+    {
+        return Order::selectRaw('DATE(created_at) AS ngay, SUM(total) AS doanhthu')
+            ->where('status', 'Đã thanh toán')
+            ->whereBetween('created_at', [$fromDate, $toDate])
+            ->groupByRaw('DATE(created_at)')
+            ->orderByRaw('DATE(created_at)')
+            ->get()
+            ->map(function ($order) {
+                $chiphi = Inventory::whereDate('created_at', $order->ngay)->sum('total');
+                return [
+                    'label' => date('d/m/Y', strtotime($order->ngay)),
+                    'ngay' => $order->ngay,
+                    'doanhthu' => $order->doanhthu,
+                    'chiphi' => $chiphi ?? 0,
+                    'loiNhuan' => $order->doanhthu - ($chiphi ?? 0),
+                ];
+            });
+    }
+
+    private function getProfitByMonth($year, $month)
+    {
+        return Order::selectRaw('DAY(created_at) AS ngay, SUM(total) AS doanhthu')
+            ->where('status', 'Đã thanh toán')
+            ->whereYear('created_at', $year)
+            ->whereMonth('created_at', $month)
+            ->groupByRaw('DAY(created_at)')
+            ->orderByRaw('DAY(created_at)')
+            ->get()
+            ->map(function ($order) use ($year, $month) {
+                $chiphi = Inventory::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $month)
+                    ->whereDay('created_at', $order->ngay)
+                    ->sum('total');
+                return [
+                    'label' => "Ngày {$order->ngay}",
+                    'ngay' => $order->ngay,
+                    'doanhthu' => $order->doanhthu,
+                    'chiphi' => $chiphi ?? 0,
+                    'loiNhuan' => $order->doanhthu - ($chiphi ?? 0),
+                ];
+            });
+    }
+
+    private function getProfitByMonthsInYear($year)
+    {
+        return Order::selectRaw('MONTH(created_at) AS thang, SUM(total) AS doanhthu')
+            ->where('status', 'Đã thanh toán')
+            ->whereYear('created_at', $year)
+            ->groupByRaw('MONTH(created_at)')
+            ->orderByRaw('MONTH(created_at)')
+            ->get()
+            ->map(function ($order) use ($year) {
+                $chiphi = Inventory::whereYear('created_at', $year)
+                    ->whereMonth('created_at', $order->thang)
+                    ->sum('total');
+                return [
+                    'label' => "Tháng {$order->thang}",
+                    'thang' => $order->thang,
+                    'doanhthu' => $order->doanhthu,
+                    'chiphi' => $chiphi ?? 0,
+                    'loiNhuan' => $order->doanhthu - ($chiphi ?? 0),
+                ];
+            });
+    }
+
+    private function getProfitByYear()
+    {
+        return Order::selectRaw('YEAR(created_at) AS nam, SUM(total) AS doanhthu')
             ->where('status', 'Đã thanh toán')
             ->groupByRaw('YEAR(created_at)')
             ->orderByRaw('YEAR(created_at)')
@@ -305,20 +469,14 @@ public function exportExcelMonth(Request $request)
             ->map(function ($order) {
                 $chiphi = Inventory::whereYear('created_at', $order->nam)->sum('total');
                 return [
+                    'label' => "Năm {$order->nam}",
                     'nam' => $order->nam,
                     'doanhthu' => $order->doanhthu,
                     'chiphi' => $chiphi ?? 0,
                     'loiNhuan' => $order->doanhthu - ($chiphi ?? 0),
                 ];
             });
-
-        // Chuẩn bị dữ liệu cho biểu đồ
-        $nam = $profitYear->pluck('nam')->map(fn($y) => "Năm $y")->toArray();
-        $loiNhuan = $profitYear->pluck('loiNhuan')->toArray();
-
-        return view('admin.revenuestatistics.profit.index', compact('nam', 'loiNhuan'));
     }
-
 
 
 

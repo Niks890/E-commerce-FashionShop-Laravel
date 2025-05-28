@@ -1,11 +1,11 @@
 @can('warehouse workers')
-@extends('admin.master')
-@section('title', 'Thêm nhà cung cấp')
+    @extends('admin.master')
+    @section('title', 'Thêm nhà cung cấp')
 
 @section('back-page')
     <div class="d-flex align-items-center mb-3">
-        <button class="btn btn-outline-primary rounded-pill px-3 py-2 shadow-sm"
-            onclick="window.history.back()" style="transition: all 0.3s ease; border: 2px solid #007bff;">
+        <button class="btn btn-outline-primary rounded-pill px-3 py-2 shadow-sm" onclick="window.history.back()"
+            style="transition: all 0.3s ease; border: 2px solid #007bff;">
             <i class="fas fa-arrow-left me-2"></i>
             <span class="fw-semibold">Quay lại</span>
         </button>
@@ -39,7 +39,8 @@
 
                 <div class="mb-3">
                     <label for="phone" class="form-label fw-semibold">Số điện thoại</label>
-                    <input type="text" name="phone" class="form-control" placeholder="Nhập số điện thoại...">
+                    <input type="text" name="phone" id="phoneInput" class="form-control" placeholder="Nhập số điện thoại...">
+                    <div id="phoneError" class="text-danger small"></div>
                     @error('phone')
                         <small class="text-danger">{{ $message }}</small>
                     @enderror
@@ -54,6 +55,42 @@
         </div>
     </div>
 @endsection
+@section('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('phoneInput');
+            const phoneError = document.getElementById('phoneError');
+            const phoneRegex = /^(0|\+84)[3|5|7|8|9][0-9]{8}$/; // Regex cho số điện thoại Việt Nam
+
+            phoneInput.addEventListener('input', function() {
+                const phoneNumber = phoneInput.value.trim();
+                if (phoneNumber === '') {
+                    phoneInput.classList.remove('is-invalid');
+                    phoneError.textContent = '';
+                } else if (!phoneRegex.test(phoneNumber)) {
+                    phoneInput.classList.add('is-invalid');
+                    phoneError.textContent = 'Số điện thoại không đúng định dạng Việt Nam.';
+                } else {
+                    phoneInput.classList.remove('is-invalid');
+                    phoneError.textContent = '';
+                }
+            });
+
+            // Optional: Prevent form submission if client-side validation fails
+            const providerForm = document.getElementById('providerForm');
+            providerForm.addEventListener('submit', function(event) {
+                const phoneNumber = phoneInput.value.trim();
+                if (phoneNumber === '' || !phoneRegex.test(phoneNumber)) {
+                    event.preventDefault(); // Ngăn chặn gửi form
+                    if (phoneNumber === '') {
+                        phoneInput.classList.add('is-invalid');
+                        phoneError.textContent = 'Số điện thoại là bắt buộc.';
+                    }
+                }
+            });
+        });
+    </script>
+@endsection
 @else
-    {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan

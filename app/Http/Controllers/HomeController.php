@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use App\Models\ProductRecent;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Pagination\Paginator;
 
 class HomeController extends Controller
 {
@@ -32,15 +35,53 @@ class HomeController extends Controller
         return view('sites.home.index', compact('data', 'productRecentInfo'));
     }
 
+    //kèm phân trang
+    // public function home()
+    // {
+    //     if (Session::has('success_payment')) {
+    //         Session::forget('success_payment');
+    //     }
+
+    //     $productRecentInfo = [];
+    //     if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
+    //         foreach (Session::get('product_recent') as $item) {
+    //             $product = Product::with('ProductVariants', 'Discount')->find($item->id_recent);
+    //             if ($product) {
+    //                 $productRecentInfo[] = $product;
+    //             }
+    //         }
+    //     }
+
+    //     // Chuyển mảng thành Collection
+    //     $productRecentCollection = new Collection($productRecentInfo);
+    //     // Xác định trang hiện tại từ request
+    //     $currentPage = Paginator::resolveCurrentPage();
+    //     // Số sản phẩm trên mỗi trang
+    //     $perPage = 6;
+    //     // Lấy slice của collection cho trang hiện tại
+    //     $currentPageItems = $productRecentCollection->slice(($currentPage * $perPage) - $perPage, $perPage)->values();
+    //     // Tạo Paginator thủ công
+    //     $productRecentPaginated = new Paginator($currentPageItems, $perPage, $currentPage, [
+    //         'path' => Paginator::resolveCurrentPath(),
+    //     ]);
+
+    //     $data = Blog::with('staff')->paginate(5);
+    //     return view('sites.home.index', compact('data', 'productRecentPaginated')); // Đổi tên biến để dễ phân biệt
+    // }
+
+
     public function shop(Request $request)
     {
-        // dd($request->all());
+        // Khởi tạo query
         $query = Product::with('category', 'Discount', 'ProductVariants')->where('status', 1);
+
+        // Tìm kiếm theo tên sản phẩm
         if ($request->has('q')) {
             $search = $request->q;
             $query->where('product_name', 'LIKE', "%$search%");
         }
 
+        // Lọc theo danh mục
         if ($request->has('category')) {
             $categoryName = $request->category;
             $query->whereHas('category', function ($q) use ($categoryName) {
@@ -48,29 +89,35 @@ class HomeController extends Controller
             });
         }
 
+        // Lọc theo thương hiệu
         if ($request->has('brand')) {
             $brandName = $request->brand;
             $query->where('brand', $brandName);
         }
 
+        // Lọc theo khoảng giá
         if ($request->has('price')) {
             $price = $request->price;
             if (strpos($price, '-') !== false) {
-                $items = explode('-', $price);
-                $minPrice = str_replace('.', '', $items[0]);
-                $maxPrice = str_replace('.', '', $items[1]);
-            } else if ($price === '1.000.000') {
+                [$min, $max] = explode('-', $price);
+                $minPrice = str_replace('.', '', $min);
+                $maxPrice = str_replace('.', '', $max);
+                $query->whereBetween('price', [$minPrice, $maxPrice]);
+            } else {
                 $minPrice = str_replace('.', '', $price);
+                $query->where('price', '>=', $minPrice);
             }
-            empty($maxPrice) ? $query->where('price', '>=', $minPrice) : $query->whereBetween('price', [$minPrice, $maxPrice]);
         }
 
+        // Lọc theo tag
         if ($request->has('tag')) {
             $tag = str_replace('-', ' ', $request->tag);
             $query->where('tags', 'like', "%$tag%");
         }
 
-        switch ($request->input('sort_by', 'newest')) {
+        // Sắp xếp
+        $sortBy = $request->input('sort_by', 'newest');
+        switch ($sortBy) {
             case 'price_asc':
                 $query->orderBy('price', 'asc');
                 break;
@@ -83,11 +130,20 @@ class HomeController extends Controller
                 break;
         }
 
-        $products = $query->paginate(12)->appends($request->except('page'));
+        // Phân trang và giữ lại các tham số lọc
+        $products = $query->paginate(12)->appends($request->query());
 
-        // $products = $query->paginate(12);
+        // Lấy dữ liệu cho các bộ lọc
+        $categories = Category::all();
+        $brands = Product::where('status', 1)->distinct()->pluck('brand');
+        $priceRanges = [
+            '0-1000000' => 'Dưới 1 triệu',
+            '1000000-5000000' => '1 - 5 triệu',
+            '5000000-10000000' => '5 - 10 triệu',
+            '10000000' => 'Trên 10 triệu'
+        ];
 
-        return view("sites.shop.shop", compact('products'));
+        return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy'));
     }
 
     public function cart()

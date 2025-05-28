@@ -4,6 +4,37 @@
 
 @section('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    {{-- Thêm Font Awesome để có biểu tượng mũi tên --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+        integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPYXKC2b0/J2gQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .product-row {
+            cursor: pointer;
+            background-color: #f8f9fa;
+            /* Màu nền nhẹ cho hàng sản phẩm chính */
+        }
+
+        .variant-detail {
+            display: none;
+            /* Mặc định ẩn chi tiết variant */
+            background-color: #e9ecef;
+            /* Màu nền cho chi tiết variant */
+        }
+
+        .product-row.expanded {
+            background-color: #e2e6ea;
+            /* Màu nền khi sản phẩm được mở rộng */
+        }
+
+        .toggle-icon {
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .product-row.expanded .toggle-icon {
+            transform: rotate(180deg);
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -74,6 +105,7 @@
             </div>
         </form>
 
+        {{-- Summary Cards --}}
         <div class="row">
             <div class="col-md-4">
                 <div class="card text-white bg-primary">
@@ -102,6 +134,7 @@
                 </div>
             </div>
         </div>
+
         {{-- Biểu đồ --}}
         <div class="card mb-4">
             <div class="card-body">
@@ -111,6 +144,7 @@
         </div>
 
         {{-- Danh sách sản phẩm --}}
+        {{-- Danh sách sản phẩm --}}
         <div class="card">
             <div class="card-body">
                 <h5 class="card-title">Danh sách sản phẩm đã nhập</h5>
@@ -119,28 +153,77 @@
                         <thead>
                             <tr>
                                 <th>Sản phẩm</th>
-                                <th>Màu sắc</th>
-                                <th>Kích thước</th>
-                                <th>Số lượng</th>
-                                <th>Giá nhập</th>
-                                <th>Thành tiền</th>
-                                <th>Ngày nhập</th>
+                                <th>Tổng số lượng nhập</th>
+                                <th>Tổng chi phí nhập</th>
+                                <th>Ngày nhập gần nhất</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($importProducts as $product)
-                                <tr>
-                                    <td>{{ $product->product_name }}</td>
-                                    <td>{{ $product->color }}</td>
-                                    <td>{{ $product->size }}</td>
-                                    <td>{{ $product->quantity }}</td>
-                                    <td>{{ number_format($product->price) }} đ</td>
-                                    <td>{{ number_format($product->total_price) }} đ</td>
-                                    <td>{{ \Carbon\Carbon::parse($product->created_at)->format('d/m/Y') }}</td>
+                            @forelse($products as $product)
+                                <tr class="product-row" data-product-id="{{ $product->id }}">
+                                    <td>
+                                        <strong>{{ $product->product_name }}</strong>
+                                        <i class="fas fa-chevron-down float-right toggle-icon"></i>
+                                    </td>
+                                    <td>
+                                        {{-- Hiển thị tổng số lượng nhập từ thuộc tính đã tính --}}
+                                        {{ number_format($product->total_imported_quantity ?? 0) }}
+                                    </td>
+                                    <td>
+                                        {{-- Hiển thị tổng chi phí nhập từ thuộc tính đã tính --}}
+                                        {{ number_format($product->total_imported_cost ?? 0) }} đ
+                                    </td>
+                                    <td>
+                                        <?php
+                                        // Lấy ngày nhập gần nhất từ các inventoryDetails đã eager loaded
+                                        $latestImportDate = null;
+                                        if ($product->inventoryDetails->isNotEmpty()) {
+                                            $latestImportDate = $product->inventoryDetails->max('created_at');
+                                        }
+                                        ?>
+                                        {{ $latestImportDate ? \Carbon\Carbon::parse($latestImportDate)->format('d/m/Y') : 'N/A' }}
+                                    </td>
+                                </tr>
+                                {{-- Hàng ẩn chứa chi tiết các variant --}}
+                                <tr class="variant-detail" id="variants-{{ $product->id }}">
+                                    <td colspan="4">
+                                        <div class="pl-4">
+                                            <h6>Chi tiết Variants:</h6>
+                                            <table class="table table-sm table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Màu sắc</th>
+                                                        <th>Kích thước</th>
+                                                        <th>Số lượng tồn kho</th>
+                                                        <th>Ghi chú</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @forelse($product->productVariants as $variant)
+                                                        <tr>
+                                                            <td>{{ $variant->color ?? 'N/A' }}</td>
+                                                            <td>{{ $variant->size ?? 'N/A' }}</td>
+                                                            <td>{{ number_format($variant->stock ?? 0) }}</td>
+                                                            <td>
+                                                                <small class="text-muted">
+                                                                    Tồn kho hiện tại
+                                                                </small>
+                                                            </td>
+                                                        </tr>
+                                                    @empty
+                                                        <tr>
+                                                            <td colspan="4" class="text-center">Không có variant nào cho
+                                                                sản phẩm này.</td>
+                                                        </tr>
+                                                    @endforelse
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="text-center">Không có dữ liệu</td>
+                                    <td colspan="4" class="text-center">Không có dữ liệu</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -149,7 +232,7 @@
 
                 {{-- Phân trang --}}
                 <div class="d-flex justify-content-center">
-                    {{ $importProducts->withQueryString()->links() }}
+                    {{ $products->withQueryString()->links() }}
                 </div>
             </div>
         </div>
@@ -158,30 +241,28 @@
 
 @section('js')
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // Khởi tạo Flatpickr cho ô input ngày
         flatpickr("#start_date, #end_date", {
             dateFormat: "Y-m-d"
         });
 
+        // Dữ liệu và logic cho biểu đồ (giữ nguyên)
         const chartData = @json($chartData);
         const timeRange = @json($timeRange);
 
-        // Sửa lỗi ở đây: `item.date` có thể là `undefined` nếu là theo tháng hoặc năm.
-        // Tên trường trong chartData đã được đổi thành `label` để đồng nhất.
         const labels = chartData.map(item => {
             if (timeRange === 'day') {
-                return item.label; // item.label sẽ là ngày (YYYY-MM-DD)
+                return item.label;
             } else if (timeRange === 'month') {
-                return `Tháng ${item.label}`; // item.label sẽ là số tháng
-            } else { // year
-                return `Tháng ${item.label}`; // item.label sẽ là số tháng
+                return `Tháng ${item.label}`;
+            } else {
+                return `Tháng ${item.label}`;
             }
         });
         const data = chartData.map(item => item.total_cost);
 
-        // Khởi tạo biểu đồ nếu có dữ liệu
         if (labels.length > 0) {
             new Chart(document.getElementById('importChart'), {
                 type: 'bar',
@@ -216,26 +297,22 @@
                         if (elements.length > 0) {
                             const index = elements[0].index;
                             const params = new URLSearchParams(window.location.search);
-                            const clickedLabel = chartData[index].label; // Lấy giá trị label gốc từ chartData
+                            const clickedLabel = chartData[index].label;
 
                             if (timeRange === 'day') {
                                 params.set('start_date', clickedLabel);
                                 params.set('end_date', clickedLabel);
                             } else if (timeRange === 'month') {
-                                // Nếu đang xem theo tháng, click vào biểu đồ sẽ lọc theo ngày của tháng đó
-                                // Cần chuyển sang chế độ lọc theo ngày
                                 params.set('time_range', 'day');
                                 const year = params.get('year') || new Date().getFullYear();
-                                const month = clickedLabel; // clickedLabel là số tháng
-                                // Đặt ngày đầu tiên và cuối cùng của tháng để lọc theo ngày
+                                const month = clickedLabel;
                                 const firstDay = `${year}-${String(month).padStart(2, '0')}-01`;
                                 const lastDay = new Date(year, month, 0).toISOString().slice(0, 10);
                                 params.set('start_date', firstDay);
                                 params.set('end_date', lastDay);
-                            } else { // timeRange === 'year'
-                                // Nếu đang xem theo năm, click vào biểu đồ sẽ lọc theo tháng
+                            } else {
                                 params.set('time_range', 'month');
-                                params.set('month', clickedLabel); // clickedLabel là số tháng
+                                params.set('month', clickedLabel);
                                 params.set('year', params.get('year') || new Date().getFullYear());
                             }
                             location.href = window.location.pathname + '?' + params.toString();
@@ -244,9 +321,31 @@
                 }
             });
         } else {
-            // Hiển thị thông báo nếu không có dữ liệu biểu đồ
             document.getElementById('importChart').innerText = 'Không có dữ liệu để hiển thị biểu đồ.';
         }
+
+        // JavaScript cho hiệu ứng ẩn/hiện chi tiết variant
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.product-row').forEach(row => {
+                row.addEventListener('click', function() {
+                    const productId = this.dataset.productId;
+                    const variantDetailRow = document.getElementById(`variants-${productId}`);
+                    if (variantDetailRow) {
+                        // Toggle display style
+                        variantDetailRow.style.display = variantDetailRow.style.display === 'none' ?
+                            'table-row' : 'none';
+                        // Toggle 'expanded' class for styling
+                        this.classList.toggle('expanded');
+                        // Toggle icon
+                        const icon = this.querySelector('.toggle-icon');
+                        if (icon) {
+                            icon.classList.toggle('fa-chevron-down');
+                            icon.classList.toggle('fa-chevron-up');
+                        }
+                    }
+                });
+            });
+        });
     </script>
 @endsection
 @endcan

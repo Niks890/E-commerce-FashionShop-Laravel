@@ -36,8 +36,91 @@
     <!-- Breadcrumb Section End -->
     <!-- Shop Section Begin -->
     <section class="shop spad">
-
         <div class="container">
+            <!-- Phần bộ lọc cải tiến -->
+            <div class="filter-bar mb-5">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="active-filters">
+                            @if (request()->hasAny(['q', 'category', 'brand', 'price', 'tag']))
+                                <span class="filter-title">Bộ lọc hiện tại:</span>
+                                @if (request('q'))
+                                    <span class="filter-badge">
+                                        Tìm kiếm: "{{ request('q') }}"
+                                        <a href="{{ request()->fullUrlWithQuery(['q' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                @if (request('category'))
+                                    <span class="filter-badge">
+                                        Danh mục: {{ request('category') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['category' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                @if (request('brand'))
+                                    <span class="filter-badge">
+                                        Thương hiệu: {{ request('brand') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['brand' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                @if (request('price'))
+                                    <span class="filter-badge">
+                                        Giá: {{ $priceRanges[request('price')] ?? request('price') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['price' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                @if (request('tag'))
+                                    <span class="filter-badge">
+                                        Tag: {{ request('tag') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['tag' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                <a href="{{ url()->current() }}" class="clear-all-filters">
+                                    <i class="fas fa-times-circle"></i> Xóa tất cả
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="sort-options">
+                            <form method="GET" action="{{ url()->current() }}">
+                                @foreach (request()->except('sort_by', 'page') as $key => $value)
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endforeach
+                                <div class="input-group">
+                                    <label class="input-group-text" for="sortSelect">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                    </label>
+                                    <select name="sort_by" id="sortSelect" class="form-select"
+                                        onchange="this.form.submit()">
+                                        <option value="newest" {{ $sortBy == 'newest' ? 'selected' : '' }}>Mới nhất
+                                        </option>
+                                        <option value="price_asc" {{ $sortBy == 'price_asc' ? 'selected' : '' }}>Giá tăng
+                                            dần</option>
+                                        <option value="price_desc" {{ $sortBy == 'price_desc' ? 'selected' : '' }}>Giá giảm
+                                            dần</option>
+                                    </select>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row">
                 <div class="col-lg-3">
                     <div class="shop__sidebar">
@@ -68,24 +151,20 @@
                                                                 let categories = data.data;
 
                                                                 let categoryList = document.getElementById('category-list');
-                                                                categoryList.innerHTML = ""; // Xóa danh mục cũ
+                                                                categoryList.innerHTML = "";
 
                                                                 categories.forEach(category => {
                                                                     let listItem = document.createElement('li');
+                                                                    // Tạo một URL mới giữ lại các tham số hiện có và thêm/cập nhật 'category'
+                                                                    let currentParams = new URLSearchParams(window.location.search);
+                                                                    currentParams.set('category', category.category_name);
+                                                                    currentParams.set('page', 1); // Reset về trang 1 khi lọc mới
+                                                                    let newUrl = '/shop?' + currentParams.toString();
+
                                                                     listItem.innerHTML =
-                                                                        `<a class="category__item" href="javascript:void(0);" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
+                                                                        `<a class="category__item" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
                                                                     categoryList.appendChild(listItem);
                                                                 });
-                                                                let categoryItems = document.querySelectorAll('.category__item');
-                                                                // console.log(categoryItems);
-                                                                categoryItems.forEach(item => {
-                                                                    item.addEventListener('click', function(e) {
-                                                                        e.preventDefault();
-                                                                        let category = this.getAttribute("data-category");
-                                                                        window.location.href = '/shop?category=' + encodeURIComponent(category);
-                                                                    });
-                                                                });
-
                                                             } catch (error) {
                                                                 console.error("Lỗi API:", error);
                                                             }
@@ -113,24 +192,20 @@
                                                                 let brands = data.data;
 
                                                                 let brandList = document.getElementById('brand-list');
-                                                                brandList.innerHTML = ""; // Xóa danh sách cũ
+                                                                brandList.innerHTML = "";
 
                                                                 brands.forEach(brand => {
                                                                     let listItem = document.createElement('li');
+                                                                    // Tạo một URL mới giữ lại các tham số hiện có và thêm/cập nhật 'brand'
+                                                                    let currentParams = new URLSearchParams(window.location.search);
+                                                                    currentParams.set('brand', brand.brand);
+                                                                    currentParams.set('page', 1); // Reset về trang 1 khi lọc mới
+                                                                    let newUrl = '/shop?' + currentParams.toString();
+
                                                                     listItem.innerHTML =
-                                                                        `<a class="brand__item" href="javascript:void(0);" data-brand="${brand.brand}">${brand.brand}</a>`;
+                                                                        `<a class="brand__item" href="${newUrl}" data-brand="${brand.brand}">${brand.brand}</a>`;
                                                                     brandList.appendChild(listItem);
                                                                 });
-
-                                                                let brandItems = document.querySelectorAll('.brand__item');
-                                                                brandItems.forEach(item => {
-                                                                    item.addEventListener('click', function(e) {
-                                                                        e.preventDefault();
-                                                                        let brand = this.getAttribute("data-brand");
-                                                                        window.location.href = '/shop?brand=' + encodeURIComponent(brand);
-                                                                    });
-                                                                });
-
                                                             } catch (error) {
                                                                 console.error("Lỗi API:", error);
                                                             }
@@ -151,7 +226,8 @@
                                             <div class="shop__sidebar__price">
                                                 <ul>
                                                     <li><a class="price__item"
-                                                            href="javascript:void(0)">{{ number_format(0, 0, ',', '.') }} -
+                                                            href="javascript:void(0)">{{ number_format(0, 0, ',', '.') }}
+                                                            -
                                                             {{ number_format(100000, 0, ',', '.') }}</a></li>
                                                     <li><a class="price__item"
                                                             href="javascript:void(0)">{{ number_format(100000, 0, ',', '.') }}
@@ -172,9 +248,23 @@
                                             priceItems.forEach(item => {
                                                 item.addEventListener('click', function(e) {
                                                     e.preventDefault();
-                                                    let price = this.textContent;
-                                                    window.location.href = '/shop?price=' + encodeURIComponent(price.replaceAll(' ', '')
-                                                        .replace('Trên', ''));
+                                                    let priceText = this.textContent;
+                                                    let priceParam = priceText.replaceAll(' ', '').replace('Trên', '').replace(/\./g,
+                                                        ''); // Xóa dấu chấm phân cách hàng nghìn
+                                                    if (priceText.includes('Dưới')) {
+                                                        priceParam = '0-' + priceParam.replace('Dưới', '');
+                                                    } else if (priceText.includes('Trên')) {
+                                                        // Giữ nguyên priceParam đã được xử lý (ví dụ: "1000000")
+                                                    }
+
+
+                                                    // Tạo một URL mới giữ lại các tham số hiện có và thêm/cập nhật 'price'
+                                                    let currentParams = new URLSearchParams(window.location.search);
+                                                    currentParams.set('price', priceParam);
+                                                    currentParams.set('page', 1); // Reset về trang 1 khi lọc mới
+                                                    let newUrl = '/shop?' + currentParams.toString();
+
+                                                    window.location.href = newUrl;
                                                 });
                                             });
                                         </script>
@@ -198,13 +288,30 @@
                                                 <a class="tag-item" href="javascript:void(0)">dài</a>
                                                 <a class="tag-item" href="javascript:void(0)">dry-ex</a>
                                             </div>
-                                            <script>
+                                            {{-- <script>
                                                 let tagItems = document.querySelectorAll('.tag-item');
                                                 tagItems.forEach(item => {
                                                     item.addEventListener('click', function(e) {
                                                         e.preventDefault();
                                                         let tag = this.textContent;
                                                         window.location.href = '/shop?tag=' + encodeURIComponent(tag.replace(' ', '-'));
+                                                    });
+                                                });
+                                            </script> --}}
+                                            <script>
+                                                let tagItems = document.querySelectorAll('.tag-item');
+                                                tagItems.forEach(item => {
+                                                    item.addEventListener('click', function(e) {
+                                                        e.preventDefault();
+                                                        let tag = this.textContent.trim().replace(' ', '-'); // Đảm bảo tag đúng định dạng
+
+                                                        // Tạo một URL mới giữ lại các tham số hiện có và thêm/cập nhật 'tag'
+                                                        let currentParams = new URLSearchParams(window.location.search);
+                                                        currentParams.set('tag', tag);
+                                                        currentParams.set('page', 1); // Reset về trang 1 khi lọc mới
+                                                        let newUrl = '/shop?' + currentParams.toString();
+
+                                                        window.location.href = newUrl;
                                                     });
                                                 });
                                             </script>
@@ -224,7 +331,7 @@
                                         phẩm</p>
                                 </div>
                             </div>
-                            <div class="col-lg-6 col-md-6 col-sm-6">
+                            {{-- <div class="col-lg-6 col-md-6 col-sm-6">
                                 <div class="shop__product__option__right">
                                     <p>Sắp xếp theo</p>
                                     <select id="sortSelect">
@@ -238,7 +345,7 @@
                                             thấp</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                     <div class="row">
@@ -319,27 +426,50 @@
                     </div>
                     <div class="row">
                         <div class="col-lg-12">
+
                             <div class="product__pagination">
                                 @if ($products->lastPage() > 1)
+                                    {{-- Previous Page Link --}}
                                     @if ($products->onFirstPage())
-                                        <a href="{{ url('shop') }}#product-list-shop" class="disabled">&laquo;</a>
+                                        <a class="disabled">&laquo;</a>
                                     @else
                                         <a href="{{ $products->previousPageUrl() }}#product-list-shop">&laquo;</a>
                                     @endif
 
-                                    @foreach ($products->links()->elements as $element)
-                                        @if (is_array($element))
-                                            @foreach ($element as $page => $url)
-                                                <a href="{{ $url }}"
-                                                    class="{{ $products->currentPage() == $page ? 'active' : '' }}">{{ $page }}</a>
-                                            @endforeach
+                                    {{-- First Page --}}
+                                    @if ($products->currentPage() > 3)
+                                        <a href="{{ $products->url(1) }}#product-list-shop">1</a>
+                                        @if ($products->currentPage() > 4)
+                                            <span class="dots">...</span>
+                                        @endif
+                                    @endif
+
+                                    {{-- Page Numbers --}}
+                                    @foreach (range(1, $products->lastPage()) as $i)
+                                        @if ($i >= $products->currentPage() - 2 && $i <= $products->currentPage() + 2)
+                                            @if ($i == $products->currentPage())
+                                                <a class="active">{{ $i }}</a>
+                                            @else
+                                                <a
+                                                    href="{{ $products->url($i) }}#product-list-shop">{{ $i }}</a>
+                                            @endif
                                         @endif
                                     @endforeach
 
+                                    {{-- Last Page --}}
+                                    @if ($products->currentPage() < $products->lastPage() - 2)
+                                        @if ($products->currentPage() < $products->lastPage() - 3)
+                                            <span class="dots">...</span>
+                                        @endif
+                                        <a
+                                            href="{{ $products->url($products->lastPage()) }}#product-list-shop">{{ $products->lastPage() }}</a>
+                                    @endif
+
+                                    {{-- Next Page Link --}}
                                     @if ($products->hasMorePages())
                                         <a href="{{ $products->nextPageUrl() }}#product-list-shop">&raquo;</a>
                                     @else
-                                        <a href="{{ url('shop') }}#product-list-shop" class="disabled">&raquo;</a>
+                                        <a class="disabled">&raquo;</a>
                                     @endif
                                 @endif
                             </div>
@@ -401,6 +531,121 @@
     </script>
 @endsection
 
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
+    <style>
+        /* Style mới cho bộ lọc */
+        .filter-bar {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .active-filters {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-title {
+            font-weight: 600;
+            color: #495057;
+            margin-right: 8px;
+        }
+
+        .filter-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            color: #495057;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .filter-badge:hover {
+            background-color: #dee2e6;
+        }
+
+        .remove-filter {
+            color: #6c757d;
+            margin-left: 6px;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .remove-filter:hover {
+            color: #dc3545;
+        }
+
+        .clear-all-filters {
+            display: inline-flex;
+            align-items: center;
+            color: #dc3545;
+            font-size: 14px;
+            margin-left: 10px;
+            text-decoration: none;
+        }
+
+        .clear-all-filters i {
+            margin-right: 5px;
+        }
+
+        .clear-all-filters:hover {
+            text-decoration: underline;
+        }
+
+        .sort-options .input-group {
+            max-width: 250px;
+            margin-left: auto;
+        }
+
+        .sort-options .input-group-text {
+            background-color: #f8f9fa;
+        }
+
+        /* Style cho phân trang */
+        .product__pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            gap: 5px;
+        }
+
+        .product__pagination a {
+            display: inline-block;
+            padding: 5px 12px;
+            border: 1px solid #ddd;
+            color: #333;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+
+        .product__pagination a:hover {
+            background-color: #f0f0f0;
+        }
+
+        .product__pagination a.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        .product__pagination a.disabled {
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .product__pagination .dots {
+            padding: 5px 10px;
+        }
+    </style>
+@endsection
+
 @section('js')
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
     <script>
@@ -414,8 +659,4 @@
             });
         });
     </script>
-@endsection
-
-@section('css')
-    <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
 @endsection

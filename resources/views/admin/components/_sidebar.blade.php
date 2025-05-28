@@ -284,11 +284,6 @@
                         <div class="collapse" id="base999999">
                             <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="javascript:void(0);">
-                                        <span class="sub-item">Thống kê lợi nhuận ngày</span>
-                                    </a>
-                                </li>
-                                <li>
                                     <a href="{{ route('admin.profitYear') }}">
                                         <span class="sub-item">Thống kê lợi nhuận theo tháng và năm</span>
                                     </a>

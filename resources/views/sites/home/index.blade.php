@@ -212,6 +212,7 @@
                         </div>
                     @endforeach
                 </div>
+                {{-- {{ $productRecentInfo->links() }} --}}
             </div>
         </section>
     @endif
