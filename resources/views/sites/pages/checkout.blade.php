@@ -1,7 +1,6 @@
 @extends('sites.master')
 @section('title', 'Thanh toán')
 @section('content')
-    <!-- Breadcrumb Section Begin -->
     <section class="breadcrumb-option">
         <div class="container">
             <div class="row">
@@ -18,9 +17,6 @@
             </div>
         </div>
     </section>
-    <!-- Breadcrumb Section End -->
-
-    <!-- Checkout Section Begin -->
     <section class="checkout spad">
         <div class="container">
             <div class="checkout__form">
@@ -42,26 +38,42 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="checkout__input">
-                                <p>Địa chỉ nhận hàng<span>*</span></p>
-                                <input type="text" placeholder="Street Address" class="checkout__input__add"
-                                    name="address" required>
-                            </div>
-                            {{-- <div class="checkout__input">
-                                <p>Địa chỉ nhận hàng<span class="text-danger">*</span></p>
 
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="use-fixed-address">
-                                    <label class="form-check-label" for="use-fixed-address">
-                                        Giao tại cửa hàng (sử dụng địa chỉ cố định)
-                                    </label>
+                            {{-- Dynamic Address Fields --}}
+                            <div class="row mb-3">
+                                <div class="col-lg-4">
+                                    <div class="checkout__input">
+                                        <p>Tỉnh/Thành phố<span>*</span></p>
+                                        <select name="province" id="province-select" class="form-control" required>
+                                            <option value="">-- Chọn Tỉnh/Thành phố --</option>
+                                        </select>
+                                    </div>
                                 </div>
-
-                                <input type="text" placeholder="Nhập địa chỉ nhận hàng" class="form-control"
-                                    name="address" id="address-input" required>
-
-                                <input type="hidden" id="fixed-address" value="123 TFashion Shop, Quận 1, TP.HCM">
-                            </div> --}}
+                                <div class="col-lg-4">
+                                    <div class="checkout__input">
+                                        <p>Quận/Huyện<span>*</span></p>
+                                        <select name="district" id="district-select" class="form-control" required disabled>
+                                            <option value="">-- Chọn Quận/Huyện --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4">
+                                    <div class="checkout__input">
+                                        <p>Phường/Xã<span>*</span></p>
+                                        <select name="ward" id="ward-select" class="form-control" required disabled>
+                                            <option value="">-- Chọn Phường/Xã --</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-lg-12">
+                                    <div class="checkout__input">
+                                        <p>Số nhà, Tên đường<span>*</span></p>
+                                        <input type="text" placeholder="Ví dụ: 123 Đường 3/2"
+                                            class="checkout__input__add" name="street_address" required>
+                                    </div>
+                                </div>
+                                <input type="hidden" name="address" id="full-address-input">
+                            </div>
 
                             <div class="row">
                                 <div class="col-lg-6">
@@ -76,10 +88,14 @@
                                         <input type="text" name="email" required>
                                     </div>
                                 </div>
+                                {{-- <small class="text-success"
+                                    style="margin-left: 12px; margin-top: -12px; margin-bottom: 12px;">(Bạn vui lòng nhập
+                                    đúng địa chỉ email và sđt để có thể dễ dàng xử lý vấn đề liên quan đến đơn hàng)</small> --}}
                             </div>
                             <div class="checkout__input">
                                 <p>Ghi chú<span></span></p>
-                                <input type="text" placeholder="Ghi chú cho đơn hàng (nếu có)" name="note" required>
+                                <input type="text" placeholder="Ghi chú cho đơn hàng (nếu có)" name="note">
+                                {{-- Changed required to optional for notes --}}
                             </div>
                             <div class="checkout__input__checkbox">
                                 <a href="{{ route('admin.login') }}">Tạo tài khoản mua hàng?</a>
@@ -188,7 +204,7 @@
                                     value="{{ Auth::guard('customer')->check() ? Auth::guard('customer')->user()->id : '' }}">
                                 {{-- danh sách sản phẩm --}}
                                 {{-- <input type="hidden" name="selected_items" id="selected-items"> --}}
-                                <input type="submit" id="checkout-form" name="redirect" class="site-btn"
+                                <input type="submit" id="checkout-form-submit-btn" name="redirect" class="site-btn"
                                     value="ĐẶT HÀNG">
                             </div>
                         </div>
@@ -197,27 +213,229 @@
             </div>
         </div>
     </section>
-    <!-- Checkout Section End -->
 @endsection
 
-{{-- @section('css')
-<style>
-    #address-input[readonly] {
-    background-color: #f8f9fa;
-    color: #6c757d;
-    font-style: italic;
-}
-</style>
-@endsection --}}
+
+@section('css')
+    <style>
+        /* Thêm vào file CSS của bạn */
+        #province-select,
+        #district-select,
+        #ward-select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            height: 40px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        /* Đảm bảo không bị ẩn bởi các style khác */
+        .checkout__input select {
+            display: block !important;
+            opacity: 1 !important;
+        }
+    </style>
+@endsection
+
 @section('js')
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const totalAmount = {{ $total }};
+        // Khai báo biến để lưu trữ toàn bộ dữ liệu địa giới hành chính
+        let administrativeData = [];
 
+        document.addEventListener('DOMContentLoaded', function() {
+            $('select.form-control').niceSelect('destroy');
+
+            const style = document.createElement('style');
+            style.innerHTML = `
+        #province-select, #district-select, #ward-select {
+            display: block !important;
+            width: 100%;
+            height: 40px;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .nice-select.form-control { display: none !important; }
+    `;
+            document.head.appendChild(style);
+            const totalAmount = {{ $total }};
 
             const emailInput = document.querySelector('input[name="email"]');
             const phoneInput = document.querySelector('input[name="phone"]');
             const checkoutForm = document.getElementById('checkout-form');
+            const fullAddressInput = document.getElementById('full-address-input');
+            const streetAddressInput = document.querySelector('input[name="street_address"]');
+
+
+            // Dynamic address elements
+            const provinceSelect = document.getElementById('province-select');
+            const districtSelect = document.getElementById('district-select');
+            const wardSelect = document.getElementById('ward-select');
+
+            // --- Thay thế API Integration bằng việc đọc file JSON cục bộ ---
+
+            // Hàm tải dữ liệu từ file JSON
+            async function loadAdministrativeData() {
+                try {
+                    // Sử dụng asset() để lấy đường dẫn public của file JSON
+                    // Đảm bảo file data.json của bạn nằm trong thư mục public/dataCountry/
+                    const response = await fetch("{{ asset('storage/dataCountry/data.json') }}");
+                    administrativeData = await response.json();
+                    // console.log('Administrative data loaded successfully:', administrativeData);
+                    // Sau khi dữ liệu được tải, gọi hàm fetchProvinces để điền dropdown tỉnh/thành phố
+                    populateProvinces();
+                } catch (error) {
+                    console.error('Error loading administrative data:', error);
+                    alert('Không thể tải dữ liệu địa giới hành chính. Vui lòng thử lại sau.');
+                }
+            }
+
+            function populateProvinces() {
+                // console.log('Populating provinces...', administrativeData); // Kiểm tra dữ liệu
+
+                // Xóa tất cả options hiện có
+                provinceSelect.innerHTML = '';
+
+                // Thêm option mặc định
+                const defaultOption = document.createElement('option');
+                defaultOption.value = '';
+                defaultOption.textContent = '-- Chọn Tỉnh/Thành phố --';
+                provinceSelect.appendChild(defaultOption);
+
+                // Kiểm tra xem administrativeData có phải là mảng không
+                if (!Array.isArray(administrativeData)) {
+                    console.error('Administrative data is not an array:', administrativeData);
+                    return;
+                }
+
+                // Thêm các tỉnh thành vào dropdown
+                administrativeData.forEach(province => {
+                    const option = document.createElement('option');
+                    option.value = province.code;
+                    option.textContent = province.name;
+                    provinceSelect.appendChild(option);
+                });
+
+                // console.log('Provinces populated:', provinceSelect.options.length); // Kiểm tra số lượng options
+
+                // Kích hoạt lại nếu có giá trị cũ
+                const oldProvinceCode = '{{ old('province') }}';
+                if (oldProvinceCode) {
+                    provinceSelect.value = oldProvinceCode;
+                    populateDistricts(oldProvinceCode, '{{ old('district') }}');
+                }
+            }
+
+            // Hàm điền dữ liệu cho dropdown Quận/Huyện dựa trên mã tỉnh
+            // data.json của bạn chỉ có 'districts' bên trong mỗi tỉnh
+            function populateDistricts(provinceCode, oldDistrictCode = null) {
+                districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                wardSelect.innerHTML =
+                    '<option value="">-- Chọn Phường/Xã --</option>'; // Xóa phường/xã khi đổi quận/huyện
+                districtSelect.disabled = true; // Ban đầu tắt
+                wardSelect.disabled = true; // Ban đầu tắt
+
+                const selectedProvince = administrativeData.find(p => p.code === Number(provinceCode));
+
+                if (selectedProvince && selectedProvince.districts) {
+                    selectedProvince.districts.forEach(district => {
+                        const option = document.createElement('option');
+                        option.value = district.code;
+                        option.textContent = district.name;
+                        districtSelect.appendChild(option);
+                    });
+                    districtSelect.disabled = false; // Bật nếu có dữ liệu
+                }
+
+                if (oldDistrictCode) {
+                    districtSelect.value = oldDistrictCode;
+                    populateWards(oldDistrictCode, '{{ old('ward') }}');
+                }
+            }
+
+            // Hàm điền dữ liệu cho dropdown Phường/Xã dựa trên mã quận
+            // data.json của bạn có 'wards' bên trong mỗi district
+            function populateWards(districtCode, oldWardCode = null) {
+                wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                wardSelect.disabled = true; // Ban đầu tắt
+
+                // Cần tìm tỉnh trước để truy cập vào districts, rồi mới tìm district để truy cập wards
+                // Cách tối ưu hơn là duyệt qua toàn bộ administrativeData để tìm district có code tương ứng
+                let selectedDistrict = null;
+                for (const province of administrativeData) {
+                    selectedDistrict = province.districts.find(d => d.code === Number(districtCode));
+                    if (selectedDistrict) break;
+                }
+
+                if (selectedDistrict && selectedDistrict.wards) {
+                    selectedDistrict.wards.forEach(ward => {
+                        const option = document.createElement('option');
+                        option.value = ward.code;
+                        option.textContent = ward.name;
+                        wardSelect.appendChild(option);
+                    });
+                    wardSelect.disabled = false; // Bật nếu có dữ liệu
+                }
+
+                if (oldWardCode) {
+                    wardSelect.value = oldWardCode;
+                }
+            }
+
+            // Event listeners cho các dropdown
+            provinceSelect.addEventListener('change', function() {
+                const selectedProvinceCode = this.value;
+                if (selectedProvinceCode) {
+                    populateDistricts(selectedProvinceCode);
+                } else {
+                    districtSelect.innerHTML = '<option value="">-- Chọn Quận/Huyện --</option>';
+                    districtSelect.disabled = true;
+                    wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                    wardSelect.disabled = true;
+                }
+                updateFullAddress();
+            });
+
+            districtSelect.addEventListener('change', function() {
+                const selectedDistrictCode = this.value;
+                if (selectedDistrictCode) {
+                    populateWards(selectedDistrictCode);
+                } else {
+                    wardSelect.innerHTML = '<option value="">-- Chọn Phường/Xã --</option>';
+                    wardSelect.disabled = true;
+                }
+                updateFullAddress();
+            });
+
+            wardSelect.addEventListener('change', updateFullAddress);
+            streetAddressInput.addEventListener('input', updateFullAddress);
+
+
+            // Function to combine address parts into a single string for submission
+            function updateFullAddress() {
+                const street = streetAddressInput.value.trim();
+                const wardName = wardSelect.options[wardSelect.selectedIndex]?.textContent;
+                const districtName = districtSelect.options[districtSelect.selectedIndex]?.textContent;
+                const provinceName = provinceSelect.options[provinceSelect.selectedIndex]?.textContent;
+
+                let fullAddressParts = [];
+                if (street) fullAddressParts.push(street);
+                if (wardName && wardName !== '-- Chọn Phường/Xã --') fullAddressParts.push(wardName);
+                if (districtName && districtName !== '-- Chọn Quận/Huyện --') fullAddressParts.push(districtName);
+                if (provinceName && provinceName !== '-- Chọn Tỉnh/Thành phố --') fullAddressParts.push(
+                    provinceName);
+
+                fullAddressInput.value = fullAddressParts.join(', ');
+            }
+
+
+            // Initial fetch for provinces when the page loads
+            // Gọi hàm tải dữ liệu khi trang được nạp
+            loadAdministrativeData();
+
 
             // Tạo các phần tử hiển thị lỗi
             let emailError = document.createElement('small');
@@ -227,7 +445,6 @@
             let phoneError = document.createElement('small');
             phoneError.classList.add('text-danger', 'phone-error');
             phoneInput.parentNode.appendChild(phoneError);
-
 
             // Hàm validate email
             function validateEmail() {
@@ -244,7 +461,7 @@
                 }
             }
 
-            // Hàm validate số điện thoại
+            // Hàm validate số điện thoại (existing code)
             function validatePhone() {
                 const phone = phoneInput.value;
                 // Regex cho số điện thoại Việt Nam (10 hoặc 11 số, bắt đầu bằng 0)
@@ -262,8 +479,6 @@
             }
             emailInput.addEventListener('input', validateEmail);
             phoneInput.addEventListener('input', validatePhone);
-
-            // console.log('Total amount:', totalAmount); // Debug log
 
             if (totalAmount > 2000000) {
                 const codRadio = document.getElementById('COD');
@@ -304,16 +519,53 @@
         document.getElementById('checkout-form').addEventListener('submit', function(event) {
             event.preventDefault(); // Ngăn chặn form submit mặc định
 
+            const isEmailValid = validateEmail(); // Call validation functions
+            const isPhoneValid = validatePhone();
+
+            // Ensure all required fields are filled, including the new address fields
+            const provinceSelect = document.getElementById('province-select');
+            const districtSelect = document.getElementById('district-select');
+            const wardSelect = document.getElementById('ward-select');
+            const streetAddressInput = document.querySelector('input[name="street_address"]');
+            const receiverNameInput = document.querySelector('input[name="receiver_name"]');
+
+            if (!receiverNameInput.value.trim()) {
+                alert('Vui lòng nhập tên người nhận.');
+                return;
+            }
+
+            if (!provinceSelect.value) {
+                alert('Vui lòng chọn Tỉnh/Thành phố.');
+                return;
+            }
+            if (!districtSelect.value) {
+                alert('Vui lòng chọn Quận/Huyện.');
+                return;
+            }
+            if (!wardSelect.value) {
+                alert('Vui lòng chọn Phường/Xã.');
+                return;
+            }
+            if (!streetAddressInput.value.trim()) {
+                alert('Vui lòng nhập số nhà, tên đường.');
+                return;
+            }
+
+            if (!isEmailValid || !isPhoneValid) {
+                alert('Vui lòng kiểm tra lại thông tin email và số điện thoại.');
+                return;
+            }
+
+            // Combine address parts into a single hidden input for submission
+            const fullAddressInput = document.getElementById('full-address-input');
+            const street = streetAddressInput.value.trim();
+            const wardName = wardSelect.options[wardSelect.selectedIndex]?.textContent;
+            const districtName = districtSelect.options[districtSelect.selectedIndex]?.textContent;
+            const provinceName = provinceSelect.options[provinceSelect.selectedIndex]?.textContent;
+            fullAddressInput.value = `${street}, ${wardName}, ${districtName}, ${provinceName}`;
 
 
-            //const isEmailValid = validateEmail();
-           // const isPhoneValid = validatePhone();
-
-            // if (!isEmailValid || !isPhoneValid) {
-            //     event.preventDefault(); // Ngăn chặn submit nếu có lỗi
-            //     alert('Vui lòng kiểm tra lại thông tin email và số điện thoại.');
-            // }
-            // Kiểm tra lại tổng tiền trước khi submit
+            // Kiểm tra lại tổng tiền trước khi submit (existing code)
             const totalAmount = {{ $total }};
             let paymentMethod = document.querySelector('input[name="payment"]:checked');
 
@@ -334,35 +586,57 @@
             if (paymentValue === 'COD') {
                 this.action = "{{ route('order.store') }}"; // Gửi đến OrderController
             } else if (paymentValue === 'momo') {
-                let inputName = document.querySelector('input[name="redirect"]').value;
-                if (inputName) {
-                    this.inputName = "payUrl";
+                let submitBtn = document.getElementById('checkout-form-submit-btn');
+                if (submitBtn) {
+                    submitBtn.name = "payUrl"; // Ensure the correct name for Momo redirection
                 }
             } else if (paymentValue === 'zalopay') {
-                let inputName = document.querySelector('input[name="redirect"]');
-                if (inputName) {
-                    inputName.name = "order_url";
+                let submitBtn = document.getElementById('checkout-form-submit-btn');
+                if (submitBtn) {
+                    submitBtn.name = "order_url"; // Ensure the correct name for ZaloPay redirection
+                }
+            } else if (paymentValue === 'vnpay') {
+                let submitBtn = document.getElementById('checkout-form-submit-btn');
+                if (submitBtn) {
+                    submitBtn.name = "redirect"; // Ensure the correct name for VNPAY redirection
                 }
             }
-
-            this.submit(); // Gửi form
+            this.submit();
         });
 
+        // Hàm validateEmail và validatePhone cần được định nghĩa ở phạm vi toàn cục
+        // để có thể được gọi từ event listener của form submit
+        function validateEmail() {
+            const emailInput = document.querySelector('input[name="email"]');
+            const emailError = document.querySelector('.email-error');
+            const email = emailInput.value;
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                emailError.textContent = 'Email không hợp lệ. Vui lòng nhập đúng định dạng email.';
+                emailInput.classList.add('is-invalid');
+                return false;
+            } else {
+                emailError.textContent = '';
+                emailInput.classList.remove('is-invalid');
+                return true;
+            }
+        }
 
-        // document.addEventListener('DOMContentLoaded', function () {
-        //     const checkbox = document.getElementById('use-fixed-address');
-        //     const addressInput = document.getElementById('address-input');
-        //     const fixedAddress = document.getElementById('fixed-address').value;
-
-        //     checkbox.addEventListener('change', function () {
-        //         if (this.checked) {
-        //             addressInput.value = fixedAddress;
-        //             addressInput.readOnly = true;
-        //         } else {
-        //             addressInput.value = '';
-        //             addressInput.readOnly = false;
-        //         }
-        //     });
-        // });
+        function validatePhone() {
+            const phoneInput = document.querySelector('input[name="phone"]');
+            const phoneError = document.querySelector('.phone-error');
+            const phone = phoneInput.value;
+            const phonePattern = /^(0|\+84)[3|5|7|8|9][0-9]{8,9}$/;
+            if (!phonePattern.test(phone)) {
+                phoneError.textContent =
+                    'Số điện thoại không hợp lệ. Vui lòng nhập số điện thoại Việt Nam (10 hoặc 11 số).';
+                phoneInput.classList.add('is-invalid');
+                return false;
+            } else {
+                phoneError.textContent = '';
+                phoneInput.classList.remove('is-invalid');
+                return true;
+            }
+        }
     </script>
 @endsection

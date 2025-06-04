@@ -22,7 +22,7 @@ class RevenueController extends Controller
 
         $query = "SELECT DATE(created_at) AS ngaytao, SUM(total) AS tongtien
               FROM orders
-              WHERE status = 'Đã thanh toán'";
+              WHERE status = 'Đã thanh toán' OR status = 'Giao hàng thành công'";
 
         $params = [];
 
@@ -51,7 +51,7 @@ class RevenueController extends Controller
     {
         $query = "SELECT DATE(created_at) AS ngaytao, SUM(total) AS tongtien
               FROM orders
-              WHERE status = 'Đã thanh toán'";
+              WHERE status = 'Đã thanh toán' OR status = 'Giao hàng thành công'";
 
         $params = [];
 
@@ -117,7 +117,8 @@ class RevenueController extends Controller
 
         $query = DB::table('orders')
             ->selectRaw("{$groupByRaw} AS period, SUM(total) AS total")
-            ->where('status', 'Đã thanh toán');
+            ->where('status', 'Đã thanh toán')
+            ->orWhere('status', 'Giao hàng thành công');
 
         // Lọc theo năm nếu cần
         if ($selectedYear) {
@@ -187,7 +188,8 @@ class RevenueController extends Controller
 
     $query = DB::table('orders')
         ->selectRaw("{$groupByRaw} AS period, SUM(total) AS total")
-        ->where('status', 'Đã thanh toán');
+        ->where('status', 'Đã thanh toán')
+        ->orWhere('status', 'Giao hàng thành công');
 
     if ($year) {
         $query->whereYear('created_at', $year);
@@ -277,7 +279,7 @@ public function exportExcelMonth(Request $request)
     {
         $revenueYear = DB::select("SELECT YEAR(created_at) AS namtao, SUM(total) AS tongtien
                                     FROM orders
-                                    WHERE status = 'Đã thanh toán'
+                                    WHERE status = 'Đã thanh toán' OR status = 'Giao hàng thành công'
                                     GROUP BY YEAR(created_at)
                                     ORDER BY YEAR(created_at)");
         $year = [];
@@ -332,7 +334,7 @@ public function exportExcelMonth(Request $request)
         $selectedYear = $request->get('selected_year', date('Y'));
 
         // Khởi tạo query cơ bản
-        $orderQuery = Order::where('status', 'Đã thanh toán');
+        $orderQuery = Order::where('status', 'Đã thanh toán')->orWhere('status', 'Giao hàng thành công');
         $inventoryQuery = Inventory::query();
 
         $labels = [];
@@ -397,6 +399,7 @@ public function exportExcelMonth(Request $request)
     {
         return Order::selectRaw('DATE(created_at) AS ngay, SUM(total) AS doanhthu')
             ->where('status', 'Đã thanh toán')
+            ->orWhere('status', 'Giao hàng thành công')
             ->whereBetween('created_at', [$fromDate, $toDate])
             ->groupByRaw('DATE(created_at)')
             ->orderByRaw('DATE(created_at)')
@@ -417,6 +420,7 @@ public function exportExcelMonth(Request $request)
     {
         return Order::selectRaw('DAY(created_at) AS ngay, SUM(total) AS doanhthu')
             ->where('status', 'Đã thanh toán')
+            ->orWhere('status', 'Giao hàng thành công')
             ->whereYear('created_at', $year)
             ->whereMonth('created_at', $month)
             ->groupByRaw('DAY(created_at)')
@@ -441,6 +445,7 @@ public function exportExcelMonth(Request $request)
     {
         return Order::selectRaw('MONTH(created_at) AS thang, SUM(total) AS doanhthu')
             ->where('status', 'Đã thanh toán')
+            ->orWhere('status', 'Giao hàng thành công')
             ->whereYear('created_at', $year)
             ->groupByRaw('MONTH(created_at)')
             ->orderByRaw('MONTH(created_at)')
@@ -463,6 +468,7 @@ public function exportExcelMonth(Request $request)
     {
         return Order::selectRaw('YEAR(created_at) AS nam, SUM(total) AS doanhthu')
             ->where('status', 'Đã thanh toán')
+            ->orWhere('status', 'Giao hàng thành công')
             ->groupByRaw('YEAR(created_at)')
             ->orderByRaw('YEAR(created_at)')
             ->get()

@@ -298,55 +298,78 @@
             });
         }
 
-        // Khi click vào bar, show bảng chi tiết sản phẩm theo period
+
+
         function chartClickHandler(evt, elements) {
             if (elements.length === 0) return;
             const firstElement = elements[0];
             const label = topProductChart.data.labels[firstElement.index];
             const period = document.querySelector('.period-selector button.active').dataset.period;
-            // console.log('period = ', period);
             const year = document.getElementById('yearSelect').value;
 
-            let periodNumber = null;
+            let periodValue = null; // Biến mới để lưu giá trị (tháng, quý, năm)
             if (period === 'month') {
-                periodNumber = parseInt(label.replace('Tháng ', ''));
+                periodValue = firstElement.index + 1; // Month labels are 1-indexed (Tháng 1, Tháng 2, ...)
             } else if (period === 'quarter') {
-                periodNumber = parseInt(label.replace('Quý ', ''));
-            } else {
-                periodNumber = parseInt(label);
+                periodValue = firstElement.index + 1; // Quarter labels are 1-indexed (Quý 1, Quý 2, ...)
+            } else { // period === 'year'
+                periodValue = parseInt(label); // Năm là chính label
             }
 
             // Hiển thị bảng chi tiết nếu có dữ liệu
-            if (currentDetailData && currentDetailData[periodNumber]) {
-                renderDetailTable(currentDetailData[periodNumber], year, label);
+            if (currentDetailData && currentDetailData[periodValue]) { // Dùng periodValue ở đây
+                renderDetailTable(currentDetailData[periodValue], year, label);
             } else {
                 clearDetailTable();
             }
         }
 
+        // Cập nhật hàm renderDetailTable để truyền thêm period và value vào button Xem chi tiết
         function renderDetailTable(productsObj, year, periodLabel) {
+            const period = document.querySelector('.period-selector button.active').dataset.period;
             let html = `
-                <h6>Chi tiết sản phẩm bán chạy trong <strong>${periodLabel}</strong> năm <strong>${year}</strong></h6>
-                <table id="detailTable" class="table table-striped table-bordered">
-                    <thead>
-                        <tr>
-                            <th>Tên sản phẩm</th>
-                            <th>Số lượng bán</th>
-                            <th>Hành động</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
+        <h6>Chi tiết sản phẩm bán chạy trong <strong>${periodLabel}</strong> năm <strong>${year}</strong></h6>
+        <table id="detailTable" class="table table-striped table-bordered">
+            <thead>
+                <tr>
+                    <th>Tên sản phẩm</th>
+                    <th>Số lượng bán</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
             for (const [productName, productData] of Object.entries(productsObj)) {
                 // productData = { id, quantity }
-                // console.log('productData = ', productData);
+                let currentPeriodValue;
+                if (period === 'month') {
+                    // currentDetailData key là số tháng (1-12)
+                    for (const key in currentDetailData) {
+                        if (currentDetailData[key] === productsObj) { // Tìm key tương ứng với productsObj hiện tại
+                            currentPeriodValue = key;
+                            break;
+                        }
+                    }
+                } else if (period === 'quarter') {
+                    // currentDetailData key là số quý (1-4)
+                    for (const key in currentDetailData) {
+                        if (currentDetailData[key] === productsObj) { // Tìm key tương ứng với productsObj hiện tại
+                            currentPeriodValue = key;
+                            break;
+                        }
+                    }
+                } else { // period === 'year'
+                    currentPeriodValue = year; // Khi period là year, value chính là năm
+                }
+
                 html += `
             <tr>
                 <td>${productData.product_name}</td>
                 <td>${productData.total_sold}</td>
                 <td>
-                    <button class="btn btn-sm btn-info" onclick="viewProductDetail(${productData.product_id})">
+                    <button class="btn btn-sm btn-info"
+                            onclick="viewProductDetail('${productData.product_id}', '${period}', '${currentPeriodValue}', '${year}')">
                         Xem chi tiết
                     </button>
                 </td>
@@ -359,47 +382,11 @@
             document.getElementById('detailContainer').innerHTML = html;
         }
 
+        // Hàm viewProductDetail mới
+        function viewProductDetail(productId, period, value, year) {
+            let url = `/api/revenue-product-detail-month-year/${productId}?period=${period}&value=${value}&year=${year}`;
 
-        function clearDetailTable() {
-            document.getElementById('detailContainer').innerHTML = '';
-        }
-
-
-
-        function viewProductDetail(productId) {
-            // const period = document.querySelector('.period-selector button.active').dataset.period;
-            const period = document.querySelector('.period-selector button.active').dataset.period;
-            const year = document.getElementById('yearSelect').value;
-
-            let url = `/api/revenue-product-detail-month-year/${productId}?period=${period}`;
-
-            if (!year) {
-                alert('Vui lòng chọn năm để xem chi tiết');
-                return;
-            }
-
-            switch (period) {
-                case 'month':
-                    const month = document.getElementById('monthSelect').value;
-                    if (!month) {
-                        alert('Vui lòng chọn tháng');
-                        return;
-                    }
-                    url += `&value=${month}&year=${year}`;
-                    break;
-                case 'quarter':
-                    const quarter = document.getElementById('quarterSelect').value;
-                    if (!quarter) {
-                        alert('Vui lòng chọn quý');
-                        return;
-                    }
-                    url += `&value=${quarter}&year=${year}`;
-                    break;
-                case 'year':
-                    url += `&value=${year}`;
-                    break;
-            }
-
+            // ... (phần fetch và hiển thị modal không đổi)
             fetch(url)
                 .then(res => {
                     if (!res.ok) throw new Error('Network response was not ok');
@@ -413,7 +400,6 @@
                         return;
                     }
 
-                    // Cập nhật dữ liệu vào bảng modal
                     const tbody = document.querySelector('#detailTableModal tbody');
                     tbody.innerHTML = ''; // Xóa dữ liệu cũ
 
@@ -427,13 +413,9 @@
                         tbody.appendChild(tr);
                     });
 
-
-
-                    // Hiển thị bảng và ẩn loading
                     document.getElementById('detail-loading').classList.add('d-none');
                     document.getElementById('detailTableModal').classList.remove('d-none');
 
-                    // Show modal
                     const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
                     detailModal.show();
                 })
@@ -443,6 +425,12 @@
                 });
         }
 
+
+
+
+        function clearDetailTable() {
+            document.getElementById('detailContainer').innerHTML = '';
+        }
 
 
         async function fetchChartData(period, year) {

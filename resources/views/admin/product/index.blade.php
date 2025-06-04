@@ -66,8 +66,8 @@
                         <label for="status" class="form-label">Trạng thái</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">Tất cả trạng thái</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Hiển thị</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Ẩn</option>
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Trên kệ</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Còn trong kho</option>
                         </select>
                     </div>
 
@@ -83,6 +83,23 @@
                             <option value="no_promotion"
                                 {{ request('promotion_status') == 'no_promotion' ? 'selected' : '' }}>
                                 Không có khuyến mãi</option>
+                        </select>
+                    </div>
+
+                    {{-- Bộ lọc Stock MỚI --}}
+                    <div class="col-lg-3 col-md-6 col-sm-6">
+                        <label for="stock_range" class="form-label">Tồn kho</label>
+                        <select name="stock_range" id="stock_range" class="form-select">
+                            <option value="">Tất cả</option>
+                            <option value="out_of_stock" {{ request('stock_range') == 'out_of_stock' ? 'selected' : '' }}>
+                                Hết hàng (0)</option>
+                            <option value="low_stock" {{ request('stock_range') == 'low_stock' ? 'selected' : '' }}>Sắp hết
+                                hàng (1-10)</option>
+                            <option value="in_stock" {{ request('stock_range') == 'in_stock' ? 'selected' : '' }}>Còn hàng
+                                (>10)</option>
+                            <option value="all_stock_available"
+                                {{ request('stock_range') == 'all_stock_available' ? 'selected' : '' }}>Còn hàng (Tổng
+                                Stock > 0)</option>
                         </select>
                     </div>
                 </div>
@@ -119,6 +136,7 @@
                             <th>Danh mục</th>
                             <th>Giá Gốc / Khuyến mãi</th>
                             <th>Giá</th>
+                            <th>Stock</th>
                             <th>Trạng thái</th>
                             <th>Khuyến mãi</th>
                             <th>Ngày thêm</th>
@@ -144,8 +162,20 @@
                                 </td>
                                 <td>{{ number_format($model->price, 0, ',', '.') }} đ</td>
                                 <td>
+                                    @php
+                                        $totalStock = $model->productVariants->sum('stock');
+                                    @endphp
+                                    @if ($totalStock == 0)
+                                        <span class="badge bg-danger">Hết hàng</span>
+                                    @elseif ($totalStock > 0 && $totalStock <= 10)
+                                        <span class="badge bg-warning">Sắp hết ({{ $totalStock }})</span>
+                                    @else
+                                        <span class="badge bg-success">Còn hàng ({{ $totalStock }})</span>
+                                    @endif
+                                </td>
+                                <td>
                                     <span class="badge bg-{{ $model->status == 1 ? 'success' : 'secondary' }}">
-                                        {{ $model->status == 1 ? 'Hiển thị' : 'Ẩn' }}
+                                        {{ $model->status == 1 ? 'Trên kệ' : 'Trong kho' }}
                                     </span>
                                 </td>
                                 <td>
@@ -164,7 +194,8 @@
                                     <form method="post" action="{{ route('product.destroy', $model->id) }}"
                                         class="d-inline">
                                         @csrf @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-info btn-detail" title="Xem chi tiết">
+                                        <button type="button" class="btn btn-sm btn-info btn-detail"
+                                            title="Xem chi tiết">
                                             <i class="fa fa-eye"></i>
                                         </button>
                                         <a href="{{ route('product.edit', $model->id) }}" class="btn btn-sm btn-primary"
@@ -278,7 +309,7 @@
     <script>
         $(document).ready(function() {
             // Tự động submit form khi thay đổi danh mục, giá hoặc trạng thái
-            $('#category, #price_range, #status, #promotion_status').on('change', function() {
+            $('#category, #price_range, #status, #promotion_status, #stock_range').on('change', function() {
                 $('#filterForm').submit();
             });
 
@@ -289,6 +320,7 @@
                 $('#price_range').val(''); // Đặt lại giá về "Tất cả"
                 $('#status').val(''); // Đặt lại trạng thái về "Tất cả"
                 $('#promotion_status').val('');
+                $('#stock_range').val('');
                 $('#filterForm').submit(); // Gửi lại form để xóa tất cả các bộ lọc
             });
 

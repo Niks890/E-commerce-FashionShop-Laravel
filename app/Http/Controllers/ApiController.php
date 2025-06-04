@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\InventoryExtraResource;
 use App\Http\Resources\InventoryResource;
 use App\Http\Resources\ProductResource;
 use App\Models\Blog;
@@ -67,57 +68,15 @@ class ApiController extends Controller
     }
 
 
-
-    // public function inventories(Request $request)
-    // {
-    //     $query = Inventory::with([
-    //         'Staff',
-    //         'Provider',
-    //         'InventoryDetails.Product.Category',
-    //         'InventoryDetails.Product.ProductVariants'
-    //     ])->orderBy('id', 'DESC');
-
-    //     // Thêm điều kiện tìm kiếm nếu có tham số 'query' trong request
-    //     if ($request->has('query') && !empty($request->input('query'))) {
-    //         $searchTerm = $request->input('query');
-    //         $query->where(function ($q) use ($searchTerm) {
-    //             // Tìm kiếm theo ID phiếu nhập (chính xác)
-    //             $q->where('id', $searchTerm)
-    //               // Tìm kiếm theo tên nhân viên (gần đúng)
-    //               ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
-    //                   $subQuery->where('name', 'like', '%' . $searchTerm . '%');
-    //               })
-    //               // THÊM ĐIỀU KIỆN NÀY ĐỂ TÌM KIẾM THEO TÊN SẢN PHẨM
-    //               ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
-    //                   $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
-    //               });
-    //         });
-    //     }
-
-    //     $inventories = $query->paginate(10);
-
-    //     return response()->json([
-    //         'status_code' => 200,
-    //         'data' => InventoryResource::collection($inventories),
-    //         'pagination' => [
-    //             'current_page' => $inventories->currentPage(),
-    //             'last_page' => $inventories->lastPage(),
-    //             'total' => $inventories->total(),
-    //             'per_page' => $inventories->perPage(),
-    //             'next_page_url' => $inventories->nextPageUrl(),
-    //             'prev_page_url' => $inventories->previousPageUrl(),
-    //         ],
-    //     ]);
-    // }
-
     public function inventories(Request $request)
     {
         $query = Inventory::with([
             'Staff',
             'Provider',
             'InventoryDetails.Product.Category',
-            'InventoryDetails.Product.ProductVariants'
-        ])->orderBy('id', 'DESC');
+            'InventoryDetails.ProductVariant'
+        ])
+            ->orderBy('id', 'DESC');
 
         // Lọc theo từ khóa tìm kiếm (ID phiếu nhập, tên nhân viên, tên sản phẩm)
         if ($request->has('query') && !empty($request->input('query'))) {
@@ -172,7 +131,7 @@ class ApiController extends Controller
             'InventoryDetails.Product.Category',
             'InventoryDetails.Product.ProductVariants'
         ])->find($id);
-        $inventoriesResource = new InventoryResource($inventories);
+        $inventoriesResource = new InventoryExtraResource($inventories);
         if ($inventories) {
             return $this->apiStatus($inventoriesResource, 200, 1, 'ok');
         } else {

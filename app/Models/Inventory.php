@@ -14,7 +14,8 @@ class Inventory extends Model
         'provider_id',
         'staff_id',
         'vat',
-        'status'
+        'status',
+        'note'
     ];
 
     //1 PhieuNhap cho 1 NCC

@@ -17,14 +17,71 @@ class ProductController extends Controller
 
     public function index()
     {
-        $data = Product::with('discount')->orderBy('id', 'DESC')->paginate(5);
+        $data = Product::with('discount', 'ProductVariants')->orderBy('id', 'DESC')->paginate(5);
         $categories = Category::all();
         return view('admin.product.index', compact('data', 'categories'));
     }
 
+    // public function search(Request $request)
+    // {
+    //     $query = Product::with('discount');
+
+    //     // Lọc theo tên sản phẩm
+    //     if ($request->filled('query')) {
+    //         $keyword = $request->input('query');
+    //         $query->where('product_name', 'like', "%$keyword%");
+    //     }
+
+    //     // Lọc theo danh mục
+    //     if ($request->filled('category')) {
+    //         $categoryId = $request->input('category');
+    //         $query->where('category_id', $categoryId);
+    //     }
+
+    //     // Lọc theo giá
+    //     if ($request->filled('price_range')) {
+    //         $priceRange = $request->input('price_range');
+    //         switch ($priceRange) {
+    //             case '0-100000':
+    //                 $query->whereBetween('price', [0, 100000]);
+    //                 break;
+    //             case '100001-500000':
+    //                 $query->whereBetween('price', [100001, 500000]);
+    //                 break;
+    //             case '500001-1000000':
+    //                 $query->whereBetween('price', [500001, 1000000]);
+    //                 break;
+    //             case '1000001-max':
+    //                 $query->where('price', '>', 1000000);
+    //                 break;
+    //         }
+    //     }
+
+    //     // Lọc theo trạng thái
+    //     if ($request->filled('status')) {
+    //         $status = $request->input('status');
+    //         $query->where('status', $status);
+    //     }
+
+    //     // Lọc theo trạng thái khuyến mãi MỚI
+    //     if ($request->filled('promotion_status')) {
+    //         $promotionStatus = $request->input('promotion_status');
+    //         if ($promotionStatus === 'has_promotion') {
+    //             $query->whereNotNull('discount_id'); // Sản phẩm có discount_id (có khuyến mãi)
+    //         } elseif ($promotionStatus === 'no_promotion') {
+    //             $query->whereNull('discount_id'); // Sản phẩm không có discount_id (không có khuyến mãi)
+    //         }
+    //     }
+
+    //     $data = $query->paginate(5)->appends($request->except('page')); // Giữ lại các tham số lọc khi phân trang
+    //     $categories = Category::all(); // Lấy tất cả danh mục để hiển thị trong bộ lọc
+
+    //     return view('admin.product.index', compact('data', 'categories'));
+    // }
+
     public function search(Request $request)
     {
-        $query = Product::with('discount');
+        $query = Product::with('discount', 'ProductVariants');
 
         // Lọc theo tên sản phẩm
         if ($request->filled('query')) {
@@ -73,8 +130,28 @@ class ProductController extends Controller
             }
         }
 
-        $data = $query->paginate(5)->appends($request->except('page')); // Giữ lại các tham số lọc khi phân trang
-        $categories = Category::all(); // Lấy tất cả danh mục để hiển thị trong bộ lọc
+        if ($request->filled('stock_range')) {
+            $stockRange = $request->input('stock_range');
+
+            // Sử dụng subquery để tính tổng stock cho mỗi sản phẩm
+            $productIdsWithStock = Product::select('products.id')
+                ->join('product_variants', 'products.id', '=', 'product_variants.product_id')
+                ->groupBy('products.id')
+                ->havingRaw('SUM(product_variants.stock) ' . ($stockRange == 'out_of_stock' ? '= 0' : '> 0')); // Logic cơ bản
+
+            if ($stockRange == 'low_stock') {
+                $productIdsWithStock->havingRaw('SUM(product_variants.stock) > 0 AND SUM(product_variants.stock) <= 10');
+            } elseif ($stockRange == 'in_stock') {
+                $productIdsWithStock->havingRaw('SUM(product_variants.stock) > 10');
+            }
+
+            // Lọc các sản phẩm chính dựa trên ID từ subquery
+            $query->whereIn('products.id', $productIdsWithStock->pluck('id'));
+        }
+
+
+        $data = $query->paginate(5)->appends($request->except('page'));
+        $categories = Category::all();
 
         return view('admin.product.index', compact('data', 'categories'));
     }

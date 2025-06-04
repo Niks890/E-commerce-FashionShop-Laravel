@@ -13,6 +13,8 @@ if (!function_exists('getColorHex')) {
             'Đỏ' => '#FF0000',
             'Hồng' => '#FFC0CB',
             'Cam' => '#FFA500',
+            'Xanh Nâu' => '#8FBC8F',
+
         ];
         return $colorMap[$color] ?? '#CCCCCC';
     }

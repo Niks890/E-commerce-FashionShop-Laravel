@@ -35,7 +35,8 @@ class RevenueProductController extends Controller
                 DB::raw('SUM(od.quantity) as total_sold'),
                 DB::raw('SUM(o.total) as total_revenue')
             )
-            ->where('o.status',  'Đã Thanh Toán');
+            ->where('o.status',  'Đã thanh toán')
+            ->orWhere('o.status', 'Giao hàng thành công');
 
 
 
@@ -77,7 +78,8 @@ class RevenueProductController extends Controller
                 DB::raw('SUM(od.quantity) as variant_quantity'),
                 DB::raw('SUM(o.total) as total_revenue')
             )
-            ->where('o.status', 'Đã Thanh Toán');
+            ->where('o.status', 'Đã thanh toán')
+            ->orWhere('o.status', 'Giao hàng thành công');
 
         if ($from) {
             $query->whereDate('o.created_at', '>=', $from);
@@ -168,8 +170,11 @@ class RevenueProductController extends Controller
         $query = DB::table('order_details as od')
             ->join('orders as o', 'od.order_id', '=', 'o.id')
             ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id')
-            ->where('o.status', 'Đã Thanh Toán')
-            ->where('pv.product_id', $productId)
+            ->where(function ($q) { // <-- Thêm nhóm điều kiện này
+                $q->where('o.status', 'Đã thanh toán')
+                    ->orWhere('o.status', 'Giao hàng thành công');
+            })
+            ->where('pv.product_id', $productId) // <-- Điều kiện này sẽ áp dụng cho cả hai trạng thái trên
             ->select('pv.color', 'pv.size', DB::raw('SUM(od.quantity) as total_sold'));
 
         if ($from) {
@@ -202,7 +207,8 @@ class RevenueProductController extends Controller
             ->join('orders as o', 'od.order_id', '=', 'o.id')
             ->join('products as p', 'od.product_id', '=', 'p.id')
             ->selectRaw("p.id as product_id, p.product_name, {$groupByRaw} as period, SUM(od.quantity) as total_sold, SUM(od.quantity * od.price) as total_revenue")
-            ->where('o.status', 'Đã thanh toán');
+            ->where('o.status', 'Đã thanh toán')
+            ->orWhere('o.status', 'Giao hàng thành công');
 
         if ($selectedYear) {
             $query->whereYear('o.created_at', $selectedYear);
@@ -292,8 +298,9 @@ class RevenueProductController extends Controller
         // Tính from và to dựa theo period + value
         switch ($period) {
             case 'month':
-                $from = \Carbon\Carbon::createFromDate(null, $value, 1)->startOfMonth()->toDateString();
-                $to = \Carbon\Carbon::createFromDate(null, $value, 1)->endOfMonth()->toDateString();
+                $year = $request->input('year') ?? date('Y'); // THÊM DÒNG NÀY
+                $from = \Carbon\Carbon::createFromDate($year, $value, 1)->startOfMonth()->toDateString();
+                $to = \Carbon\Carbon::createFromDate($year, $value, 1)->endOfMonth()->toDateString();
                 break;
             case 'quarter':
                 // Quý 1 = tháng 1-3, quý 2 = 4-6, ...
@@ -314,7 +321,12 @@ class RevenueProductController extends Controller
         $query = DB::table('order_details as od')
             ->join('orders as o', 'od.order_id', '=', 'o.id')
             ->join('product_variants as pv', 'od.product_variant_id', '=', 'pv.id')
-            ->where('o.status', 'Đã Thanh Toán')
+            // Bắt đầu nhóm các điều kiện OR
+            ->where(function ($q) {
+                $q->where('o.status', 'Đã thanh toán')
+                    ->orWhere('o.status', 'Giao hàng thành công');
+            })
+            // Các điều kiện này sẽ được áp dụng cho cả hai trạng thái trên
             ->where('pv.product_id', $productId)
             ->whereDate('o.created_at', '>=', $from)
             ->whereDate('o.created_at', '<=', $to)
@@ -324,8 +336,4 @@ class RevenueProductController extends Controller
 
         return response()->json($query);
     }
-
-
-
-
 }

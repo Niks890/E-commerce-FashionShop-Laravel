@@ -154,12 +154,12 @@
             <div class="form-check form-check-inline">
                 <input type="radio" name="status" value="1" class="form-check-input" id="statusShow"
                     @checked($product->status == 1)>
-                <label for="statusShow" class="form-check-label fw-semibold">Hiển thị</label>
+                <label for="statusShow" class="form-check-label fw-semibold">Đưa lên kệ hàng</label>
             </div>
             <div class="form-check form-check-inline">
                 <input type="radio" name="status" value="0" class="form-check-input" id="statusHide"
                     @checked($product->status == 0)>
-                <label for="statusHide" class="form-check-label fw-semibold">Ẩn</label>
+                <label for="statusHide" class="form-check-label fw-semibold">Ẩn khỏi kệ hàng</label>
             </div>
             @error('status')
                 <small class="text-danger">{{ $message }}</small>

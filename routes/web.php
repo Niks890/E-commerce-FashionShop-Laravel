@@ -192,7 +192,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::get('/order_success', [OrderController::class, 'orderSuccess'])->name('order.orderSuccess');
     Route::get('/delivery-orders', [OrderController::class, 'manageDeliveryOrders'])->name('order.trackingOrder');
     Route::get('/delivery-orders/search', [OrderController::class, 'manageDeliveryOrders'])->name('order.searchOrderTracking');
-Route::post('/admin/orders/update-status/{order}', [OrderController::class, 'updateOrderStatus'])->name('order.updateStatus');
+    Route::post('/admin/orders/update-status/{order}', [OrderController::class, 'updateOrderStatus'])->name('order.updateStatus');
     // Thong ke doanh thu va loi nhuan
     Route::group(['prefix' => '/revenue'], function () {
         Route::get('/day', [RevenueController::class, 'revenueDay'])->name('admin.revenueDay')->middleware('can:managers');
@@ -219,3 +219,4 @@ Route::post('/admin/orders/update-status/{order}', [OrderController::class, 'upd
 // Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
 // Route::get('/cloudinary', [CloudinaryUploadController::class, 'showForm'])->name('cloudinary.showForm');
+Route::get('/inventory/generatePDF/{id}', [InventoryController::class, 'generatePDF'])->name('inventory.generatePDF');

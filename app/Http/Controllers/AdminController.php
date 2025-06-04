@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -11,37 +12,38 @@ class AdminController extends Controller
 {
     public  function dashboard()
     {
+        $revenueByMonth = [];
+        for ($i = 1; $i <= 12; $i++) {
+            // Sử dụng Carbon để lấy tên tháng theo định dạng 'M' (Jan, Feb,...)
+            $monthName = Carbon::create(null, $i, 1)->format('M');
+            $revenueByMonth[$monthName] = 0.0; // Khởi tạo với giá trị 0.0
+        }
 
-        $months = collect(range(1, 12))->map(function ($month) {
-            return DB::table(DB::raw("(SELECT $month as month) as m"));
-        })->reduce(function ($query, $builder) {
-            return $query ? $query->unionAll($builder) : $builder;
-        });
+        // 2. Lấy dữ liệu doanh thu thực tế từ database cho năm hiện tại
+        $currentYear = now()->year;
 
-        // Gói truy vấn subquery lại
-        $subquery = DB::query()->fromSub($months, 'months');
-
-        $results = DB::query()
-            ->fromSub($subquery, 'months')
-            ->leftJoin('orders as o', function ($join) {
-                $join->on(DB::raw('MONTH(o.created_at)'), '=', 'months.month')
-                    ->where(DB::raw('YEAR(o.created_at)'), '=', now()->year)
-                    ->where('o.status', '=', 'Đã thanh toán');
-            })
+        $dbResults = DB::table('orders')
             ->select(
-                'months.month',
-                DB::raw('COALESCE(SUM(o.total), 0) as revenue')
+                DB::raw('MONTH(created_at) as month_number'),
+                DB::raw('SUM(total) as monthly_revenue')
             )
-            ->groupBy('months.month')
-            ->orderBy('months.month')
+            ->whereYear('created_at', $currentYear)
+            ->where(function ($query) {
+                $query->where('status', 'Đã thanh toán')
+                    ->orWhere('status', 'Giao hàng thành công');
+            })
+            ->groupBy(DB::raw('MONTH(created_at)'))
             ->get();
 
-        $revenueByMonth = $results->mapWithKeys(function ($row) {
-            $monthName = date('M', mktime(0, 0, 0, $row->month, 1)); // 'Jan', 'Feb', ...
-            return [$monthName => (float) $row->revenue];
-        })->toArray();
+        // 3. Ghi đè các giá trị doanh thu thực tế vào mảng $revenueByMonth
+        foreach ($dbResults as $row) {
+            $monthName = Carbon::create(null, $row->month_number, 1)->format('M');
+            $revenueByMonth[$monthName] = (float) $row->monthly_revenue;
+        }
 
-        $total = array_values($revenueByMonth); // mảng doanh thu thuần không chứa key
+        // 4. Tính toán tổng doanh thu từ mảng đã chuẩn bị
+        $total = array_values($revenueByMonth);
+        // dd($total);
 
 
         $staffQuantity = DB::table('staff')->count();

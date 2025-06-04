@@ -7,15 +7,12 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class InventoryResource extends JsonResource
 {
-    /**
-     * Transform the resource into an array.
-     *
-     * @return array<string, mixed>
-     */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
+            'vat'=>$this->vat,
+            'status' => $this->status,
             'total_price' => $this->total,
             'createdate' => $this->created_at,
             'updatedate' => $this->updated_at,
@@ -27,11 +24,20 @@ class InventoryResource extends JsonResource
                 'id' => $this->provider->id,
                 'name' => $this->provider->name,
             ],
-            'detail' => $this->inventoryDetails->map(function ($detail) {
-                return [
-                    'sizes' => $detail->size,
-                    'price' => $detail->price,
-                    'quantity' => $detail->quantity,
+            'detail' => $this->groupInventoryDetails(),
+        ];
+    }
+
+    private function groupInventoryDetails()
+    {
+        $groupedDetails = [];
+
+        foreach ($this->inventoryDetails as $detail) {
+            $productId = $detail->product->id;
+
+            // Nếu sản phẩm chưa có trong group, thêm mới
+            if (!isset($groupedDetails[$productId])) {
+                $groupedDetails[$productId] = [
                     'product' => [
                         'id' => $detail->product->id,
                         'name' => $detail->product->product_name,
@@ -40,18 +46,44 @@ class InventoryResource extends JsonResource
                         'category' => [
                             'id' => $detail->product->category->id,
                             'name' => $detail->product->category->category_name,
-                        ],
-                        'product-variant' => $detail->product->productVariants->map(function ($variant) {
-                            return [
-                                'id' => $variant->id,
-                                'color' => $variant->color,
-                                'size' => $variant->size,
-                                'stock' => $variant->stock
-                            ];
-                        }),
+                        ]
                     ],
+                    'variants' => []
                 ];
-            }),
+            }
+
+            // Thêm variant vào sản phẩm - chỉ variant được nhập kho
+            $groupedDetails[$productId]['variants'][] = [
+                'id' => $detail->productVariant->id,
+                'color' => $detail->productVariant->color,
+                'color_code' => $this->getColorCode($detail->productVariant->color),
+                'size' => $detail->productVariant->size,
+                'price' => $detail->price,
+                'quantity' => $detail->quantity,
+                'stock' => $detail->productVariant->stock,
+                'sizes' => $detail->productVariant->size . '-' . $detail->quantity . '-' . $detail->productVariant->color
+            ];
+        }
+
+        return array_values($groupedDetails);
+    }
+
+    private function getColorCode($colorName)
+    {
+        $colorMap = [
+            'Đỏ' => '#ff0000',
+            'Xanh Nâu' => '#8FBC8F',
+            'Xanh Dương' => '#0000ff',
+            'Xanh Lá' => '#00ff00',
+            'Vàng' => '#ffff00',
+            'Tím' => '#800080',
+            'Hồng' => '#ffc0cb',
+            'Cam' => '#ffa500',
+            'Đen' => '#000000',
+            'Trắng' => '#ffffff',
+            'Xám' => '#808080',
         ];
+
+        return $colorMap[$colorName] ?? '#cccccc';
     }
 }
