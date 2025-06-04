@@ -11,7 +11,7 @@ class ChatBotApiController extends Controller
 {
 
 
-// **************** Luồng xử lý chính trong ChatBotApiController có thể tóm tắt ngắn gọn như sau **************
+    // **************** Luồng xử lý chính trong ChatBotApiController tóm tắt ngắn gọn như sau **************
     // Nhận tin nhắn từ user:
     // Lấy message từ request
     // Xác định user ID

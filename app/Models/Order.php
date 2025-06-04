@@ -49,4 +49,9 @@ class Order extends Model
     {
         return $this->hasMany(VoucherUsage::class);
     }
+
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }

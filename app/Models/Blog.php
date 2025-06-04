@@ -22,4 +22,11 @@ class Blog extends Model
     {
         return $this->belongsTo(Staff::class);
     }
+
+    public function blogcommentsofblog()
+    {
+        return $this->hasMany(BlogComment::class);
+    }
+
+
 }

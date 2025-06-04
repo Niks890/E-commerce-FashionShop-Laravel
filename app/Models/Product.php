@@ -61,6 +61,10 @@ class Product extends Model
         return $this->hasMany(Comment::class);
     }
 
+    public function color(){
+        return $this->hasMany(Color::class);
+    }
+
 
     public function getDiscountedPriceAttribute()
     {

@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('discounts', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('colors', function (Blueprint $table) {
+            $table->id('color_hex_id');
             $table->string('name');
-            $table->decimal('percent_discount', 10,3);
-            $table->string('code', 10)->unique();
-            $table->datetime('start_date');
-            $table->datetime('end_date');
-            $table->string('status')->default('active');
+            $table->unsignedInteger('product_id');
+            $table->foreign('product_id')->references('id')->on('products');
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('discounts');
+        Schema::dropIfExists('colors');
     }
 };

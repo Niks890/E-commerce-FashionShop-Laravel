@@ -42,4 +42,14 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(VoucherUsage::class);
     }
+
+    public function blogcommentsofcustomer()
+    {
+        return $this->hasMany(BlogComment::class);
+    }
+
+    public function likecommentsofcustomer()
+    {
+        return $this->hasMany(LikeComment::class);
+    }
 }

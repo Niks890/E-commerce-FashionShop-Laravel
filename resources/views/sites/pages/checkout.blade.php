@@ -306,13 +306,13 @@
 
 
 
-            const isEmailValid = validateEmail();
-            const isPhoneValid = validatePhone();
+            //const isEmailValid = validateEmail();
+           // const isPhoneValid = validatePhone();
 
-            if (!isEmailValid || !isPhoneValid) {
-                event.preventDefault(); // Ngăn chặn submit nếu có lỗi
-                alert('Vui lòng kiểm tra lại thông tin email và số điện thoại.');
-            }
+            // if (!isEmailValid || !isPhoneValid) {
+            //     event.preventDefault(); // Ngăn chặn submit nếu có lỗi
+            //     alert('Vui lòng kiểm tra lại thông tin email và số điện thoại.');
+            // }
             // Kiểm tra lại tổng tiền trước khi submit
             const totalAmount = {{ $total }};
             let paymentMethod = document.querySelector('input[name="payment"]:checked');
