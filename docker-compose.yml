@@ -1,0 +1,18 @@
+###### File docker này để test local trước khi deploy ######
+
+version: '3.8'
+
+services:
+  laravel-app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: turntable.proxy.rlwy.net
+      DB_PORT: 41011
+      DB_DATABASE: railway
+      DB_USERNAME: root
+      DB_PASSWORD: GlzXgrzDwCeEEtzOTJwPGeburAwmoryo
+    volumes:
+      - .:/var/www
