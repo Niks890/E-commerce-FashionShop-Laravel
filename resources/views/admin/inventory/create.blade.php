@@ -47,7 +47,7 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <h5 class="text-primary mb-0">
-                                    <i class="fas fa-boxes me-2"></i>Danh sách sản phẩm
+                                    <i class="fas fa-boxes me-2"></i>Danh sách sản phẩm cần nhập
                                     <span class="text-danger">*</span>
                                 </h5>
                                 <button type="button" id="add-product-btn"

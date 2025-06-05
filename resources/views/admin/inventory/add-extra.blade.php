@@ -1,473 +1,588 @@
-@extends('admin.master')
-
-@section('content')
-<div class="container-fluid">
-    <form method="POST" action="{{ route('inventory.post_add_extra') }}" id="addExtraForm">
-        @csrf
-        <input type="hidden" name="inventory_id" value="{{ $originalInventory->id }}">
-
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5>Nhập thêm cho phiếu: #{{ $originalInventory->id }}</h5>
-                <p class="mb-0">Nhà cung cấp: {{ $originalInventory->provider->name }}</p>
-            </div>
-        </div>
-
-        <div class="row mb-4">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <span class="input-group-text"><i class="fas fa-search"></i></span>
-                    <input type="text" id="productSearch" class="form-control" placeholder="Tìm kiếm sản phẩm...">
-                </div>
-            </div>
-            <div class="col-md-4 text-end">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal">
-                    <i class="fas fa-plus me-2"></i>Chọn sản phẩm
-                </button>
-            </div>
-        </div>
-
-        <!-- Selected Products List -->
-        <div class="selected-products-container card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">Sản phẩm sẽ nhập thêm</h5>
-            </div>
-            <div class="card-body" id="selectedProductsList">
-                <p class="text-muted mb-0">Chưa có sản phẩm nào được chọn</p>
-            </div>
-            <div class="card-footer bg-light">
-                <div class="d-flex justify-content-between align-items-center">
-                    <span>Tổng giá trị:</span>
-                    <strong id="totalValue">0 ₫</strong>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-end mt-4">
-            <button type="submit" class="btn btn-success" id="submitBtn" disabled>
-                <i class="fas fa-save me-2"></i>Xác nhận nhập thêm
-            </button>
-            <a href="{{ route('inventory.index') }}" class="btn btn-secondary">
-                <i class="fas fa-times me-2"></i>Hủy bỏ
-            </a>
-        </div>
-    </form>
-</div>
-
-<!-- Product Selection Modal -->
-<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Chọn sản phẩm nhập thêm</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row" id="productListContainer">
-                    @foreach($products as $product)
-                    <div class="col-md-6 mb-3 product-item" data-id="{{ $product->id }}">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <div class="d-flex align-items-start">
-                                    <div class="form-check flex-grow-1">
-                                        <input class="form-check-input product-checkbox" type="checkbox"
-                                               id="product-{{ $product->id }}"
-                                               data-name="{{ $product->name }}"
-                                               data-code="{{ $product->code }}">
-                                        <label class="form-check-label fw-bold" for="product-{{ $product->id }}">
-                                            {{ $product->name }} <small class="text-muted">({{ $product->code }})</small>
-                                        </label>
-                                    </div>
-                                    <div class="ps-3">
-                                        @if($product->image)
-                                        <img src="{{ asset('storage/'.$product->image) }}" alt="{{ $product->name }}"
-                                             class="img-thumbnail" style="width: 60px; height: 60px; object-fit: cover;">
-                                        @else
-                                        <div class="no-image bg-light d-flex align-items-center justify-content-center"
-                                             style="width: 60px; height: 60px;">
-                                            <i class="fas fa-image text-muted"></i>
-                                        </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                <!-- Product Variants -->
-                                <div class="variants-container mt-3 ms-4" style="display: none;">
-                                    @foreach($product->productVariants->groupBy('color') as $color => $variants)
-                                    <div class="variant-item mb-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input variant-checkbox" type="checkbox"
-                                                   data-color="{{ $color }}"
-                                                   data-product-id="{{ $product->id }}">
-                                            <label class="form-check-label d-flex align-items-center">
-                                                <span class="color-indicator me-2"
-                                                      style="background-color: {{ $color }}; width: 16px; height: 16px; border-radius: 3px;"></span>
-                                                {{ $color }}
-                                            </label>
-                                        </div>
-
-                                        <!-- Sizes for each color -->
-                                        <div class="sizes-container ms-4 mt-2" style="display: none;">
-                                            <div class="table-responsive">
-                                                <table class="table table-sm table-bordered">
-                                                    <thead class="table-light">
-                                                        <tr>
-                                                            <th>Size</th>
-                                                            <th>Tồn kho</th>
-                                                            <th>Số lượng nhập thêm</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        @foreach($product->productVariants->groupBy('size') as $size => $items)
-                                                        <tr>
-                                                            <td>{{ $size }}</td>
-                                                            <td>{{ $items->sum('stock') }}</td>
-                                                            <td>
-                                                                <input type="number" class="form-control form-control-sm quantity-input"
-                                                                       min="1" value="0"
-                                                                       data-product-id="{{ $product->id }}"
-                                                                       data-color="{{ $color }}"
-                                                                       data-size="{{ $size }}">
-                                                            </td>
-                                                        </tr>
-                                                        @endforeach
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
-                <button type="button" class="btn btn-primary" id="confirmSelection">
-                    <i class="fas fa-check me-2"></i>Xác nhận chọn
-                </button>
-            </div>
-        </div>
+@can('warehouse workers')
+    @extends('admin.master')
+    @section('title', 'Tạo phiếu nhập thêm sản phẩm đã có trong kho')
+@section('back-page')
+    <div class="d-flex align-items-center mb-3">
+        <button class="btn btn-outline-primary rounded-pill px-3 py-2 shadow-sm" onclick="window.history.back()"
+            style="transition: all 0.3s ease; border: 2px solid #007bff;">
+            <i class="fas fa-arrow-left me-2"></i>
+            <span class="fw-semibold">Quay lại</span>
+        </button>
     </div>
-</div>
-
-<!-- Templates -->
-<template id="selectedProductTemplate">
-    <div class="selected-product mb-3 p-3 border rounded" data-product-id="">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="d-flex align-items-center">
-                <img src="" class="product-image me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                <div>
-                    <h6 class="mb-0 product-name fw-bold"></h6>
-                    <small class="text-muted product-code"></small>
-                </div>
-            </div>
-            <button type="button" class="btn btn-sm btn-danger remove-product">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <div class="variants-list mt-2">
-            <!-- Variants will be added here -->
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <label class="form-label">Giá nhập (₫)</label>
-                <input type="number" class="form-control price-input" name="selected_products[][price]" min="1" required>
-                <input type="hidden" name="selected_products[][product_id]" class="product-id-input">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Thành tiền</label>
-                <div class="form-control-plaintext product-total">0 ₫</div>
-            </div>
-        </div>
-    </div>
-</template>
-
-<template id="variantTemplate">
-    <div class="variant-item mb-2 p-2 bg-light rounded" data-color="">
-        <div class="d-flex align-items-center mb-2">
-            <span class="color-indicator me-2"
-                  style="width: 14px; height: 14px; border-radius: 2px;"></span>
-            <span class="variant-color fw-bold"></span>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered mb-0 sizes-table">
-                <thead class="table-light">
-                    <tr>
-                        <th>Size</th>
-                        <th>Số lượng</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Sizes will be added here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</template>
-
-<template id="sizeTemplate">
-    <tr>
-        <td class="size-name align-middle"></td>
-        <td class="size-quantity align-middle"></td>
-    </tr>
-</template>
-
 @endsection
+@section('content')
+    <form id="formCreateInventory" method="POST" action="{{ route('inventory.post_add_extra') }}"
+        enctype="multipart/form-data">
+        @csrf
+        <input type="hidden" name="id" value="{{ auth()->user()->id - 1 }}">
+
+        <div class="card shadow-lg mb-4 rounded-3">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-truck me-2"></i>Thông tin nhà cung cấp</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="provider_name_display" class="form-label fw-bold">Nhà cung cấp:</label>
+                    <input type="text" id="provider_name_display" class="form-control form-control-lg" readonly
+                        placeholder="Tên nhà cung cấp">
+                    <input type="hidden" name="provider_id" id="provider_id_hidden">
+                </div>
+            </div>
+        </div>
+
+        {{-- Product details will be loaded here by JavaScript --}}
+        <div id="products_container" class="card shadow-lg mb-4 rounded-3">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-boxes me-2"></i>Thông tin sản phẩm trong phiếu nhập</h5>
+            </div>
+            <div class="card-body">
+                <div class="btn-group-bulk mb-4">
+                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="selectAllProductsBtn">
+                        <i class="fas fa-check-double me-2"></i>Chọn tất cả
+                    </button>
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 shadow-sm"
+                        id="deselectAllProductsBtn">
+                        <i class="fas fa-times me-2"></i>Bỏ chọn tất cả
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" width="60px" class="text-center">Chọn</th>
+                                <th scope="col">Sản phẩm</th>
+                                <th scope="col" width="100px">Hình ảnh</th>
+                                <th scope="col">Danh mục</th>
+                                <th scope="col">Thương hiệu</th>
+                                <th scope="col">Thông tin biến thể hiện có</th>
+                                <th scope="col">Giá nhập thêm (VND)</th>
+                                <th scope="col">Màu mới</th>
+                                <th scope="col" width="200px">Kích cỡ & Số lượng nhập thêm</th>
+                            </tr>
+                        </thead>
+                        <tbody id="products-tbody">
+                            {{-- Product rows will be inserted here by JavaScript --}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success rounded-pill px-5 py-3 shadow-lg mt-3 fw-bold">
+            <i class="fas fa-save me-2"></i>Lưu thông tin nhập kho
+        </button>
+    </form>
+
+    <div class="modal fade" id="modal-quantity" tabindex="-1" aria-labelledby="modal-quantity-label" aria-hidden="true">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white text-center rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="modal-quantity-label">Nhập số lượng</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label for="quantity_variant" class="form-label fw-semibold">Số lượng:</label>
+                        <input id="quantity_variant" class="form-control form-control-lg" type="number"
+                            name="quantity_variant" value="1" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center border-top-0 pt-0">
+                    <button type="button" class="btn btn-success text-white btn-quantity-submit rounded-pill px-4 py-2">
+                        <i class="fas fa-check me-2"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
 @section('css')
-    <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
     <style>
-        .color-indicator {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
-    border: 1px solid #dee2e6;
-}
+        body {
+            background-color: #f8f9fa;
+            /* Light background for the page */
+        }
 
-.selected-product {
-    background-color: #f8f9fa;
-    transition: all 0.2s;
-}
+        .card {
+            border: none;
+            /* Remove default card border */
+        }
 
-.selected-product:hover {
-    background-color: #e9ecef;
-}
+        .card-header.bg-gradient-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3) !important;
+            /* Blue gradient */
+            border-bottom: none;
+        }
 
-.variant-item {
-    background-color: white;
-}
+        .btn-outline-primary {
+            border-color: #007bff;
+            color: #007bff;
+        }
 
-.no-image {
-    width: 60px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
+        .btn-outline-primary:hover {
+            background-color: #007bff;
+            color: white;
+        }
 
-.quantity-input {
-    max-width: 100px;
-}
+        .btn-group-bulk button {
+            transition: all 0.3s ease;
+        }
 
-.price-input {
-    max-width: 150px;
-}
+        .btn-group-bulk button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
+        }
+
+        .table thead th {
+            background-color: #e9eff4;
+            /* Lighter header background */
+            color: #343a40;
+            /* Darker text */
+            font-weight: 600;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+
+        .product-check {
+            transform: scale(1.3);
+            /* Slightly larger checkboxes */
+            cursor: pointer;
+        }
+
+        .img-thumbnail {
+            border: 1px solid #dee2e6;
+            padding: 2px;
+        }
+
+        .variant-table {
+            width: 100%;
+            margin-top: 5px;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            /* Slightly smaller font for inner table */
+        }
+
+        .variant-table th,
+        .variant-table td {
+            border: 1px solid #e9ecef;
+            padding: 6px 8px;
+            text-align: left;
+        }
+
+        .variant-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .variant-table td small {
+            color: #6c757d;
+        }
+
+        .badge.bg-secondary {
+            background-color: #6c757d !important;
+            font-size: 0.75em;
+            padding: 0.3em 0.6em;
+            vertical-align: middle;
+        }
+
+        .form-control-lg {
+            height: calc(3.5rem + 2px);
+            /* Larger input fields */
+            padding: 0.75rem 1rem;
+            font-size: 1.1rem;
+            border-radius: 0.3rem;
+        }
+
+        /* Select2 Customizations for larger appearance */
+        .select2-container--bootstrap-5 .select2-selection--multiple {
+            min-height: calc(3.5rem + 2px) !important;
+            /* Match form-control-lg height */
+            padding: 0.75rem 1rem !important;
+            border-radius: 0.3rem !important;
+            font-size: 1.1rem !important;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
+            background-color: #0d6efd;
+            color: white;
+            border: 1px solid #0a58ca;
+            border-radius: 0.25rem;
+            padding: 0.4rem 0.75rem;
+            /* Larger padding for choices */
+            font-size: 0.95rem;
+            /* Slightly larger text in choices */
+            margin-top: 0.3rem;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 0.25rem;
+            font-size: 1.1rem;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
+            padding-right: 2rem;
+            /* Give space for the clear button */
+        }
+
+        .modal-header.bg-primary {
+            background-color: #007bff !important;
+        }
+
+        .modal-footer {
+            background-color: #f8f9fa;
+        }
     </style>
 @endsection
 
 @section('js')
-<script>
-$(document).ready(function() {
-    // Toggle variants when product is selected
-    $('.product-checkbox').change(function() {
-        const productItem = $(this).closest('.product-item');
-        const variantsContainer = productItem.find('.variants-container');
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const inventory_id = urlParams.get('inventory_id');
 
-        if ($(this).is(':checked')) {
-            variantsContainer.slideDown();
-        } else {
-            variantsContainer.slideUp();
-            productItem.find('.variant-checkbox').prop('checked', false).trigger('change');
-        }
-    });
+            if (!inventory_id) {
+                console.error("Không tìm thấy inventory_id trong URL.");
+                // Optionally, redirect or show a user-friendly error message
+                alert("Không tìm thấy ID phiếu nhập. Vui lòng thử lại.");
+                window.history.back(); // Go back to the previous page
+                return;
+            }
 
-    // Toggle sizes when variant is selected
-    $(document).on('change', '.variant-checkbox', function() {
-        const sizesContainer = $(this).closest('.variant-item').find('.sizes-container');
+            let productsData = []; // Global array to store and manage product data
 
-        if ($(this).is(':checked')) {
-            sizesContainer.slideDown();
-        } else {
-            sizesContainer.slideUp();
-            sizesContainer.find('.quantity-input').val(0);
-        }
-    });
+            fetch(`http://127.0.0.1:8000/api/inventory/${inventory_id}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok ' + response.statusText);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.status_code === 200) {
+                        const inventoryData = data.data;
 
-    // Confirm product selection
-    $('#confirmSelection').click(function() {
-        const selectedProducts = [];
+                        // Display provider name and ID
+                        document.getElementById('provider_name_display').value = inventoryData.provider.name ||
+                            "";
+                        document.getElementById('provider_id_hidden').value = inventoryData.provider.id || "";
 
-        $('.product-checkbox:checked').each(function() {
-            const productId = $(this).closest('.product-item').data('id');
-            const productName = $(this).data('name');
-            const productCode = $(this).data('code');
-            const productImage = $(this).closest('.product-item').find('img').attr('src') || '';
-            const variants = [];
+                        // Group product details by product_id
+                        const groupedProducts = {};
+                        inventoryData.detail.forEach(item => {
+                            if (!groupedProducts[item.product.id]) {
+                                groupedProducts[item.product.id] = {
+                                    product: item.product,
+                                    variants: []
+                                };
+                            }
+                            groupedProducts[item.product.id].variants.push({
+                                color: item.color,
+                                sizes: item.sizes, // String "S,M,L"
+                                quantity: item.quantity,
+                                price: item.price
+                            });
+                        });
 
-            $(this).closest('.product-item').find('.variant-checkbox:checked').each(function() {
-                const color = $(this).data('color');
-                const sizes = [];
+                        // Convert object to array for easy iteration
+                        const uniqueProducts = Object.values(groupedProducts);
 
-                $(this).closest('.variant-item').find('.quantity-input').each(function() {
-                    const size = $(this).data('size');
-                    const quantity = parseInt($(this).val()) || 0;
+                        // Initialize productsData from uniqueProducts for new data management
+                        productsData = uniqueProducts.map((item, index) => ({
+                            product_id: item.product.id,
+                            product_name: item.product.name,
+                            product_image: item.product.image,
+                            category_name: item.product.category.name,
+                            brand_name: item.product.brand,
+                            existing_variants: item.variants,
+                            new_color: item.variants.length > 0 ? item.variants[0].color :
+                            '', // Initialize with existing color if available
+                            new_price: '',
+                            new_sizes_quantities: {} // {size: quantity}
+                        }));
 
-                    if (quantity > 0) {
-                        sizes.push({
-                            size: size,
-                            quantity: quantity
+                        const productsTbody = document.getElementById('products-tbody');
+                        productsTbody.innerHTML = ''; // Clear existing content
+
+                        productsData.forEach((productItem, index) => {
+                            const row = document.createElement('tr');
+                            row.id = `product-row-${index}`;
+                            row.innerHTML = `
+                                    <td class="text-center">
+                                        <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
+                                        <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
+                                    </td>
+                                    <td>
+                                        <strong>${productItem.product_name}</strong>
+                                    </td>
+                                    <td>
+                                        <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
+                                    </td>
+                                    <td>${productItem.category_name}</td>
+                                    <td>${productItem.brand_name}</td>
+                                    <td>
+                                        <table class="variant-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Kích cỡ</th>
+                                                    <th>SL</th>
+                                                    <th>Giá</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                ${productItem.existing_variants.map(variant => `
+                                                                <tr>
+                                                                    <td>${variant.sizes.split(',').map(s => `<span class="badge bg-secondary me-1">${s.trim()}</span>`).join('')}</td>
+                                                                    <td>${variant.quantity}</td>
+                                                                    <td>${formatCurrency(variant.price)}</td>
+                                                                </tr>
+                                                            `).join('')}
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                    <td>
+                                        <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
+                                    </td>
+                                    <td>
+                                        <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
+                                    </td>
+                                    <td>
+                                        <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
+                                            <option value="XS">XS</option>
+                                            <option value="S">S</option>
+                                            <option value="M">M</option>
+                                            <option value="L">L</option>
+                                            <option value="XL">XL</option>
+                                            <option value="XXL">XXL</option>
+                                        </select>
+                                        <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
+                                    </td>
+                                `;
+                            productsTbody.appendChild(row);
+                        });
+
+                        // Event Listeners for select/deselect all buttons
+                        document.getElementById('selectAllProductsBtn').addEventListener('click', function() {
+                            document.querySelectorAll('.product-check').forEach(checkbox => {
+                                checkbox.checked = true;
+                                const index = checkbox.dataset.index;
+                                $(`#product-row-${index} input, #product-row-${index} select`)
+                                    .prop('disabled', false);
+                                $(`#product-row-${index} .select-sizes`).select2('enable');
+                            });
+                        });
+
+                        document.getElementById('deselectAllProductsBtn').addEventListener('click', function() {
+                            document.querySelectorAll('.product-check').forEach(checkbox => {
+                                checkbox.checked = false;
+                                const index = checkbox.dataset.index;
+                                $(`#product-row-${index} input:not([type="hidden"]), #product-row-${index} select`)
+                                    .prop('disabled', true);
+                                $(`#product-row-${index} .select-sizes`).select2('disable');
+                            });
+                        });
+
+                        // Handle individual product checkbox changes
+                        document.querySelectorAll('.product-check').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const index = this.dataset.index;
+                                const isDisabled = !this.checked;
+                                $(`#product-row-${index} input:not([type="hidden"]), #product-row-${index} select`)
+                                    .prop('disabled', isDisabled);
+                                $(`#product-row-${index} .select-sizes`).select2(isDisabled ?
+                                    'disable' : 'enable');
+                            });
+                        });
+
+                        // Initialize Select2 for each row
+                        $('.select-sizes').each(function() {
+                            const selectElement = $(this);
+                            const index = selectElement.data('index');
+                            if (!productsData[index]) {
+                                productsData[index] = {
+                                    new_sizes_quantities: {},
+                                    new_color: ''
+                                };
+                            }
+                            let sizesWithQuantities = productsData[index].new_sizes_quantities;
+
+                            selectElement.select2({
+                                theme: "bootstrap-5",
+                                placeholder: "Chọn kích cỡ và số lượng",
+                                allowClear: true,
+                                templateSelection: function(selection) {
+                                    if (sizesWithQuantities[selection.id]) {
+                                        return `${selection.id} (${sizesWithQuantities[selection.id]})`;
+                                    }
+                                    return selection.text;
+                                }
+                            });
+
+                            selectElement.on("select2:select", function(e) {
+                                const selectedSize = e.params.data.id;
+                                $('#modal-quantity-label').text("Nhập số lượng cho size " +
+                                    selectedSize + " của sản phẩm " + productsData[index]
+                                    .product_name);
+                                $("#quantity_variant").val(sizesWithQuantities[selectedSize] ||
+                                    1);
+                                $("#modal-quantity").modal("show");
+
+                                $('#modal-quantity').data('product-index', index);
+                                $('#modal-quantity').data('selected-size', selectedSize);
+                            });
+                        });
+
+                        // Handle quantity modal submission
+                        $(".btn-quantity-submit").on("click", function() {
+                            const quantity = parseInt($("#quantity_variant").val()) || 0;
+                            const productIndex = $('#modal-quantity').data('product-index');
+                            const selectedSize = $('#modal-quantity').data('selected-size');
+
+                            if (quantity > 0) {
+                                productsData[productIndex].new_sizes_quantities[selectedSize] =
+                                    quantity;
+
+                                // Set the new_color based on the first existing variant's color if not already set or explicitly entered
+                                if (!productsData[productIndex].new_color && productsData[productIndex]
+                                    .existing_variants.length > 0) {
+                                    productsData[productIndex].new_color = productsData[productIndex]
+                                        .existing_variants[0].color;
+                                    $(`#product-row-${productIndex} .new-color-input`).val(productsData[
+                                        productIndex].new_color);
+                                }
+
+                                const formattedSizesInput = $(
+                                    `#product-row-${productIndex} .formatted-new-sizes`);
+                                formattedSizesInput.val(
+                                    Object.entries(productsData[productIndex].new_sizes_quantities)
+                                    .map(([size, qty]) => `${size}-${qty}`)
+                                    .join(',')
+                                );
+                                $(`#product-row-${productIndex} .select-sizes`).trigger("change");
+                                $("#modal-quantity").modal("hide");
+                            } else {
+                                alert("Vui lòng nhập số lượng hợp lệ!");
+                            }
+                        });
+
+                        // Handle unselecting size in Select2
+                        $('.select-sizes').on("select2:unselect", function(e) {
+                            const unselectedSize = e.params.data.id;
+                            const productIndex = $(this).data('index');
+                            delete productsData[productIndex].new_sizes_quantities[unselectedSize];
+                            const formattedSizesInput = $(
+                                `#product-row-${productIndex} .formatted-new-sizes`);
+                            formattedSizesInput.val(
+                                Object.entries(productsData[productIndex].new_sizes_quantities)
+                                .map(([size, qty]) => `${size}-${qty}`)
+                                .join(',')
+                            );
+                        });
+
+                        // Update productsData when new price input changes
+                        $(document).on('change', '.new-price-input', function() {
+                            const index = $(this).data('index');
+                            productsData[index].new_price = $(this).val();
+                        });
+
+                        // Update productsData when new color input changes
+                        $(document).on('change', '.new-color-input', function() {
+                            const index = $(this).data('index');
+                            productsData[index].new_color = $(this).val();
+                        });
+
+                        // Form submission handler
+                        $("#formCreateInventory").on("submit", function(e) {
+                            const selectedProductsToSend = [];
+                            document.querySelectorAll('.product-check:checked').forEach(checkbox => {
+                                const index = checkbox.dataset.index;
+                                const productItem = productsData[index];
+
+                                // Get the latest values from input fields
+                                productItem.new_price = $(
+                                    `#product-row-${index} .new-price-input`).val();
+                                productItem.new_color = $(
+                                    `#product-row-${index} .new-color-input`).val();
+
+                                const hasNewPrice = productItem.new_price && productItem
+                                    .new_price > 0;
+                                const hasNewSizesQuantities = Object.keys(productItem
+                                    .new_sizes_quantities).length > 0;
+                                const hasNewColor = productItem.new_color && productItem
+                                    .new_color.trim() !== '';
+
+                                // A product is "selected" and "to be added" if it has any new data (price, color, or sizes/quantities)
+                                const hasNewData = hasNewPrice || hasNewSizesQuantities ||
+                                    hasNewColor;
+
+                                if (hasNewData) {
+                                    // Validation: if new sizes/quantities are provided, new_color and new_price must be set
+                                    if (hasNewSizesQuantities && (!hasNewColor || !
+                                            hasNewPrice)) {
+                                        alert(
+                                            `Lỗi: Vui lòng nhập đầy đủ Màu mới và Giá nhập thêm cho các biến thể mới của sản phẩm "${productItem.product_name}".`
+                                        );
+                                        e.preventDefault();
+                                        return;
+                                    }
+
+                                    selectedProductsToSend.push({
+                                        product_id: productItem.product_id,
+                                        new_color: productItem.new_color,
+                                        new_price: productItem.new_price,
+                                        new_sizes_quantities: productItem
+                                            .new_sizes_quantities
+                                    });
+                                }
+                            });
+
+                            if (selectedProductsToSend.length === 0) {
+                                alert(
+                                    "Vui lòng chọn ít nhất một sản phẩm và nhập thông tin bổ sung (giá, màu hoặc kích cỡ/số lượng)!"
+                                );
+                                e.preventDefault();
+                                return;
+                            }
+
+                            const input = document.createElement('input');
+                            input.type = 'hidden';
+                            input.name = 'products_to_add';
+                            input.value = JSON.stringify(selectedProductsToSend);
+                            this.appendChild(input);
+
+                            // Disable input fields to prevent duplicate data submission
+                            $(this).find('input[name^="products["]:not([type="hidden"])').prop(
+                                'disabled', true);
+                            $(this).find('select[name^="products["]').prop('disabled', true);
                         });
                     }
+                })
+                .catch(error => {
+                    console.error("Lỗi khi lấy API:", error);
+                    alert(
+                        "Không thể tải thông tin phiếu nhập. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau."
+                    );
                 });
 
-                if (sizes.length > 0) {
-                    variants.push({
-                        color: color,
-                        sizes: sizes
-                    });
-                }
-            });
-
-            if (variants.length > 0) {
-                selectedProducts.push({
-                    product_id: productId,
-                    name: productName,
-                    code: productCode,
-                    image: productImage,
-                    variants: variants
-                });
+            function formatCurrency(amount) {
+                return new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND'
+                }).format(amount);
             }
         });
-
-        if (selectedProducts.length > 0) {
-            renderSelectedProducts(selectedProducts);
-            $('#submitBtn').prop('disabled', false);
-            $('#productModal').modal('hide');
-            calculateTotal();
-        } else {
-            alert('Vui lòng chọn ít nhất một sản phẩm và số lượng nhập thêm');
-        }
-    });
-
-    // Render selected products
-    function renderSelectedProducts(products) {
-        const $container = $('#selectedProductsList');
-        $container.empty();
-
-        if (products.length === 0) {
-            $container.html('<p class="text-muted">Chưa có sản phẩm nào được chọn</p>');
-            $('#submitBtn').prop('disabled', true);
-            $('#totalValue').text('0 ₫');
-            return;
-        }
-
-        products.forEach((product, productIndex) => {
-            const $template = $('#selectedProductTemplate').html();
-            const $productElement = $($template);
-
-            $productElement.attr('data-product-id', product.product_id);
-            $productElement.find('.product-name').text(product.name);
-            $productElement.find('.product-code').text(product.code);
-            $productElement.find('.product-image').attr('src', product.image || '');
-            $productElement.find('.product-id-input').attr('name', `selected_products[${productIndex}][product_id]`).val(product.product_id);
-            $productElement.find('.price-input').attr('name', `selected_products[${productIndex}][price]`);
-
-            const $variantsList = $productElement.find('.variants-list');
-
-            product.variants.forEach((variant, variantIndex) => {
-                const $variantTemplate = $('#variantTemplate').html();
-                const $variantElement = $($variantTemplate);
-
-                $variantElement.attr('data-color', variant.color);
-                $variantElement.find('.variant-color').text(variant.color);
-                $variantElement.find('.color-indicator').css('background-color', variant.color);
-
-                // Add hidden input for variant
-                $variantElement.append(`<input type="hidden" name="selected_products[${productIndex}][variants][${variantIndex}][color]" value="${variant.color}">`);
-
-                const $sizesTable = $variantElement.find('.sizes-table tbody');
-                let variantTotalQty = 0;
-
-                variant.sizes.forEach((size, sizeIndex) => {
-                    const $sizeTemplate = $('#sizeTemplate').html();
-                    const $sizeElement = $($sizeTemplate);
-
-                    $sizeElement.find('.size-name').text(size.size);
-                    $sizeElement.find('.size-quantity').text(size.quantity);
-
-                    // Add hidden inputs for size
-                    $sizeElement.append(`
-                        <input type="hidden" name="selected_products[${productIndex}][variants][${variantIndex}][sizes][${sizeIndex}][size]" value="${size.size}">
-                        <input type="hidden" name="selected_products[${productIndex}][variants][${variantIndex}][sizes][${sizeIndex}][quantity]" value="${size.quantity}">
-                    `);
-
-                    $sizesTable.append($sizeElement);
-                    variantTotalQty += parseInt(size.quantity);
-                });
-
-                $variantsList.append($variantElement);
-            });
-
-            // Handle price change
-            $productElement.find('.price-input').on('input', function() {
-                const price = parseFloat($(this).val()) || 0;
-                const totalQty = product.variants.reduce((sum, variant) => {
-                    return sum + variant.sizes.reduce((sum, size) => sum + parseInt(size.quantity), 0);
-                }, 0);
-
-                $productElement.find('.product-total').text((price * totalQty).toLocaleString('vi-VN') + ' ₫');
-                calculateTotal();
-            });
-
-            // Handle product removal
-            $productElement.find('.remove-product').click(function() {
-                $(this).closest('.selected-product').remove();
-                if ($container.find('.selected-product').length === 0) {
-                    $container.html('<p class="text-muted">Chưa có sản phẩm nào được chọn</p>');
-                    $('#submitBtn').prop('disabled', true);
-                }
-                calculateTotal();
-            });
-
-            $container.append($productElement);
-        });
-    }
-
-    // Calculate total value
-    function calculateTotal() {
-        let total = 0;
-
-        $('.selected-product').each(function() {
-            const price = parseFloat($(this).find('.price-input').val()) || 0;
-            const qty = $(this).find('.size-quantity').toArray().reduce((sum, el) => {
-                return sum + parseInt($(el).text());
-            }, 0);
-
-            total += price * qty;
-        });
-
-        $('#totalValue').text(total.toLocaleString('vi-VN') + ' ₫');
-    }
-
-    // Product search
-    $('#productSearch').on('input', function() {
-        const searchTerm = $(this).val().toLowerCase();
-
-        if (searchTerm.length === 0) {
-            $('.product-item').show();
-            return;
-        }
-
-        $('.product-item').each(function() {
-            const productName = $(this).find('.form-check-label').text().toLowerCase();
-            const productCode = $(this).find('.form-check-label').data('code').toLowerCase();
-
-            if (productName.includes(searchTerm) || productCode.includes(searchTerm)) {
-                $(this).show();
-            } else {
-                $(this).hide();
-            }
-        });
-    });
-});
-</script>
+    </script>
 @endsection
+@else
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+@endcan

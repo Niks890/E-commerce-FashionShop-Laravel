@@ -114,8 +114,6 @@
                 </div>
 
 
-
-
                 {{-- Hàng mới cho các nút chức năng --}}
                 <div class="row g-2 mt-3 justify-content-end"> {{-- Thêm mt-3 để tạo khoảng cách với hàng trên --}}
                     <div class="col-auto"> {{-- Sử dụng col-auto để nút có kích thước tự động --}}

@@ -395,88 +395,6 @@ class InventoryController extends Controller
         }
     }
 
-
-    public function approve($id)
-    {
-        DB::beginTransaction();
-        try {
-            $inventory = Inventory::with('InventoryDetails.ProductVariant')->findOrFail($id);
-
-            // Kiểm tra nếu phiếu nhập đã được duyệt rồi
-            if ($inventory->status === 'approved') {
-                return back()->with('warning', 'Phiếu nhập này đã được duyệt trước đó.');
-            }
-
-            // Cập nhật stock cho từng biến thể sản phẩm
-            foreach ($inventory->InventoryDetails as $detail) {
-                if ($detail->ProductVariant) {
-                    $detail->ProductVariant->increment('stock', $detail->quantity);
-                }
-            }
-
-            // Cập nhật trạng thái phiếu nhập
-            $inventory->update([
-                'status' => 'approved',
-                'updated_at' => now(),
-                'staff_id' => auth()->user()->id - 1
-            ]);
-
-            // Kích hoạt các sản phẩm liên quan
-            Product::whereIn('id', $inventory->InventoryDetails->pluck('product_id')->unique())
-                ->update(['status' => 0]); // 0 = ẩn trong kho
-
-            DB::commit();
-
-            return back()->with('success', 'Đã duyệt phiếu nhập và cập nhật kho thành công!');
-        } catch (Exception $e) {
-            DB::rollBack();
-            return back()->with('error', 'Có lỗi xảy ra khi duyệt phiếu nhập: ' . $e->getMessage());
-        }
-    }
-
-
-
-
-public function reject($id, Request $request)
-{
-    $request->validate([
-        'note' => 'required|string|max:500'
-    ]);
-
-    DB::beginTransaction();
-    try {
-        $inventory = Inventory::findOrFail($id);
-
-        if ($inventory->status !== 'pending') {
-            return redirect()->back()->with('error', 'Chỉ có thể huỷ phiếu nhập ở trạng thái chờ duyệt');
-        }
-
-        $inventory->update([
-            'status' => 'rejected',
-            'updated_at' => now(),
-            'staff_id' => auth()->user()->id - 1,
-            'note' => $request->note
-        ]);
-
-        $productIds = InventoryDetail::where('inventory_id', $id)
-            ->pluck('product_id')
-            ->unique();
-
-        Product::whereIn('id', $productIds)
-            ->update(['status' => 3]);
-
-        DB::commit();
-
-        return redirect()->route('inventory.index')
-            ->with('success', 'Đã huỷ phiếu nhập và ẩn các sản phẩm liên quan');
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return redirect()->back()
-            ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
-    }
-}
-
     // Hàm riêng xử lý ảnh (có thể đưa vào queue)
     protected function processProductImage(Product $product, $imageFile, CloudinaryService $cloudinaryService)
     {
@@ -498,269 +416,13 @@ public function reject($id, Request $request)
             ]);
         }
     }
-
-
-    // public function edit(Inventory $inventory)
-    // {
-    //     // Chỉ cho phép edit khi status = pending
-    //     if ($inventory->status !== 'pending') {
-    //         return redirect()->route('inventory.show', $inventory)
-    //             ->with('error', 'Chỉ có thể chỉnh sửa phiếu nhập đang chờ duyệt!');
-    //     }
-
-    //     $cats = Category::all();
-    //     $providers = Provider::all();
-    //     $inventory->load(['inventoryDetails.product', 'inventoryDetails.productVariant']);
-
-    //     return view('admin.inventory.edit', compact('inventory', 'cats', 'providers'));
-    // }
-
-
-    // public function update(Request $request, Inventory $inventory, CloudinaryService $cloudinaryService)
-    // {
-    //     // Chỉ cho phép update khi status = pending
-    //     if ($inventory->status !== 'pending') {
-    //         return redirect()->route('inventory.show', $inventory)
-    //             ->with('error', 'Chỉ có thể chỉnh sửa phiếu nhập đang chờ duyệt!');
-    //     }
-
-    //     DB::beginTransaction();
-    //     try {
-    //         Log::info('Updating inventory:', ['inventory_id' => $inventory->id, 'data' => $request->all()]);
-
-    //         $data = $request->validate([
-    //             'provider_id' => 'required|exists:providers,id',
-    //             'products' => 'required|array|min:1',
-    //             'products.*.id' => 'nullable|exists:products,id', // ID sản phẩm (nếu cập nhật sản phẩm cũ)
-    //             'products.*.product_name' => 'required|min:3|max:150',
-    //             'products.*.brand_name' => 'required|max:100',
-    //             'products.*.image' => 'nullable|image', // Không bắt buộc nếu cập nhật
-    //             'products.*.category_id' => 'required|exists:categories,id',
-    //             'products.*.price' => 'required|numeric|min:1',
-    //             'products.*.variants' => 'required|array|min:1',
-    //             'products.*.variants.*.id' => 'nullable|exists:product_variants,id', // ID variant (nếu cập nhật variant cũ)
-    //             'products.*.variants.*.color' => 'required|string',
-    //             'products.*.variants.*.size' => 'required|string',
-    //             'products.*.variants.*.quantity' => 'required|integer|min:1',
-    //             'deleted_products' => 'nullable|array', // Danh sách ID sản phẩm bị xóa
-    //             'deleted_variants' => 'nullable|array', // Danh sách ID variant bị xóa
-    //         ], [
-    //             'products.*.product_name.required' => 'Tên sản phẩm không được để trống.',
-    //             'products.*.product_name.min' => 'Tên sản phẩm phải có ít nhất 3 ký tự.',
-    //             'products.*.product_name.max' => 'Tên sản phẩm đã vượt quá 150 ký tự.',
-    //             'products.*.image.image' => 'File phải là hình ảnh.',
-    //             'products.*.category_id.required' => 'Vui lòng chọn danh mục.',
-    //             'products.*.price.required' => 'Vui lòng điền giá nhập.',
-    //             'products.*.price.min' => 'Giá tiền phải lớn hơn 0.',
-    //             'products.*.variants.required' => 'Vui lòng nhập ít nhất một biến thể cho sản phẩm.',
-    //             'products.*.variants.*.color.required' => 'Vui lòng nhập màu sắc.',
-    //             'products.*.variants.*.size.required' => 'Vui lòng chọn kích cỡ.',
-    //             'products.*.variants.*.quantity.required' => 'Vui lòng nhập số lượng.',
-    //             'products.*.variants.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
-    //         ]);
-
-    //         // Cập nhật thông tin inventory
-    //         $inventory->update([
-    //             'provider_id' => $data['provider_id']
-    //         ]);
-
-    //         // Xử lý xóa sản phẩm (nếu có)
-    //         if (!empty($request->deleted_products)) {
-    //             foreach ($request->deleted_products as $productId) {
-    //                 $product = Product::find($productId);
-    //                 if ($product) {
-    //                     // Xóa inventory details liên quan
-    //                     InventoryDetail::where('inventory_id', $inventory->id)
-    //                         ->where('product_id', $productId)
-    //                         ->delete();
-
-    //                     // Xóa variants
-    //                     ProductVariant::where('product_id', $productId)->delete();
-
-    //                     // Xóa sản phẩm
-    //                     $product->delete();
-    //                 }
-    //             }
-    //         }
-
-    //         // Xử lý xóa variants riêng lẻ (nếu có)
-    //         if (!empty($request->deleted_variants)) {
-    //             foreach ($request->deleted_variants as $variantId) {
-    //                 $variant = ProductVariant::find($variantId);
-    //                 if ($variant) {
-    //                     // Xóa inventory detail liên quan
-    //                     InventoryDetail::where('inventory_id', $inventory->id)
-    //                         ->where('product_variant_id', $variantId)
-    //                         ->delete();
-
-    //                     // Xóa variant
-    //                     $variant->delete();
-    //                 }
-    //             }
-    //         }
-
-    //         $totalInventoryValue = 0;
-    //         $totalVat = 0;
-    //         $vatRate = 0.1;
-    //         $productsToProcessImages = [];
-
-    //         foreach ($request->products as $productData) {
-    //             $product = null;
-
-    //             // Kiểm tra xem đây là sản phẩm mới hay cập nhật
-    //             if (isset($productData['id']) && !empty($productData['id'])) {
-    //                 // Cập nhật sản phẩm cũ
-    //                 $product = Product::find($productData['id']);
-    //                 if ($product) {
-    //                     // Kiểm tra tên sản phẩm unique (trừ chính nó)
-    //                     $existingProduct = Product::where('product_name', $productData['product_name'])
-    //                         ->where('id', '!=', $product->id)
-    //                         ->first();
-
-    //                     if ($existingProduct) {
-    //                         throw new Exception("Tên sản phẩm '{$productData['product_name']}' đã tồn tại.");
-    //                     }
-
-    //                     $product->update([
-    //                         'product_name' => $productData['product_name'],
-    //                         'price' => $productData['price'],
-    //                         'brand' => $productData['brand_name'],
-    //                         'category_id' => $productData['category_id'],
-    //                         'slug' => Str::slug($productData['product_name'])
-    //                     ]);
-    //                 }
-    //             } else {
-    //                 // Tạo sản phẩm mới
-    //                 $existingProduct = Product::where('product_name', $productData['product_name'])->first();
-    //                 if ($existingProduct) {
-    //                     throw new Exception("Tên sản phẩm '{$productData['product_name']}' đã tồn tại.");
-    //                 }
-
-    //                 $product = Product::create([
-    //                     'product_name' => $productData['product_name'],
-    //                     'price' => $productData['price'],
-    //                     'brand' => $productData['brand_name'],
-    //                     'status' => 0,
-    //                     'sku' => strtoupper(Str::random(6)),
-    //                     'category_id' => $productData['category_id'],
-    //                     'image' => 'temp',
-    //                     'slug' => Str::slug($productData['product_name'])
-    //                 ]);
-    //             }
-
-    //             // Xử lý hình ảnh (nếu có upload mới)
-    //             if (isset($productData['image']) && $productData['image']) {
-    //                 $productsToProcessImages[] = [
-    //                     'product' => $product,
-    //                     'image' => $productData['image']
-    //                 ];
-    //             }
-
-    //             $productTotalQuantity = 0;
-    //             $productTotalValue = 0;
-
-    //             // Xử lý variants
-    //             foreach ($productData['variants'] as $variantData) {
-    //                 $productTotalQuantity += $variantData['quantity'];
-
-    //                 if (isset($variantData['id']) && !empty($variantData['id'])) {
-    //                     // Cập nhật variant cũ
-    //                     $variant = ProductVariant::find($variantData['id']);
-    //                     if ($variant) {
-    //                         $variant->update([
-    //                             'color' => $variantData['color'],
-    //                             'size' => $variantData['size'],
-    //                             'price' => $productData['price'],
-    //                         ]);
-
-    //                         // Cập nhật inventory detail
-    //                         $inventoryDetail = InventoryDetail::where('inventory_id', $inventory->id)
-    //                             ->where('product_variant_id', $variant->id)
-    //                             ->first();
-
-    //                         if ($inventoryDetail) {
-    //                             $inventoryDetail->update([
-    //                                 'price' => $productData['price'],
-    //                                 'quantity' => $variantData['quantity'],
-    //                                 'size' => $variantData['size'] . '-' . $variantData['quantity'] . '-' . $variantData['color'],
-    //                             ]);
-    //                         }
-    //                     }
-    //                 } else {
-    //                     // Tạo variant mới
-    //                     $variant = ProductVariant::create([
-    //                         'color' => $variantData['color'],
-    //                         'size' => $variantData['size'],
-    //                         'price' => $productData['price'],
-    //                         'stock' => 0,
-    //                         'product_id' => $product->id,
-    //                     ]);
-
-    //                     // Tạo inventory detail mới
-    //                     InventoryDetail::create([
-    //                         'product_variant_id' => $variant->id,
-    //                         'product_id' => $product->id,
-    //                         'inventory_id' => $inventory->id,
-    //                         'price' => $productData['price'],
-    //                         'quantity' => $variantData['quantity'],
-    //                         'size' => $variantData['size'] . '-' . $variantData['quantity'] . '-' . $variantData['color'],
-    //                     ]);
-    //                 }
-    //             }
-
-    //             $productTotalValue = $productTotalQuantity * $productData['price'];
-    //             $productVat = $productTotalValue * $vatRate;
-    //             $totalInventoryValue += $productTotalValue + $productVat;
-    //             $totalVat += $productVat;
-    //         }
-
-    //         // Cập nhật tổng tiền của inventory
-    //         $inventory->update([
-    //             'total' => $totalInventoryValue,
-    //             'vat' => $totalVat
-    //         ]);
-
-    //         DB::commit();
-
-    //         // Xử lý ảnh sau khi transaction thành công
-    //         foreach ($productsToProcessImages as $item) {
-    //             $this->processProductImage($item['product'], $item['image'], $cloudinaryService);
-    //         }
-
-    //         Log::info('Inventory updated successfully:', [
-    //             'inventory_id' => $inventory->id,
-    //             'total_products' => count($request->products)
-    //         ]);
-
-    //         return redirect()->route('inventory.show', $inventory)
-    //             ->with('success', 'Cập nhật phiếu nhập thành công!');
-    //     } catch (Exception $e) {
-    //         DB::rollBack();
-    //         Log::error('Error updating inventory:', [
-    //             'inventory_id' => $inventory->id,
-    //             'error' => $e->getMessage(),
-    //             'trace' => $e->getTraceAsString()
-    //         ]);
-    //         return redirect()->back()
-    //             ->withInput()
-    //             ->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
-    //     }
-    // }
-
-    // public function show(Inventory $inventory)
-    // {
-    //     $inventory->load(['provider', 'staff', 'inventoryDetails.product', 'inventoryDetails.productVariant']);
-    //     return view('admin.inventory.show', compact('inventory'));
-    // }
-
-
+    // Hàm gốc
     // public function add_extra()
     // {
     //     $cats = Category::all();
     //     $providers = Provider::all();
     //     return view('admin.inventory.add-extra', compact('cats', 'providers'));
     // }
-
     // public function post_add_extra(Request $request)
     // {
     //     $data = $request->validate([
@@ -856,103 +518,273 @@ public function reject($id, Request $request)
     // }
 
 
-    public function add_extra(Request $request)
+    public function add_extra()
     {
-        $request->validate(['inventory_id' => 'required|exists:inventories,id']);
-
-        $originalInventory = Inventory::with('provider')->findOrFail($request->inventory_id);
-        $products = Product::with(['productVariants' => function ($query) {
-            $query->select('product_id', 'color', 'size') // Only select grouped columns
-                ->groupBy('product_id', 'color', 'size');
-        }])->get();
-
-        return view('admin.inventory.add-extra', compact('originalInventory', 'products'));
+        $providers = Provider::all();
+        return view('admin.inventory.add-extra', compact('providers'));
     }
+
 
     public function post_add_extra(Request $request)
     {
-        $data = $request->validate([
-            'inventory_id' => 'required|exists:inventories,id',
-            'selected_products' => 'required|array',
-            'selected_products.*.product_id' => 'required|exists:products,id',
-            'selected_products.*.price' => 'required|numeric|min:1',
-            'selected_products.*.variants' => 'required|array',
-            'selected_products.*.variants.*.color' => 'required',
-            'selected_products.*.variants.*.sizes' => 'required|array',
-            'selected_products.*.variants.*.sizes.*.size' => 'required',
-            'selected_products.*.variants.*.sizes.*.quantity' => 'required|integer|min:1',
-        ]);
-
-        $originalInventory = Inventory::findOrFail($data['inventory_id']);
+        Log::debug('Bắt đầu post_add_extra', ['request_data' => $request->all()]);
 
         DB::beginTransaction();
 
         try {
-            // Create new inventory record
-            $newInventory = new Inventory();
-            $newInventory->provider_id = $originalInventory->provider_id;
-            $newInventory->staff_id = auth()->id();
-            $newInventory->original_inventory_id = $originalInventory->id;
-            $newInventory->is_additional = true;
-            $newInventory->save();
+            // Bước 1: Giải mã JSON products_to_add
+            $productsToAdd = json_decode($request->input('products_to_add'), true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
+            }
 
-            $totalValue = 0;
-
-            foreach ($data['selected_products'] as $selectedProduct) {
-                $productTotal = 0;
-                $productQuantity = 0;
-                $sizeDetails = [];
-
-                foreach ($selectedProduct['variants'] as $variant) {
-                    $color = $variant['color'];
-                    $colorSizes = [];
-
-                    foreach ($variant['sizes'] as $sizeData) {
-                        $size = $sizeData['size'];
-                        $quantity = (int)$sizeData['quantity'];
-
-                        // Update stock quantity
-                        ProductVariant::updateOrCreate(
-                            [
-                                'product_id' => $selectedProduct['product_id'],
-                                'color' => $color,
-                                'size' => $size
-                            ],
-                            ['stock' => DB::raw("stock + $quantity")]
-                        );
-
-                        $productQuantity += $quantity;
-                        $colorSizes[] = "$size-$quantity";
-                        $sizeDetails[] = "$size-$quantity-$color";
-                    }
-
-                    $productTotal += $productQuantity * $selectedProduct['price'];
-                }
-
-                if ($productQuantity > 0) {
-                    // Add to inventory details
-                    $detail = new InventoryDetail();
-                    $detail->inventory_id = $newInventory->id;
-                    $detail->product_id = $selectedProduct['product_id'];
-                    $detail->price = $selectedProduct['price'];
-                    $detail->quantity = $productQuantity;
-                    $detail->size = implode(',', $sizeDetails);
-                    $detail->save();
-
-                    $totalValue += $productTotal;
+            // Bước 2: Gộp dữ liệu đã giải mã vào mảng products
+            $mergedProducts = [];
+            foreach ($request->input('products') as $index => $product) {
+                if (isset($productsToAdd[$index])) {
+                    $mergedProduct = array_merge($product, $productsToAdd[$index]);
+                    $mergedProducts[] = $mergedProduct;
+                } else {
+                    Log::warning('Không tìm thấy dữ liệu products_to_add tương ứng cho sản phẩm tại index: ' . $index);
+                    $mergedProducts[] = $product;
                 }
             }
 
-            $newInventory->total = $totalValue;
-            $newInventory->save();
+            // Bước 3: Thay thế dữ liệu products bằng dữ liệu đã gộp
+            $request->merge(['products' => $mergedProducts]);
+
+            // Bước 4: Validate dữ liệu request
+            $validated = $request->validate([
+                'id' => 'required', // Giả định 'id' là staff_id
+                'provider_id' => 'required|exists:providers,id',
+                'products' => 'required|array|min:1',
+                'products.*.product_id' => 'required|exists:products,id',
+                'products.*.new_price' => 'required|numeric|min:1',
+                'products.*.new_color' => 'required|string|min:2',
+                'products.*.formatted_new_sizes' => 'required|string',
+            ], [
+                'provider_id.required' => 'Vui lòng chọn nhà cung cấp.',
+                'provider_id.exists' => 'Nhà cung cấp không hợp lệ.',
+                'products.required' => 'Vui lòng chọn ít nhất một sản phẩm để nhập thêm.',
+                'products.*.new_price.required' => 'Vui lòng nhập giá nhập cho sản phẩm.',
+                'products.*.new_price.min' => 'Giá nhập phải lớn hơn 0.',
+                'products.*.new_color.required' => 'Vui lòng nhập màu sắc cho sản phẩm.',
+                'products.*.formatted_new_sizes.required' => 'Vui lòng chọn kích cỡ và số lượng cho sản phẩm.',
+            ]);
+
+            Log::debug('Validation đã vượt qua', ['validated_data' => $validated]);
+
+            // Bước 5: Tạo bản ghi nhập kho mới (Inventory)
+            $inventory = new Inventory();
+            $inventory->provider_id = $validated['provider_id'];
+            $inventory->staff_id = $validated['id'];
+            $inventory->status = 'pending'; // Đặt trạng thái là 'pending' (chờ duyệt)
+            $inventory->note = 'yêu cầu nhập thêm sản phẩm'; // Cập nhật ghi chú cho rõ ràng
+            $inventory->total = 0; // Sẽ cập nhật sau khi tính toán tổng
+            $inventory->save();
+
+            Log::debug('Đã tạo phiếu nhập kho với trạng thái chờ duyệt', ['inventory_id' => $inventory->id]);
+
+            $totalInventoryValue = 0;
+
+            // Bước 6: Xử lý từng sản phẩm đã được validate
+            foreach ($validated['products'] as $productData) {
+                Log::debug("Đang xử lý sản phẩm", ['product_data' => $productData]);
+
+                $sizeEntries = explode(',', $productData['formatted_new_sizes']);
+                Log::debug('Các mục kích cỡ', ['entries' => $sizeEntries]);
+
+                foreach ($sizeEntries as $entry) {
+                    if (empty($entry)) continue;
+
+                    try {
+                        list($size, $quantity) = explode('-', $entry);
+                        $size = trim($size);
+                        $quantity = (int)trim($quantity);
+
+                        if ($quantity <= 0) {
+                            throw new Exception("Số lượng cho kích cỡ {$size} của sản phẩm có ID {$productData['product_id']} phải lớn hơn 0.");
+                        }
+
+                        Log::debug('Đã xử lý mục kích cỡ', ['size' => $size, 'quantity' => $quantity]);
+
+                        $variantTotal = $quantity * $productData['new_price'];
+                        $totalInventoryValue += $variantTotal;
+
+                        Log::debug('Tổng giá trị biến thể đã tính toán', ['variant_total' => $variantTotal, 'running_total' => $totalInventoryValue]);
+
+                        // Tìm hoặc tạo ProductVariant
+                        // Quan trọng: Chúng ta CHỈ firstOrCreate ProductVariant ở đây,
+                        // KHÔNG CẬP NHẬT STOCK ngay lập tức.
+                        $variant = ProductVariant::firstOrCreate([
+                            'product_id' => $productData['product_id'],
+                            'color' => $productData['new_color'],
+                            'size' => $size,
+                        ]);
+                        // Log::debug('Đã tìm/tạo biến thể nhưng chưa cập nhật stock', ['variant_id' => $variant->id]);
+                        // Gán stock ban đầu là 0 nếu mới tạo, hoặc giữ nguyên nếu đã tồn tại.
+                        // Việc tăng stock sẽ được thực hiện khi phiếu nhập được duyệt.
+                        if (!$variant->exists) {
+                            $variant->stock = 0; // Đặt stock ban đầu là 0 nếu mới tạo
+                            $variant->save(); // Lưu lại để đảm bảo variant có ID
+                        }
+
+
+                        // Tạo bản ghi InventoryDetail cho TỪNG BIẾN THỂ CỤ THỂ
+                        $inventoryDetail = new InventoryDetail();
+                        $inventoryDetail->product_id = $productData['product_id'];
+                        $inventoryDetail->inventory_id = $inventory->id;
+                        $inventoryDetail->product_variant_id = $variant->id; // Gán ID của ProductVariant
+                        $inventoryDetail->price = $productData['new_price'];
+                        $inventoryDetail->quantity = $quantity; // Số lượng cho biến thể này (đang chờ duyệt)
+                        $inventoryDetail->size = $size . '-' . $quantity . '-' . $productData['new_color'];
+                        $inventoryDetail->save();
+
+                        Log::debug('Đã tạo chi tiết nhập kho cho biến thể', ['detail_id' => $inventoryDetail->id, 'product_variant_id' => $variant->id]);
+
+                    } catch (Exception $e) {
+                        throw $e; // Ném ngoại lệ để kích hoạt rollback
+                    }
+                }
+            }
+
+            // Bước 7: Cập nhật tổng giá trị cho bản ghi Inventory chính
+            $inventory->total = $totalInventoryValue;
+            $inventory->save();
+
+            DB::commit();
+            Log::debug('Đã commit transaction cho phiếu nhập mới', ['inventory_id' => $inventory->id]);
+
+            return redirect()->route('inventory.index')
+                ->with('success', 'Yêu cầu nhập kho đã được tạo thành công và đang chờ duyệt!');
+
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Lỗi trong post_add_extra, đã rollback transaction', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+        }
+    }
+
+
+    public function approve($id)
+    {
+        DB::beginTransaction();
+        try {
+            // Nạp phiếu nhập cùng với chi tiết và biến thể sản phẩm
+            $inventory = Inventory::with('InventoryDetails.ProductVariant')->findOrFail($id);
+
+            // Kiểm tra nếu phiếu nhập đã được duyệt rồi hoặc bị từ chối
+            if ($inventory->status === 'approved') {
+                DB::rollBack(); // Đảm bảo rollback nếu có beginTransaction trước đó
+                return back()->with('warning', 'Phiếu nhập này đã được duyệt trước đó.');
+            }
+            if ($inventory->status === 'rejected') {
+                DB::rollBack();
+                return back()->with('error', 'Phiếu nhập này đã bị từ chối, không thể duyệt.');
+            }
+
+            // Cập nhật stock cho từng biến thể sản phẩm
+            foreach ($inventory->InventoryDetails as $detail) {
+                if ($detail->ProductVariant) {
+                    // Cập nhật số lượng tồn kho bằng cách tăng lên
+                    $detail->ProductVariant->increment('stock', $detail->quantity);
+                    Log::debug('Đã cập nhật stock cho biến thể', [
+                        'variant_id' => $detail->ProductVariant->id,
+                        'added_quantity' => $detail->quantity,
+                        'new_stock' => $detail->ProductVariant->stock
+                    ]);
+                } else {
+                    // Xử lý trường hợp không tìm thấy ProductVariant (có thể do lỗi dữ liệu)
+                    // Ném lỗi để rollback toàn bộ transaction
+                    throw new Exception('Không tìm thấy biến thể sản phẩm cho chi tiết nhập kho ID: ' . $detail->id);
+                }
+            }
+
+            // Cập nhật trạng thái phiếu nhập
+            $inventory->update([
+                'status' => 'approved',
+                'updated_at' => now(),
+                'staff_id' => auth()->user()->id // Sử dụng ID của người duyệt hiện tại
+            ]);
+            Log::debug('Đã cập nhật trạng thái phiếu nhập thành duyệt', ['inventory_id' => $inventory->id]);
+
+            // Kích hoạt các sản phẩm liên quan (nếu trạng thái 0 = hiển thị, 3 = ẩn)
+            // Dựa trên comment của bạn "0 = ẩn trong kho", có vẻ bạn muốn đặt nó thành hiển thị
+            // Giả sử status = 0 là hiển thị (hoặc một giá trị khác tùy ý định của bạn)
+            Product::whereIn('id', $inventory->InventoryDetails->pluck('product_id')->unique())
+                ->update(['status' => 1]); // Ví dụ: 1 là trạng thái hiển thị
+            Log::debug('Đã cập nhật trạng thái sản phẩm liên quan', ['product_ids' => $inventory->InventoryDetails->pluck('product_id')->unique()]);
+
+
+            DB::commit();
+
+            return back()->with('success', 'Đã duyệt phiếu nhập và cập nhật kho thành công!');
+        } catch (Exception $e) {
+            DB::rollBack();
+            Log::error('Có lỗi xảy ra khi duyệt phiếu nhập', [
+                'inventory_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'Có lỗi xảy ra khi duyệt phiếu nhập: ' . $e->getMessage());
+        }
+    }
+
+    public function reject($id, Request $request)
+    {
+        $request->validate([
+            'note' => 'required|string|max:500'
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $inventory = Inventory::findOrFail($id);
+
+            // Kiểm tra trạng thái hợp lệ để từ chối
+            if ($inventory->status !== 'pending') {
+                DB::rollBack();
+                return redirect()->back()->with('error', 'Chỉ có thể huỷ phiếu nhập ở trạng thái chờ duyệt');
+            }
+
+            $inventory->update([
+                'status' => 'rejected',
+                'updated_at' => now(),
+                'staff_id' => auth()->user()->id, // Sử dụng ID của người từ chối hiện tại
+                'note' => $request->note
+            ]);
+            Log::debug('Đã cập nhật trạng thái phiếu nhập thành từ chối', ['inventory_id' => $inventory->id]);
+
+            // Trong trường hợp từ chối, bạn có thể không cần cập nhật trạng thái Product
+            // vì chúng chưa được thêm vào kho. Tuy nhiên, nếu bạn muốn đặt chúng về một trạng thái ẩn
+            // (ví dụ: 'unlisted' hoặc 'inactive'), bạn có thể giữ lại đoạn này.
+            // Nếu sản phẩm này hoàn toàn mới và chưa từng tồn tại, việc reject không cần làm gì với Product.
+            // Nếu sản phẩm có thể đã tồn tại và bạn muốn đảm bảo nó không được hiển thị, thì giữ lại.
+            // Giả sử bạn muốn ẩn chúng (status 3 = ẩn) khi phiếu nhập bị từ chối
+            $productIds = InventoryDetail::where('inventory_id', $id)
+                ->pluck('product_id')
+                ->unique();
+
+            Product::whereIn('id', $productIds)
+                ->update(['status' => 3]); // 3 = ẩn/không niêm yết
+            Log::debug('Đã cập nhật trạng thái sản phẩm liên quan khi từ chối', ['product_ids' => $productIds]);
 
             DB::commit();
 
             return redirect()->route('inventory.index')
-                ->with('success', 'Nhập thêm hàng thành công!');
+                ->with('success', 'Đã huỷ phiếu nhập thành công!');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            Log::error('Có lỗi xảy ra khi huỷ phiếu nhập', [
+                'inventory_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 }
