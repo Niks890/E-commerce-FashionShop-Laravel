@@ -40,6 +40,7 @@
 
     @include('sites.components._footer')
 
+
     <!-- Js Plugins -->
     <script src="{{ asset('client/js/jquery-3.7.1.min.js') }}"></script>
     <script src="{{ asset('client/js/jquery.nice-select.min.js') }}"></script>

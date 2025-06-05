@@ -476,8 +476,8 @@
     </section>
     <!-- Product Section End -->
 
-
-    <!-- Product Section Begin -->
+    {{-- product gốc --}}
+    {{-- <!-- Product Section Begin -->
     <section class="product spad">
         <div class="container">
             <div class="row">
@@ -600,6 +600,217 @@
                 }
                 fetchProduct();
             </script>
+        </div>
+    </section>
+    <!-- Product Section End --> --}}
+
+
+    <!-- Product Section Begin -->
+    <section class="product spad">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <ul class="filter__controls">
+                        <li class="active" data-filter="*">Sản Phẩm Bán Chạy</li>
+                        <li data-filter=".new-arrivals">Mới ra mắt</li>
+                        <li data-filter=".hot-sales">Hot Sales</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row product__filter" id="product-client-container">
+            </div>
+            <!-- Pagination -->
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="product__pagination" id="pagination-container">
+                        <!-- Pagination links will be inserted here -->
+                    </div>
+                </div>
+            </div>
+            <script>
+                let currentPage = 1;
+                const itemsPerPage = 8;
+
+                async function fetchProduct(page = 1) {
+                    try {
+                        let response = await fetch(`http://127.0.0.1:8000/api/product-client?page=${page}`);
+                        let data = await response.json();
+                        let products = data.data;
+
+                        let container = document.querySelector('#product-client-container');
+                        container.innerHTML = "";
+
+                        products.forEach((product, index) => {
+                            let finalPrice;
+                            let nameDiscount = "";
+
+                            if (product.discount_id != null) {
+                                finalPrice = product.price - (product.price * product.discount.percent_discount);
+                                nameDiscount = product.discount.name;
+                            } else {
+                                finalPrice = product.price ?? 0;
+                                nameDiscount = "New";
+                            }
+
+                            let formattedPrice = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(finalPrice);
+
+                            let totalStock = [];
+                            let addCartOrNone = [];
+                            product['product_variants'].map((variant) => {
+                                totalStock[variant.product_id] = 0;
+                            })
+                            product['product_variants'].forEach((variant) => {
+                                totalStock[variant.product_id] += variant.stock + 0;
+                            });
+                            product['product_variants'].map((variant) => {
+                                if (totalStock[variant.product_id] == 0) {
+                                    addCartOrNone[variant.product_id] = false;
+                                } else {
+                                    addCartOrNone[variant.product_id] = true;
+                                };
+                            })
+
+                            let productItem = document.createElement('div');
+                            productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6");
+                            productItem.setAttribute("data-category", index % 2 === 0 ? "new-arrivals" : "hot-sales");
+
+                            productItem.innerHTML = `
+                    <div class="product__item" id="product-list-home">
+                        <div class="product__item__pic">
+                            <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
+                            <span class="label name-discount-section">${nameDiscount}</span>
+                            <ul class="product__hover">
+                                <li>
+                                    <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
+                                        <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
+                                    </a>
+                                </li>
+                                <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
+                                <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
+                            </ul>
+                        </div>
+                        <div class="product__item__text">
+                            <h6>${product.product_name}</h6>
+                            ` + (addCartOrNone[product.id] ?
+                                `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
+                                `<span class="badge badge-warning">Hết hàng</span>`) + `
+                            <div class="rating">
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                            <h5>${formattedPrice}</h5>
+                            <div class="product__color__select">
+                                <label for="pc-${index * 3 + 1}"><input type="radio" id="pc-${index * 3 + 1}"></label>
+                                <label class="active black" for="pc-${index * 3 + 2}"><input type="radio" id="pc-${index * 3 + 2}"></label>
+                                <label class="grey" for="pc-${index * 3 + 3}"><input type="radio" id="pc-${index * 3 + 3}"></label>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                            container.appendChild(productItem);
+                        });
+
+                        // Gắn class màu cho nhãn discount
+                        document.querySelectorAll('.name-discount-section').forEach(el => {
+                            if (el.textContent.trim() !== "New") {
+                                el.classList.add('bg-danger', 'text-white');
+                            }
+                        });
+
+                        // Cập nhật phân trang
+                        updatePagination(data.total, data.per_page, data.current_page);
+
+                    } catch (error) {
+                        console.error("Lỗi API:", error);
+                    }
+                }
+
+                function updatePagination(totalItems, perPage, currentPage) {
+                    const totalPages = Math.ceil(totalItems / perPage);
+                    const paginationContainer = document.getElementById('pagination-container');
+                    paginationContainer.innerHTML = '';
+
+                    if (totalPages <= 1) return;
+
+                    function createPageLink(page, label = null, isActive = false, isEllipsis = false) {
+                        const link = document.createElement('a');
+                        link.href = 'javascript:void(0);';
+                        link.textContent = label ?? page;
+
+                        if (isActive) link.classList.add('active');
+                        if (isEllipsis) link.classList.add('disabled');
+
+                        if (!isEllipsis && !isActive) {
+                            link.addEventListener('click', () => fetchProduct(page));
+                        }
+
+                        return link;
+                    }
+
+                    if (currentPage > 1) {
+                        paginationContainer.appendChild(createPageLink(currentPage - 1, '<'));
+                    }
+
+                    const pages = [];
+                    if (totalPages <= 5) {
+                        for (let i = 1; i <= totalPages; i++) pages.push(i);
+                    } else {
+                        pages.push(1);
+                        if (currentPage > 3) pages.push('...');
+                        const start = Math.max(2, currentPage - 1);
+                        const end = Math.min(totalPages - 1, currentPage + 1);
+                        for (let i = start; i <= end; i++) pages.push(i);
+                        if (currentPage < totalPages - 2) pages.push('...');
+                        pages.push(totalPages);
+                    }
+
+                    pages.forEach(page => {
+                        if (page === '...') {
+                            const ellipsis = document.createElement('span');
+                            ellipsis.textContent = '...';
+                            ellipsis.classList.add('disabled');
+                            paginationContainer.appendChild(ellipsis);
+                        } else {
+                            paginationContainer.appendChild(createPageLink(page, null, page === currentPage));
+                        }
+                    });
+
+                    if (currentPage < totalPages) {
+                        paginationContainer.appendChild(createPageLink(currentPage + 1, '>'));
+                    }
+                }
+
+
+                // Xử lý lọc sản phẩm
+                document.querySelectorAll('.filter__controls li').forEach((btn) => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.filter__controls li').forEach(el => el.classList.remove(
+                            'active'));
+                        btn.classList.add('active');
+
+                        const filter = btn.getAttribute('data-filter'); // '*', '.new-arrivals', '.hot-sales'
+                        const products = document.querySelectorAll('#product-client-container > div');
+
+                        products.forEach((el) => {
+                            const category = el.getAttribute('data-category');
+                            if (filter === '*' || category === filter.replace('.', '')) {
+                                el.style.display = 'block';
+                            } else {
+                                el.style.display = 'none';
+                            }
+                        });
+                    });
+                });
+
+                fetchProduct();
+            </script>
+
         </div>
     </section>
     <!-- Product Section End -->
@@ -773,6 +984,9 @@
     </section>
     <!-- Latest Blog Section End -->
 @endsection
+{{-- @section('js')
+    <script src="https://cdn.jsdelivr.net/npm/mixitup@3/dist/mixitup.min.js"></script>
+@endsection --}}
 @section('css')
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
 @endsection

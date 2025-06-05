@@ -238,13 +238,34 @@ class ApiController extends Controller
         return $this->apiStatus($productVariants, 200, 1, 'ok');
     }
 
+    // Hàm gốc
+    // public function getProductsClient()
+    // {
+    //     $products = Product::with('Discount', 'ProductVariants')
+    //         ->orderBy('id', 'ASC')->where('status', 1)->get();
+    //     return $this->apiStatus($products, 200, $products->count(), 'ok');
+    // }
 
-    public function getProductsClient()
+
+    public function getProductsClient(Request $request)
     {
+        $perPage = $request->input('per_page', 8); // Default to 8 items per page
         $products = Product::with('Discount', 'ProductVariants')
-            ->orderBy('id', 'ASC')->where('status', 1)->get();
-        return $this->apiStatus($products, 200, $products->count(), 'ok');
+            ->orderBy('id', 'ASC')
+            ->where('status', 1)
+            ->paginate($perPage);
+
+        return response()->json([
+            'data' => $products->items(),
+            'total' => $products->total(),
+            'per_page' => $products->perPage(),
+            'current_page' => $products->currentPage(),
+            'last_page' => $products->lastPage(),
+        ]);
     }
+
+
+
 
     public function product($id)
     {
