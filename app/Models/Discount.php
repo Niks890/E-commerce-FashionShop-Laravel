@@ -42,6 +42,9 @@ class Discount extends Model
             if ($discount->end_date < $now && $discount->status === 'active') {
                 $discount->status = 'inactive';
                 $discount->saveQuietly(); // saveQuietly() để tránh lặp vô hạn sự kiện retrieved
+            }else{
+                $discount->status = 'active';
+                $discount->saveQuietly();
             }
         });
     }

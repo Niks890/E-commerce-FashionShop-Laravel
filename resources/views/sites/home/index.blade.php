@@ -872,6 +872,7 @@
 
 
 
+
     <!-- Categories Section Begin -->
     <section class="categories spad">
         <div class="container">
@@ -883,18 +884,33 @@
                 </div>
                 <div class="col-lg-4">
                     <div class="categories__hot__deal">
-                        <img src="{{ asset('client/img/product-sale.png') }}" alt="">
-                        <div class="hot__deal__sticker">
-                            <span>Sale Of</span>
-                            <h5>$29.99</h5>
-                        </div>
+                        @if ($highestDiscountProduct)
+                            <img src="{{ asset($highestDiscountProduct->image) }}"
+                                alt="{{ $highestDiscountProduct->name }}">
+                            <div class="hot__deal__sticker">
+                                <span>Giảm {{ $highestDiscountProduct->discount->percent_discount * 100 }}%</span>
+                                <h5>{{ number_format($highestDiscountProduct->price * (1 - $highestDiscountProduct->discount->percent_discount), 0, ',', '.') }}đ
+                                </h5>
+                            </div>
+                        @else
+                            <img src="{{ asset('client/img/product-sale.png') }}" alt="">
+                            <div class="hot__deal__sticker">
+                                <span>Sale Of</span>
+                                <h5>$29.99</h5>
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-lg-4 offset-lg-1">
                     <div class="categories__deal__countdown">
                         <span>Deal Of The Week</span>
-                        <h2>Multi-pocket Chest Bag Black</h2>
-                        <div class="categories__deal__countdown__timer" id="countdown">
+                        @if ($highestDiscountProduct)
+                            <h2>{{ $highestDiscountProduct->name }}</h2>
+                        @else
+                            <h2>Multi-pocket Chest Bag Black</h2>
+                        @endif
+                        <div class="categories__deal__countdown__timer" id="countdown"
+                            @if ($highestDiscountProduct && $highestDiscountProduct->discount) data-enddate="{{ $highestDiscountProduct->discount->formatted_end_date }}" @endif>
                             <div class="cd-item">
                                 <span>3</span>
                                 <p>Days</p>
@@ -912,7 +928,12 @@
                                 <p>Seconds</p>
                             </div>
                         </div>
-                        <a href="javascript:void(0);" class="primary-btn">Shop now</a>
+                        @if ($highestDiscountProduct)
+                            <a href="{{ route('sites.productDetail', $highestDiscountProduct->slug) }}"
+                                class="primary-btn">Mua ngay</a>
+                        @else
+                            <a href="javascript:void(0);" class="primary-btn">Shop now</a>
+                        @endif
                     </div>
                 </div>
             </div>

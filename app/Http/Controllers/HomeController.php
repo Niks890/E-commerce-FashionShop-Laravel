@@ -32,42 +32,25 @@ class HomeController extends Controller
             }
         }
         $data = Blog::with('staff')->paginate(5);
-        return view('sites.home.index', compact('data', 'productRecentInfo'));
+
+
+       $highestDiscountProduct = Product::whereHas('discount', function($query) {
+        $query->where('start_date', '<=', now())
+              ->where('end_date', '>=', now());
+    })
+    ->with('discount')
+    ->get()
+    ->sortByDesc(function($product) {
+        return $product->discount->percent_discount;
+    })
+    ->first();
+
+    // Format lại ngày nếu cần
+    if ($highestDiscountProduct && $highestDiscountProduct->discount) {
+        $highestDiscountProduct->discount->formatted_end_date = $highestDiscountProduct->discount->end_date->format('Y-m-d H:i:s');
     }
-
-    //kèm phân trang
-    // public function home()
-    // {
-    //     if (Session::has('success_payment')) {
-    //         Session::forget('success_payment');
-    //     }
-
-    //     $productRecentInfo = [];
-    //     if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
-    //         foreach (Session::get('product_recent') as $item) {
-    //             $product = Product::with('ProductVariants', 'Discount')->find($item->id_recent);
-    //             if ($product) {
-    //                 $productRecentInfo[] = $product;
-    //             }
-    //         }
-    //     }
-
-    //     // Chuyển mảng thành Collection
-    //     $productRecentCollection = new Collection($productRecentInfo);
-    //     // Xác định trang hiện tại từ request
-    //     $currentPage = Paginator::resolveCurrentPage();
-    //     // Số sản phẩm trên mỗi trang
-    //     $perPage = 6;
-    //     // Lấy slice của collection cho trang hiện tại
-    //     $currentPageItems = $productRecentCollection->slice(($currentPage * $perPage) - $perPage, $perPage)->values();
-    //     // Tạo Paginator thủ công
-    //     $productRecentPaginated = new Paginator($currentPageItems, $perPage, $currentPage, [
-    //         'path' => Paginator::resolveCurrentPath(),
-    //     ]);
-
-    //     $data = Blog::with('staff')->paginate(5);
-    //     return view('sites.home.index', compact('data', 'productRecentPaginated')); // Đổi tên biến để dễ phân biệt
-    // }
+        return view('sites.home.index', compact('data', 'productRecentInfo', 'highestDiscountProduct'));
+    }
 
 
     public function shop(Request $request)

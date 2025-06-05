@@ -56,7 +56,7 @@
                                 <div class="col-lg-6 col-md-6 col-sm-6">
                                     <div class="blog__details__author">
                                         <div class="blog__details__author__pic">
-                                            <img src="{{ ('client/img/blog/details/blog-author.jpg') }}" alt="">
+                                            <img src="{{ $blogDetail->staff->avatar }}" alt="">
                                         </div>
                                         <div class="blog__details__author__text">
                                             <h5>{{$blogDetail->staff->name}}</h5>
