@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -51,6 +52,19 @@ class AdminController extends Controller
         $productQuantity = DB::table('products')->count();
         $orderQuantity = DB::table('orders')->where('status', 'Chờ xử lý')->count();
 
+
+        $orderAssign = Order::where('status', 'Đã gửi cho đơn vị vận chuyển')
+        ->where('staff_delivery_id', auth()->user()->id - 1)
+        ->count();
+
+        $orderProcessing = Order::where('status', 'Đang giao hàng')
+        ->where('staff_delivery_id', auth()->user()->id - 1)
+        ->count();
+
+        $orderSuccess = Order::where('status', 'Giao hàng thành công')
+        ->where('staff_delivery_id', auth()->user()->id - 1)
+        ->count();
+
         $orderPending = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
             ->whereIn('o.status', ['Chờ xử lý'])
@@ -62,7 +76,7 @@ class AdminController extends Controller
             ->join('products as p', 'pv.product_id', '=', 'p.id')
             ->where('pv.stock', 0)
             ->count();
-        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueByMonth', 'productOutOfStock', 'orderPending', 'total'));
+        return view('admin.dashboard', compact('staffQuantity', 'customerQuantity', 'productQuantity', 'orderQuantity', 'revenueByMonth', 'productOutOfStock', 'orderPending', 'total', 'orderAssign', 'orderProcessing', 'orderSuccess'));
     }
 
     public function login()

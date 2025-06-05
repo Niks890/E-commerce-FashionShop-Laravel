@@ -16,6 +16,7 @@ class InventoryResource extends JsonResource
             'total_price' => $this->total,
             'createdate' => $this->created_at,
             'updatedate' => $this->updated_at,
+            'note' => $this->note,
             'staff' => [
                 'id' => $this->staff->id,
                 'name' => $this->staff->name,

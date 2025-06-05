@@ -14,7 +14,8 @@ class RevenueInventoryController extends Controller
         $query = DB::table('product_variants as pv')
             ->join('products as p', 'pv.product_id', '=', 'p.id')
             ->select('pv.id as variant_id', 'p.product_name', 'p.id as product_id', 'pv.color', 'pv.size', 'pv.stock')
-            ->where('pv.stock', '>=', 0);
+            ->where('pv.stock', '>=', 0)
+            ->whereIn('p.status', [0, 1]);
 
         // Lọc theo các trường
         if ($request->filled('product_name')) {
@@ -52,6 +53,159 @@ class RevenueInventoryController extends Controller
 
 
 
+    // public function revenueInventoryDatetime(Request $request)
+    // {
+    //     // Xử lý filter theo thời gian
+    //     $timeRange = $request->input('time_range', 'month');
+    //     $now = Carbon::now();
+
+    //     $startDate = null;
+    //     $endDate = null;
+    //     $year = $request->input('year', $now->year);
+    //     $month = $request->input('month', $now->month);
+
+    //     switch ($timeRange) {
+    //         case 'day':
+    //             $startDate = $request->input('start_date', $now->format('Y-m-d'));
+    //             $endDate = $request->input('end_date', $now->format('Y-m-d'));
+    //             break;
+    //         case 'year':
+    //             break;
+    //         default:
+    //             break;
+    //     }
+
+    //     // Query tính tổng tiền và số phiếu nhập
+    //     $totalCostQuery = DB::table('inventories as ii')
+    //         ->select(
+    //             DB::raw('SUM(ii.total) as total_cost'),
+    //             DB::raw('COUNT(ii.id) as import_count')
+    //         );
+    //     if ($timeRange === 'day') {
+    //         $totalCostQuery->whereBetween('ii.created_at', [$startDate, $endDate]);
+    //     } elseif ($timeRange === 'month') {
+    //         $totalCostQuery->whereYear('ii.created_at', $year)
+    //             ->whereMonth('ii.created_at', $month);
+    //     } elseif ($timeRange === 'year') {
+    //         $totalCostQuery->whereYear('ii.created_at', $year);
+    //     }
+    //     $totalSummary = $totalCostQuery->first();
+
+    //     // Query tính tổng số lượng
+    //     $totalQuantityQuery = DB::table('inventory_details as iid')
+    //         ->join('inventories as ii', 'iid.inventory_id', '=', 'ii.id')
+    //         ->select(DB::raw('SUM(iid.quantity) as total_quantity'));
+    //     if ($timeRange === 'day') {
+    //         $totalQuantityQuery->whereBetween('ii.created_at', [$startDate, $endDate]);
+    //     } elseif ($timeRange === 'month') {
+    //         $totalQuantityQuery->whereYear('ii.created_at', $year)
+    //             ->whereMonth('ii.created_at', $month);
+    //     } elseif ($timeRange === 'year') {
+    //         $totalQuantityQuery->whereYear('ii.created_at', $year);
+    //     }
+    //     $totalQuantity = $totalQuantityQuery->value('total_quantity') ?? 0;
+
+    //     // Kết hợp summary
+    //     $summary = [
+    //         'total_cost' => $totalSummary->total_cost ?? 0,
+    //         'import_count' => $totalSummary->import_count ?? 0,
+    //         'total_quantity' => $totalQuantity
+    //     ];
+
+    //     // Dữ liệu cho biểu đồ
+    //     $chartDataQuery = DB::table('inventories as ii')
+    //         ->select(DB::raw('SUM(ii.total) as total_cost'));
+    //     switch ($timeRange) {
+    //         case 'day':
+    //             $chartDataQuery->addSelect(DB::raw('DATE(ii.created_at) as label'))
+    //                 ->whereBetween('ii.created_at', [$startDate, $endDate])
+    //                 ->groupBy(DB::raw('DATE(ii.created_at)'))
+    //                 ->orderBy('label');
+    //             break;
+    //         case 'year':
+    //             $chartDataQuery->addSelect(DB::raw('MONTH(ii.created_at) as label'))
+    //                 ->whereYear('ii.created_at', $year)
+    //                 ->groupBy(DB::raw('MONTH(ii.created_at)'))
+    //                 ->orderBy('label');
+    //             break;
+    //         default:
+    //             $chartDataQuery->addSelect(DB::raw('DATE(ii.created_at) as label'))
+    //                 ->whereYear('ii.created_at', $year)
+    //                 ->whereMonth('ii.created_at', $month)
+    //                 ->groupBy(DB::raw('DATE(ii.created_at)'))
+    //                 ->orderBy('label');
+    //             break;
+    //     }
+    //     $chartData = $chartDataQuery->get();
+
+    //     // Query sản phẩm
+    //     $products = Product::whereHas('inventoryDetails', function ($query) use ($timeRange, $startDate, $endDate, $year, $month) {
+    //         $query->join('inventories as ii', 'inventory_details.inventory_id', '=', 'ii.id')
+    //             ->when($timeRange === 'day', function ($q) use ($startDate, $endDate) {
+    //                 $q->whereBetween('ii.created_at', [$startDate, $endDate]);
+    //             })
+    //             ->when($timeRange === 'month', function ($q) use ($year, $month) {
+    //                 $q->whereYear('ii.created_at', $year)
+    //                     ->whereMonth('ii.created_at', $month);
+    //             })
+    //             ->when($timeRange === 'year', function ($q) use ($year) {
+    //                 $q->whereYear('ii.created_at', $year);
+    //             });
+    //     })
+    //         ->with(['productVariants']) // Load tất cả variants
+    //         ->with(['inventoryDetails' => function ($query) use ($timeRange, $startDate, $endDate, $year, $month) {
+    //             $query->join('inventories as ii', 'inventory_details.inventory_id', '=', 'ii.id')
+    //                 ->select('inventory_details.*', 'ii.created_at')
+    //                 ->when($timeRange === 'day', function ($q) use ($startDate, $endDate) {
+    //                     $q->whereBetween('ii.created_at', [$startDate, $endDate]);
+    //                 })
+    //                 ->when($timeRange === 'month', function ($q) use ($year, $month) {
+    //                     $q->whereYear('ii.created_at', $year)
+    //                         ->whereMonth('ii.created_at', $month);
+    //                 })
+    //                 ->when($timeRange === 'year', function ($q) use ($year) {
+    //                     $q->whereYear('ii.created_at', $year);
+    //                 });
+    //         }])
+    //         ->paginate(10)
+    //         ->appends($request->query());
+
+    //     // Tính toán thống kê cho từng sản phẩm sau khi paginate
+    //     foreach ($products as $product) {
+    //         // Tính tổng từ inventory_details trong khoảng thời gian
+    //         $totalImportedQuantity = $product->inventoryDetails->sum('quantity');
+    //         $totalImportedCost = $product->inventoryDetails->sum(function ($detail) {
+    //             return $detail->quantity * $detail->price;
+    //         });
+
+    //         // Gán thống kê cho sản phẩm
+    //         $product->total_imported_quantity = $totalImportedQuantity;
+    //         $product->total_imported_cost = $totalImportedCost;
+
+    //         // Vì không có product_variant_id trong inventory_details,
+    //         // ta sẽ hiển thị thông tin variant hiện có và ghi chú tổng nhập
+    //         foreach ($product->productVariants as $variant) {
+    //             // Variant sẽ hiển thị số lượng tồn kho hiện tại
+    //             // Thông tin tổng nhập sẽ hiển thị ở cấp sản phẩm
+    //             $variant->current_stock = $variant->quantity ?? 0;
+    //         }
+    //     }
+
+    //     return view('admin.inventory.revenue.revenue-inventory-datetime', [
+    //         'summary' => $summary,
+    //         'chartData' => $chartData,
+    //         'products' => $products, // Vẫn dùng biến 'products' như cũ
+    //         'timeRange' => $timeRange,
+    //         'currentYear' => $now->year,
+    //         'currentMonth' => $now->month,
+    //         'startDate' => $startDate,
+    //         'endDate' => $endDate,
+    //         'selectedYear' => $year,
+    //         'selectedMonth' => $month
+    //     ]);
+    // }
+
+
     public function revenueInventoryDatetime(Request $request)
     {
         // Xử lý filter theo thời gian
@@ -74,12 +228,14 @@ class RevenueInventoryController extends Controller
                 break;
         }
 
-        // Query tính tổng tiền và số phiếu nhập
+        // Query tính tổng tiền và số phiếu nhập - CHỈ LẤY STATUS APPROVED
         $totalCostQuery = DB::table('inventories as ii')
             ->select(
                 DB::raw('SUM(ii.total) as total_cost'),
                 DB::raw('COUNT(ii.id) as import_count')
-            );
+            )
+            ->where('ii.status', 'approved'); // Thêm điều kiện này
+
         if ($timeRange === 'day') {
             $totalCostQuery->whereBetween('ii.created_at', [$startDate, $endDate]);
         } elseif ($timeRange === 'month') {
@@ -90,10 +246,12 @@ class RevenueInventoryController extends Controller
         }
         $totalSummary = $totalCostQuery->first();
 
-        // Query tính tổng số lượng
+        // Query tính tổng số lượng - CHỈ LẤY STATUS APPROVED
         $totalQuantityQuery = DB::table('inventory_details as iid')
             ->join('inventories as ii', 'iid.inventory_id', '=', 'ii.id')
-            ->select(DB::raw('SUM(iid.quantity) as total_quantity'));
+            ->select(DB::raw('SUM(iid.quantity) as total_quantity'))
+            ->where('ii.status', 'approved'); // Thêm điều kiện này
+
         if ($timeRange === 'day') {
             $totalQuantityQuery->whereBetween('ii.created_at', [$startDate, $endDate]);
         } elseif ($timeRange === 'month') {
@@ -111,9 +269,11 @@ class RevenueInventoryController extends Controller
             'total_quantity' => $totalQuantity
         ];
 
-        // Dữ liệu cho biểu đồ
+        // Dữ liệu cho biểu đồ - CHỈ LẤY STATUS APPROVED
         $chartDataQuery = DB::table('inventories as ii')
-            ->select(DB::raw('SUM(ii.total) as total_cost'));
+            ->select(DB::raw('SUM(ii.total) as total_cost'))
+            ->where('ii.status', 'approved'); // Thêm điều kiện này
+
         switch ($timeRange) {
             case 'day':
                 $chartDataQuery->addSelect(DB::raw('DATE(ii.created_at) as label'))
@@ -137,9 +297,10 @@ class RevenueInventoryController extends Controller
         }
         $chartData = $chartDataQuery->get();
 
-        // Query sản phẩm
+        // Query sản phẩm - CHỈ LẤY STATUS APPROVED
         $products = Product::whereHas('inventoryDetails', function ($query) use ($timeRange, $startDate, $endDate, $year, $month) {
             $query->join('inventories as ii', 'inventory_details.inventory_id', '=', 'ii.id')
+                ->where('ii.status', 'approved') // Thêm điều kiện này
                 ->when($timeRange === 'day', function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('ii.created_at', [$startDate, $endDate]);
                 })
@@ -151,9 +312,10 @@ class RevenueInventoryController extends Controller
                     $q->whereYear('ii.created_at', $year);
                 });
         })
-            ->with(['productVariants']) // Load tất cả variants
+            ->with(['productVariants'])
             ->with(['inventoryDetails' => function ($query) use ($timeRange, $startDate, $endDate, $year, $month) {
                 $query->join('inventories as ii', 'inventory_details.inventory_id', '=', 'ii.id')
+                    ->where('ii.status', 'approved') // Thêm điều kiện này
                     ->select('inventory_details.*', 'ii.created_at')
                     ->when($timeRange === 'day', function ($q) use ($startDate, $endDate) {
                         $q->whereBetween('ii.created_at', [$startDate, $endDate]);
@@ -171,21 +333,15 @@ class RevenueInventoryController extends Controller
 
         // Tính toán thống kê cho từng sản phẩm sau khi paginate
         foreach ($products as $product) {
-            // Tính tổng từ inventory_details trong khoảng thời gian
             $totalImportedQuantity = $product->inventoryDetails->sum('quantity');
             $totalImportedCost = $product->inventoryDetails->sum(function ($detail) {
                 return $detail->quantity * $detail->price;
             });
 
-            // Gán thống kê cho sản phẩm
             $product->total_imported_quantity = $totalImportedQuantity;
             $product->total_imported_cost = $totalImportedCost;
 
-            // Vì không có product_variant_id trong inventory_details,
-            // ta sẽ hiển thị thông tin variant hiện có và ghi chú tổng nhập
             foreach ($product->productVariants as $variant) {
-                // Variant sẽ hiển thị số lượng tồn kho hiện tại
-                // Thông tin tổng nhập sẽ hiển thị ở cấp sản phẩm
                 $variant->current_stock = $variant->quantity ?? 0;
             }
         }
@@ -193,7 +349,7 @@ class RevenueInventoryController extends Controller
         return view('admin.inventory.revenue.revenue-inventory-datetime', [
             'summary' => $summary,
             'chartData' => $chartData,
-            'products' => $products, // Vẫn dùng biến 'products' như cũ
+            'products' => $products,
             'timeRange' => $timeRange,
             'currentYear' => $now->year,
             'currentMonth' => $now->month,

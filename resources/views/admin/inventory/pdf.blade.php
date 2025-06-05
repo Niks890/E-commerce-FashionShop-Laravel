@@ -190,7 +190,7 @@
 <body>
     <div class="container">
         <div class="watermark">PHIẾU NHẬP HÀNG</div>
-        <p style="text-align: center; margin-bottom: 15px; color: #666;"><strong>Ngày in hóa đơn:</strong> {{ now()->format('d/m/Y') }}</p>
+        <p style="text-align: center; margin-bottom: 15px; color: #666;"><strong>Ngày in phiếu nhập:</strong> {{ now()->format('d/m/Y') }}</p>
 
         <div class="company-info">
             <h1 class="company-name">Công ty TNHH TFashionShop</h1>
@@ -220,10 +220,12 @@
                 <td class="label">Đ/c NCC:</td> <td>{{ $inventory->provider->address ?? 'N/A' }}</td>
                 <td class="label">Trạng thái:</td>
                 <td>
-                    @if ($inventory->status == 1)
-                        <span style="color: #28a745;">● Hoàn thành</span>
+                    @if ($inventory->status == 'approved')
+                        <span style="color: #28a745;">● Đã duyệt</span>
+                    @elseif ($inventory->status == 'pending')
+                        <span style="color: #ffc107;">● Chờ duyệt</span>
                     @else
-                        <span style="color: #ffc107;">● Đang xử lý</span>
+                        <span style="color: #dc3545;">● Đã huỷ</span>
                     @endif
                 </td>
             </tr>

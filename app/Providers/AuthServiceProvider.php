@@ -44,7 +44,7 @@ class AuthServiceProvider extends ServiceProvider
         });
 
          Gate::define('delivery workers', function(User $user) {
-            return in_array('admin', $user->roles()) || in_array('manage', $user->roles()) || in_array('inventory', $user->roles()) || in_array('delivery', $user->roles()) ? true : false;
+            return  in_array('delivery', $user->roles()) ? true : false;
         });
     }
 }

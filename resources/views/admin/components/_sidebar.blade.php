@@ -96,6 +96,11 @@
                                         <span class="sub-item">Đơn hàng đã hoàn thành</span>
                                     </a>
                                 </li>
+                                <li>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Quản lý giao dịch</span>
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </li>
@@ -115,6 +120,22 @@
                                 <li>
                                     <a href="{{ route('voucher.index') }}">
                                         <span class="sub-item">Thông tin Voucher</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    <li class="nav-item">
+                        <a data-bs-toggle="collapse" href="#base66666">
+                            <i class="fas fa-users"></i>
+                            <p>Quản lý Khách Hàng</p>
+                            <span class="caret"></span>
+                        </a>
+                        <div class="collapse" id="base66666">
+                            <ul class="nav nav-collapse">
+                                <li>
+                                    <a href="{{ route('customer.index') }}">
+                                        <span class="sub-item">Top khách hàng mua nhiều</span>
                                     </a>
                                 </li>
                             </ul>
@@ -174,11 +195,14 @@
                                         <span class="sub-item">Quản lý tồn kho hiện tại</span>
                                     </a>
                                 </li>
-                                <li>
-                                    <a href="{{ route('admin.revenueInventoryDatetime') }}">
-                                        <span class="sub-item">Thống kê chi phí nhập hàng</span>
-                                    </a>
-                                </li>
+                                @can('managers')
+                                    <li>
+                                        <a href="{{ route('admin.revenueInventoryDatetime') }}">
+                                            <span class="sub-item">Thống kê chi phí nhập hàng</span>
+                                        </a>
+                                    </li>
+                                @endcan
+
                             </ul>
                         </div>
                     </li>
@@ -231,23 +255,12 @@
                             <ul class="nav nav-collapse">
                                 <li>
                                     <a href="{{ route('comment.index') }}">
-                                        <span class="sub-item">Lọc/Ẩn đánh giá</span>
+                                        <span class="sub-item">Lọc/Ẩn đánh giá sản phẩm</span>
                                     </a>
                                 </li>
-                            </ul>
-                        </div>
-                    </li>
-                    <li class="nav-item">
-                        <a data-bs-toggle="collapse" href="#base66666">
-                            <i class="fas fa-users"></i>
-                            <p>Quản lý Khách Hàng</p>
-                            <span class="caret"></span>
-                        </a>
-                        <div class="collapse" id="base66666">
-                            <ul class="nav nav-collapse">
                                 <li>
-                                    <a href="{{ route('customer.index') }}">
-                                        <span class="sub-item">Top khách hàng mua nhiều</span>
+                                    <a href="javascript:void(0);">
+                                        <span class="sub-item">Quản lý đánh giá blog</span>
                                     </a>
                                 </li>
                             </ul>

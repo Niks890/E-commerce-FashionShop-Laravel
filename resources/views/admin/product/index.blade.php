@@ -10,6 +10,13 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     @endif
+    @if (Session::has('error'))
+        <div class="shadow-lg p-2 move-from-top js-div-dissappear" style="width: 25rem; display:flex; text-align:center">
+            <i class="fas fa-times p-2 bg-danger text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('error') }}
+        </div>
+    @endif
+
+
 
     <div class="card shadow-sm">
         <div class="card-body">
@@ -67,7 +74,9 @@
                         <select name="status" id="status" class="form-select">
                             <option value="">Tất cả trạng thái</option>
                             <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Trên kệ</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Còn trong kho</option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Trong kho</option>
+                            <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Đang chờ duyệt vào kho
+                            </option>
                         </select>
                     </div>
 
@@ -166,7 +175,7 @@
                                         $totalStock = $model->productVariants->sum('stock');
                                     @endphp
                                     @if ($totalStock == 0)
-                                        <span class="badge bg-danger">Hết hàng</span>
+                                        <span class="badge bg-danger">Hết hàng/Chờ duyệt</span>
                                     @elseif ($totalStock > 0 && $totalStock <= 10)
                                         <span class="badge bg-warning">Sắp hết ({{ $totalStock }})</span>
                                     @else
@@ -174,8 +183,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <span class="badge bg-{{ $model->status == 1 ? 'success' : 'secondary' }}">
-                                        {{ $model->status == 1 ? 'Trên kệ' : 'Trong kho' }}
+                                    <span
+                                        class="badge bg-{{ $model->status == 1 ? 'success' : ($model->status == 2 ? 'warning' : 'secondary') }}">
+                                        {{ $model->status == 1 ? 'Trên kệ' : ($model->status == 2 ? 'Đang chờ duyệt vào kho' : 'Trong kho') }}
                                     </span>
                                 </td>
                                 <td>
@@ -193,18 +203,25 @@
                                 <td class="text-center">
                                     <form method="post" action="{{ route('product.destroy', $model->id) }}"
                                         class="d-inline">
-                                        @csrf @method('DELETE')
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <!-- Luôn hiển thị nút Xem chi tiết -->
                                         <button type="button" class="btn btn-sm btn-info btn-detail"
                                             title="Xem chi tiết">
                                             <i class="fa fa-eye"></i>
                                         </button>
-                                        <a href="{{ route('product.edit', $model->id) }}" class="btn btn-sm btn-primary"
-                                            title="Sửa">
-                                            <i class="fa fa-edit"></i>
-                                        </a>
-                                        <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
+
+                                        @if ($model->status != 2)
+                                            <!-- Nếu KHÔNG phải trạng thái chờ duyệt (2) thì hiển thị Sửa/Xóa -->
+                                            <a href="{{ route('product.edit', $model->id) }}"
+                                                class="btn btn-sm btn-primary" title="Sửa">
+                                                <i class="fa fa-edit"></i>
+                                            </a>
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Xóa">
+                                                <i class="fa fa-trash"></i>
+                                            </button>
+                                        @endif
                                     </form>
                                 </td>
                             </tr>
@@ -302,7 +319,7 @@
 @endsection
 
 @section('js')
-    @if (Session::has('success'))
+    @if (Session::has('success') || Session::has('error'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
 

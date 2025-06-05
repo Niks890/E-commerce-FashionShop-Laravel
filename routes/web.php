@@ -174,12 +174,14 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
     Route::put('/staff/{staff}/update', [StaffController::class, 'update_staff'])->name('staff.update_staff');
     Route::get('/add_extra', [InventoryController::class, 'add_extra'])->name('inventory.add_extra');
     Route::post('/post_add_extra', [InventoryController::class, 'post_add_extra'])->name('inventory.post_add_extra');
+    // Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
+    // Route::put('/inventory/update/{id}', [InventoryController::class, 'update'])->name('inventory.update');
     Route::get('/search_category', [CategoryController::class, 'search'])->name('category.search');
     Route::get('/search_discount', [DiscountController::class, 'search'])->name('discount.search');
     Route::get('/search_product', [ProductController::class, 'search'])->name('product.search');
     Route::get('/search_provider', [ProviderController::class, 'search'])->name('provider.search');
     Route::get('/search_staff', [StaffController::class, 'search'])->name('staff.search');
-    Route::get('/search_inventory', [InventoryController::class, 'search'])->name('inventory.search');
+    // Route::get('/search_inventory', [InventoryController::class, 'search'])->name('inventory.search');
     // Route::get('/advanced-search', [InventoryController::class, 'advancedSearch'])->name('advanced_search');
     Route::get('/search_order', [OrderController::class, 'search'])->name('order.search');
     Route::get('/search_order_approval', [OrderController::class, 'searchOrderApproval'])->name('order.searchOrderApproval');
@@ -203,11 +205,11 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
         Route::get('/revenue-month/export-excel', [RevenueController::class, 'exportExcelMonth'])->name('admin.revenueMonth.exportExcel')->middleware('can:managers');
         Route::get('/year', [RevenueController::class, 'revenueYear'])->name('admin.revenueYear');
         Route::get('/profit', [RevenueController::class, 'profitYear'])->name('admin.profitYear');
-        Route::get('/revenue-best-seller-product', [RevenueProductController::class, 'revenueProductBestSeller'])->name('admin.revenueProductBestSeller')->middleware('can:managers');
-        Route::get('/revenue-best-seller-product/export-pdf', [RevenueProductController::class, 'exportPdf'])->name('admin.revenueProductBestSeller.exportPdf')->middleware('can:managers');
-        Route::get('/revenue-best-seller-product/export-excel', [RevenueProductController::class, 'exportExcel'])->name('admin.revenueProductBestSeller.exportExcel')->middleware('can:managers');
-        Route::get('/revenue-best-seller-product-month-year', [RevenueProductController::class, 'revenueProductBestSellerMonthYear'])->name('admin.revenueProductBestSellerMonthYear')->middleware('can:managers');
-        Route::get('/revenue-inventory', [RevenueInventoryController::class, 'revenueInventory'])->name('admin.revenueInventory')->middleware('can:managers');
+        Route::get('/revenue-best-seller-product', [RevenueProductController::class, 'revenueProductBestSeller'])->name('admin.revenueProductBestSeller')->middleware('can:salers');
+        Route::get('/revenue-best-seller-product/export-pdf', [RevenueProductController::class, 'exportPdf'])->name('admin.revenueProductBestSeller.exportPdf')->middleware('can:salers');
+        Route::get('/revenue-best-seller-product/export-excel', [RevenueProductController::class, 'exportExcel'])->name('admin.revenueProductBestSeller.exportExcel')->middleware('can:salers');
+        Route::get('/revenue-best-seller-product-month-year', [RevenueProductController::class, 'revenueProductBestSellerMonthYear'])->name('admin.revenueProductBestSellerMonthYear')->middleware('can:salers');
+        Route::get('/revenue-inventory', [RevenueInventoryController::class, 'revenueInventory'])->name('admin.revenueInventory')->middleware('can:warehouse workers');
 
         Route::get('/revenue-inventory-datetime', [RevenueInventoryController::class, 'revenueInventoryDatetime'])->name('admin.revenueInventoryDatetime')->middleware('can:managers');
         Route::get('/revenue-inventory-datetime/export-pdf', [RevenueInventoryController::class, 'exportPdf'])->name('admin.revenueInventoryDatetime.exportPdf')->middleware('can:managers');
@@ -220,3 +222,9 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
 // Route::get('/cloudinary', [CloudinaryUploadController::class, 'showForm'])->name('cloudinary.showForm');
 Route::get('/inventory/generatePDF/{id}', [InventoryController::class, 'generatePDF'])->name('inventory.generatePDF');
+Route::post('/inventory/{inventory}/approve', [InventoryController::class, 'approve'])
+    ->name('inventory.approve')
+    ->middleware('can:warehouse workers');
+Route::post('/inventory/{id}/reject', [InventoryController::class, 'reject'])
+    ->name('inventory.reject')
+    ->middleware('can:warehouse workers');

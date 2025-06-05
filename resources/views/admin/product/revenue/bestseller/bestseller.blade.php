@@ -1,3 +1,4 @@
+@can('salers')
 @extends('admin.master')
 @section('title', 'Thống kê sản phẩm bán chạy')
 
@@ -316,3 +317,6 @@ if (!context) {
     });
 </script>
 @endsection
+@else
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+@endcan

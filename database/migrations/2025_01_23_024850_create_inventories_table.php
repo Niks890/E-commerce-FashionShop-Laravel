@@ -16,7 +16,7 @@ return new class extends Migration
             $table->decimal('total', 10,2)->nullable();
             $table->decimal('vat', 10,2)->nullable();
             $table->text('note')->nullable();
-            $table->enum('status', ['approved', 'pending'])->default('pending');
+            $table->enum('status', ['approved', 'pending', 'rejected'])->default('pending');
             $table->unsignedInteger('provider_id');
             $table->unsignedInteger('staff_id');
             $table->foreign('provider_id')->references('id')->on('providers');

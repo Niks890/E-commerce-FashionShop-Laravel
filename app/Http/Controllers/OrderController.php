@@ -477,6 +477,7 @@ class OrderController extends Controller
             $order->email = $data['email'];
             $order->VAT = $data['VAT'];
             $order->payment = $data['payment'];
+            $order->status = 'Chờ xử lý';
             $order->customer_id = $data['customer_id'];
             $order->save();
 

@@ -4,7 +4,7 @@
 @section('content')
     @if (Session::has('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-lg p-2 move-from-top js-div-dissappear"
-            role="alert" style="width: 26rem; display:flex; text-align:center">
+             role="alert" style="width: 26rem; display:flex; text-align:center">
             <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>
             {{ Session::get('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -15,81 +15,82 @@
         <h3 class="mb-4 text-center">Lịch sử đơn hàng của bạn</h3>
 
         <!-- Form tìm kiếm và lọc -->
-<div class="card mb-4 shadow-sm">
-    <div class="card-header bg-light">
-        <h5 class="mb-0">
-            <button class="btn btn-link w-100 text-start d-flex align-items-center text-dark text-decoration-none"
-                    type="button" data-bs-toggle="collapse"
-                    data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
-                <i class="fas fa-filter me-2"></i>
-                <span class="fw-semibold">Bộ lọc tìm kiếm</span>
-            </button>
-        </h5>
-    </div>
-    <div id="filterCollapse" class="collapse show">
-        <div class="card-body pt-3">
-            <form method="GET" action="{{ route('sites.getHistoryOrder') }}">
-                <div class="row g-3">
-                    <!-- Tìm kiếm theo ID hoặc SĐT -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="query" class="form-label mb-1">Tìm kiếm theo ID/SĐT:</label>
-                            <input name="query" id="query" type="text" class="form-control"
-                                placeholder="Nhập ID đơn hàng hoặc số điện thoại..."
-                                value="{{ request()->query('query') }}">
-                        </div>
-                    </div>
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <button class="btn btn-link w-100 text-start d-flex align-items-center text-dark text-decoration-none"
+                            type="button" data-bs-toggle="collapse"
+                            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                        <i class="fas fa-filter me-2"></i>
+                        <span class="fw-semibold">Bộ lọc tìm kiếm</span>
+                    </button>
+                </h5>
+            </div>
+            <div id="filterCollapse" class="collapse show">
+                <div class="card-body pt-3">
+                    <form method="GET" action="{{ route('sites.getHistoryOrder') }}">
+                        <div class="row g-3">
+                            <!-- Tìm kiếm theo ID hoặc SĐT -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="query" class="form-label mb-1">Tìm kiếm theo ID/SĐT:</label>
+                                    <input name="query" id="query" type="text" class="form-control"
+                                           placeholder="Nhập ID đơn hàng hoặc số điện thoại..."
+                                           value="{{ request()->query('query') }}">
+                                </div>
+                            </div>
 
-                    <!-- Lọc theo trạng thái -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <div>Lọc theo trạng thái:</div>
-                            <select name="status" id="status" class="form-select">
-                                <option value="">-- Tất cả trạng thái --</option>
-                                @foreach($statusList as $status)
-                                    <option value="{{ $status }}"
-                                        {{ request()->query('status') == $status ? 'selected' : '' }}>
-                                        {{ $status }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
+                            <!-- Lọc theo trạng thái -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <div>Lọc theo trạng thái:</div>
+                                    <select name="status" id="status" class="form-select">
+                                        <option value="">-- Tất cả trạng thái --</option>
+                                        @foreach($statusList as $status)
+                                            <option value="{{ $status }}"
+                                                {{ request()->query('status') == $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
 
-                    <!-- Lọc theo ngày bắt đầu -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="date_from" class="form-label mb-1">Từ ngày:</label>
-                            <input name="date_from" id="date_from" type="date" class="form-control"
-                                value="{{ request()->query('date_from') }}">
-                        </div>
-                    </div>
+                            <!-- Lọc theo ngày bắt đầu -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="date_from" class="form-label mb-1">Từ ngày:</label>
+                                    <input name="date_from" id="date_from" type="date" class="form-control"
+                                           value="{{ request()->query('date_from') }}">
+                                </div>
+                            </div>
 
-                    <!-- Lọc theo ngày kết thúc -->
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="date_to" class="form-label mb-1">Đến ngày:</label>
-                            <input name="date_to" id="date_to" type="date" class="form-control"
-                                value="{{ request()->query('date_to') }}">
-                        </div>
-                    </div>
+                            <!-- Lọc theo ngày kết thúc -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="date_to" class="form-label mb-1">Đến ngày:</label>
+                                    <input name="date_to" id="date_to" type="date" class="form-control"
+                                           value="{{ request()->query('date_to') }}">
+                                </div>
+                            </div>
 
-                    <!-- Nút hành động -->
-                    <div class="col-12 mt-2">
-                        <div class="d-flex justify-content-end gap-2">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-search me-1"></i> Tìm kiếm
-                            </button>
-                            <a href="{{ route('sites.getHistoryOrder') }}" class="btn btn-outline-secondary">
-                                <i class="fas fa-undo me-1"></i> Đặt lại
-                            </a>
+                            <!-- Nút hành động -->
+                            <div class="col-12 mt-2">
+                                <div class="d-flex justify-content-end gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search me-1"></i> Tìm kiếm
+                                    </button>
+                                    <a href="{{ route('sites.getHistoryOrder') }}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-undo me-1"></i> Đặt lại
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
-    </div>
-</div>
+
         <!-- Hiển thị kết quả lọc -->
         @if(request()->hasAny(['query', 'status', 'date_from', 'date_to']))
             <div class="alert alert-info">
@@ -118,7 +119,7 @@
                     <tr>
                         <th>ID</th>
                         <th>Tên khách hàng</th>
-                        <th>Địa chỉ</th>
+                        <th style="max-width: 200px;">Địa chỉ</th>
                         <th>SĐT</th>
                         <th>Tổng tiền</th>
                         <th>Trạng thái</th>
@@ -131,7 +132,9 @@
                         <tr id="orderRow{{ $item->id }}">
                             <td>{{ $item->id }}</td>
                             <td>{{ $item->customer_name }}</td>
-                            <td>{{ $item->address }}</td>
+                            <td class="text-truncate" style="max-width: 200px;" title="{{ $item->address }}">
+                                {{ $item->address }}
+                            </td>
                             <td>{{ $item->phone }}</td>
                             <td>{{ number_format($item->total, 0, ',', '.') }} đ</td>
                             <td>
@@ -150,7 +153,7 @@
                             <td class="text-center" id="action{{ $item->id }}">
                                 <div class="d-flex justify-content-center action-buttons">
                                     <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
-                                        class="btn btn-sm btn-secondary">
+                                       class="btn btn-sm btn-secondary">
                                         <i class="fa fa-eye"></i> Xem
                                     </a>
 
@@ -159,12 +162,12 @@
                                     </a>
                                     @if ($item->status === 'Chờ xử lý')
                                         <button type="button" class="btn btn-sm btn-danger ms-2"
-                                            onclick="openCancelModal({{ $item->id }})">
+                                                onclick="openCancelModal({{ $item->id }})">
                                             <i class="fa fa-times"></i> Hủy
                                         </button>
                                     @elseif ($item->status === 'Đã thanh toán' || $item->status === 'Giao hàng thành công')
                                         <button type="button" class="btn btn-sm btn-success ms-2"
-                                            onclick="openSidebar({{ $item->id }})">
+                                                onclick="openSidebar({{ $item->id }})">
                                             <i class="fa fa-comments"></i>
                                         </button>
                                     @endif
@@ -203,13 +206,13 @@
 
     <!-- Modal Xác nhận Hủy -->
     <div class="modal fade cancel-order-modal" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
-        aria-hidden="true">
+         aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận hủy đơn hàng</h5>
                     <button type="button" class="btn-close-modal bg-danger border-0 text-white fw-bold"
-                        data-bs-dismiss="modal" aria-label="Close">X</button>
+                            data-bs-dismiss="modal" aria-label="Close">X</button>
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
@@ -242,20 +245,54 @@
         .alert-info {
             border-left: 4px solid #17a2b8;
         }
-
         .form-group {
-    margin-bottom: 1rem;
-}
-.form-label {
-    font-weight: 500;
-    color: #495057;
-}
-.card-header {
-    padding: 0.75rem 1.25rem;
-}
-.btn-outline-secondary {
-    border-color: #dee2e6;
-}
+            margin-bottom: 1rem;
+        }
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+        .card-header {
+            padding: 0.75rem 1.25rem;
+        }
+        .btn-outline-secondary {
+            border-color: #dee2e6;
+        }
+
+        /* Improved address column styling */
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        /* Responsive table adjustments */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .action-buttons {
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+            .action-buttons .btn {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Hover effect for address to show full text */
+        td.text-truncate:hover {
+            position: relative;
+            z-index: 1;
+            white-space: normal;
+            word-break: break-word;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: none;
+        }
     </style>
 @endsection
 
@@ -456,5 +493,4 @@
                 .catch(error => console.error("Lỗi khi lấy đánh giá:", error));
         }
     </script>
-
 @endsection

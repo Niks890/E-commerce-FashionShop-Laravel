@@ -1,4 +1,4 @@
-<footer class="footer">
+<footer class="footer" style="margin-top: 100px;">
     <div class="container-fluid d-flex justify-content-between">
         <nav class="pull-left">
             <ul class="nav">
@@ -16,7 +16,7 @@
             </ul>
         </nav>
         <div class="copyright">
-            2025, made with <i class="fa fa-heart heart text-danger"></i> by
+            2025, made by
             <a href="{{ route('sites.home') }}">TFashionShop</a>
         </div>
     </div>

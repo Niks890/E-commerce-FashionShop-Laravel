@@ -1,5 +1,5 @@
+@can('salers')
 @extends('admin.master')
-@can('managers')
     @section('title', 'Thống kê sản phẩm bán chạy theo tháng quý năm')
 @section('css')
     <style>
@@ -482,4 +482,6 @@
         fetchChartData('year', '{{ date('Y') }}');
     </script>
 @endsection
+@else
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan

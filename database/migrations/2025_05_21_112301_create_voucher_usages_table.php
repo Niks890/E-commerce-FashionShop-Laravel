@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vouche_usages', function (Blueprint $table) {
+        Schema::create('voucher_usages', function (Blueprint $table) {
             $table->increments('id');
             $table->unsignedInteger('voucher_id')->nullable();
             $table->unsignedInteger('order_id')->nullable();
