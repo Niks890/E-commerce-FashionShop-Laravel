@@ -253,13 +253,12 @@
 
             if (!inventory_id) {
                 console.error("Không tìm thấy inventory_id trong URL.");
-                // Optionally, redirect or show a user-friendly error message
                 alert("Không tìm thấy ID phiếu nhập. Vui lòng thử lại.");
-                window.history.back(); // Go back to the previous page
+                window.history.back();
                 return;
             }
 
-            let productsData = []; // Global array to store and manage product data
+            let productsData = [];
 
             fetch(`http://127.0.0.1:8000/api/inventory/${inventory_id}`)
                 .then(response => {
@@ -272,12 +271,9 @@
                     if (data.status_code === 200) {
                         const inventoryData = data.data;
 
-                        // Display provider name and ID
-                        document.getElementById('provider_name_display').value = inventoryData.provider.name ||
-                            "";
+                        document.getElementById('provider_name_display').value = inventoryData.provider.name || "";
                         document.getElementById('provider_id_hidden').value = inventoryData.provider.id || "";
 
-                        // Group product details by product_id
                         const groupedProducts = {};
                         inventoryData.detail.forEach(item => {
                             if (!groupedProducts[item.product.id]) {
@@ -288,16 +284,14 @@
                             }
                             groupedProducts[item.product.id].variants.push({
                                 color: item.color,
-                                sizes: item.sizes, // String "S,M,L"
+                                sizes: item.sizes,
                                 quantity: item.quantity,
                                 price: item.price
                             });
                         });
 
-                        // Convert object to array for easy iteration
                         const uniqueProducts = Object.values(groupedProducts);
 
-                        // Initialize productsData from uniqueProducts for new data management
                         productsData = uniqueProducts.map((item, index) => ({
                             product_id: item.product.id,
                             product_name: item.product.name,
@@ -306,72 +300,71 @@
                             brand_name: item.product.brand,
                             existing_variants: item.variants,
                             new_color: item.variants.length > 0 ? item.variants[0].color :
-                            '', // Initialize with existing color if available
+                                '',
                             new_price: '',
-                            new_sizes_quantities: {} // {size: quantity}
+                            new_sizes_quantities: {}
                         }));
 
                         const productsTbody = document.getElementById('products-tbody');
-                        productsTbody.innerHTML = ''; // Clear existing content
+                        productsTbody.innerHTML = '';
 
                         productsData.forEach((productItem, index) => {
                             const row = document.createElement('tr');
                             row.id = `product-row-${index}`;
                             row.innerHTML = `
-                                    <td class="text-center">
-                                        <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
-                                        <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
-                                    </td>
-                                    <td>
-                                        <strong>${productItem.product_name}</strong>
-                                    </td>
-                                    <td>
-                                        <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
-                                    </td>
-                                    <td>${productItem.category_name}</td>
-                                    <td>${productItem.brand_name}</td>
-                                    <td>
-                                        <table class="variant-table">
-                                            <thead>
+                                <td class="text-center">
+                                    <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
+                                    <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
+                                </td>
+                                <td>
+                                    <strong>${productItem.product_name}</strong>
+                                </td>
+                                <td>
+                                    <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
+                                </td>
+                                <td>${productItem.category_name}</td>
+                                <td>${productItem.brand_name}</td>
+                                <td>
+                                    <table class="variant-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Kích cỡ</th>
+                                                <th>SL</th>
+                                                <th>Giá</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${productItem.existing_variants.map(variant => `
                                                 <tr>
-                                                    <th>Kích cỡ</th>
-                                                    <th>SL</th>
-                                                    <th>Giá</th>
+                                                    <td>${variant.sizes.split(',').map(s => `<span class="badge bg-secondary me-1">${s.trim()}</span>`).join('')}</td>
+                                                    <td>${variant.quantity}</td>
+                                                    <td>${formatCurrency(variant.price)}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                ${productItem.existing_variants.map(variant => `
-                                                                <tr>
-                                                                    <td>${variant.sizes.split(',').map(s => `<span class="badge bg-secondary me-1">${s.trim()}</span>`).join('')}</td>
-                                                                    <td>${variant.quantity}</td>
-                                                                    <td>${formatCurrency(variant.price)}</td>
-                                                                </tr>
-                                                            `).join('')}
-                                            </tbody>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
-                                    </td>
-                                    <td>
-                                        <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
-                                    </td>
-                                    <td>
-                                        <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
-                                            <option value="XS">XS</option>
-                                            <option value="S">S</option>
-                                            <option value="M">M</option>
-                                            <option value="L">L</option>
-                                            <option value="XL">XL</option>
-                                            <option value="XXL">XXL</option>
-                                        </select>
-                                        <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
-                                    </td>
-                                `;
+                                            `).join('')}
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td>
+                                    <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
+                                </td>
+                                <td>
+                                    <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
+                                </td>
+                                <td>
+                                    <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
+                                        <option value="XS">XS</option>
+                                        <option value="S">S</option>
+                                        <option value="M">M</option>
+                                        <option value="L">L</option>
+                                        <option value="XL">XL</option>
+                                        <option value="XXL">XXL</option>
+                                    </select>
+                                    <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
+                                </td>
+                            `;
                             productsTbody.appendChild(row);
                         });
 
-                        // Event Listeners for select/deselect all buttons
                         document.getElementById('selectAllProductsBtn').addEventListener('click', function() {
                             document.querySelectorAll('.product-check').forEach(checkbox => {
                                 checkbox.checked = true;
@@ -392,7 +385,6 @@
                             });
                         });
 
-                        // Handle individual product checkbox changes
                         document.querySelectorAll('.product-check').forEach(checkbox => {
                             checkbox.addEventListener('change', function() {
                                 const index = this.dataset.index;
@@ -404,7 +396,6 @@
                             });
                         });
 
-                        // Initialize Select2 for each row
                         $('.select-sizes').each(function() {
                             const selectElement = $(this);
                             const index = selectElement.data('index');
@@ -442,7 +433,6 @@
                             });
                         });
 
-                        // Handle quantity modal submission
                         $(".btn-quantity-submit").on("click", function() {
                             const quantity = parseInt($("#quantity_variant").val()) || 0;
                             const productIndex = $('#modal-quantity').data('product-index');
@@ -452,7 +442,6 @@
                                 productsData[productIndex].new_sizes_quantities[selectedSize] =
                                     quantity;
 
-                                // Set the new_color based on the first existing variant's color if not already set or explicitly entered
                                 if (!productsData[productIndex].new_color && productsData[productIndex]
                                     .existing_variants.length > 0) {
                                     productsData[productIndex].new_color = productsData[productIndex]
@@ -475,7 +464,6 @@
                             }
                         });
 
-                        // Handle unselecting size in Select2
                         $('.select-sizes').on("select2:unselect", function(e) {
                             const unselectedSize = e.params.data.id;
                             const productIndex = $(this).data('index');
@@ -489,62 +477,73 @@
                             );
                         });
 
-                        // Update productsData when new price input changes
                         $(document).on('change', '.new-price-input', function() {
                             const index = $(this).data('index');
                             productsData[index].new_price = $(this).val();
                         });
 
-                        // Update productsData when new color input changes
                         $(document).on('change', '.new-color-input', function() {
                             const index = $(this).data('index');
-                            productsData[index].new_color = $(this).val();
+                            const newColor = $(this).val().trim();
+
+                            if (newColor.includes(',')) {
+                                alert('Vui lòng chỉ nhập MỘT màu duy nhất cho sản phẩm này.');
+                                $(this).val(productsData[index].new_color || '');
+                                return;
+                            }
+
+                            productsData[index].new_color = newColor;
                         });
 
-                        // Form submission handler
                         $("#formCreateInventory").on("submit", function(e) {
                             const selectedProductsToSend = [];
+                            let validationError = false;
+
                             document.querySelectorAll('.product-check:checked').forEach(checkbox => {
                                 const index = checkbox.dataset.index;
                                 const productItem = productsData[index];
 
-                                // Get the latest values from input fields
-                                productItem.new_price = $(
-                                    `#product-row-${index} .new-price-input`).val();
-                                productItem.new_color = $(
-                                    `#product-row-${index} .new-color-input`).val();
+                                productItem.new_price = $(`#product-row-${index} .new-price-input`).val();
+                                productItem.new_color = $(`#product-row-${index} .new-color-input`).val();
 
-                                const hasNewPrice = productItem.new_price && productItem
-                                    .new_price > 0;
-                                const hasNewSizesQuantities = Object.keys(productItem
-                                    .new_sizes_quantities).length > 0;
-                                const hasNewColor = productItem.new_color && productItem
-                                    .new_color.trim() !== '';
+                                const hasNewPrice = productItem.new_price && parseFloat(productItem.new_price) > 0;
+                                const hasNewSizesQuantities = Object.keys(productItem.new_sizes_quantities).length > 0;
+                                const hasNewColor = productItem.new_color && productItem.new_color.trim() !== '';
 
-                                // A product is "selected" and "to be added" if it has any new data (price, color, or sizes/quantities)
-                                const hasNewData = hasNewPrice || hasNewSizesQuantities ||
-                                    hasNewColor;
+                                const hasNewData = hasNewPrice || hasNewSizesQuantities || hasNewColor;
 
                                 if (hasNewData) {
+                                    // Validation: If new color or new price is provided, but no sizes/quantities are added
+                                    if ((hasNewColor || hasNewPrice) && !hasNewSizesQuantities) {
+                                        alert(
+                                            `Lỗi: Vui lòng chọn kích cỡ và nhập số lượng nhập thêm cho sản phẩm "${productItem.product_name}" khi bạn đã nhập Màu mới hoặc Giá nhập thêm.`
+                                        );
+                                        validationError = true;
+                                        return; // Break out of forEach
+                                    }
+
                                     // Validation: if new sizes/quantities are provided, new_color and new_price must be set
-                                    if (hasNewSizesQuantities && (!hasNewColor || !
-                                            hasNewPrice)) {
+                                    if (hasNewSizesQuantities && (!hasNewColor || !hasNewPrice)) {
                                         alert(
                                             `Lỗi: Vui lòng nhập đầy đủ Màu mới và Giá nhập thêm cho các biến thể mới của sản phẩm "${productItem.product_name}".`
                                         );
-                                        e.preventDefault();
-                                        return;
+                                        validationError = true;
+                                        return; // Break out of forEach
                                     }
 
                                     selectedProductsToSend.push({
                                         product_id: productItem.product_id,
                                         new_color: productItem.new_color,
                                         new_price: productItem.new_price,
-                                        new_sizes_quantities: productItem
-                                            .new_sizes_quantities
+                                        new_sizes_quantities: productItem.new_sizes_quantities
                                     });
                                 }
                             });
+
+                            if (validationError) {
+                                e.preventDefault();
+                                return;
+                            }
 
                             if (selectedProductsToSend.length === 0) {
                                 alert(
@@ -560,7 +559,6 @@
                             input.value = JSON.stringify(selectedProductsToSend);
                             this.appendChild(input);
 
-                            // Disable input fields to prevent duplicate data submission
                             $(this).find('input[name^="products["]:not([type="hidden"])').prop(
                                 'disabled', true);
                             $(this).find('select[name^="products["]').prop('disabled', true);
@@ -584,5 +582,5 @@
     </script>
 @endsection
 @else
-{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+    {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan
