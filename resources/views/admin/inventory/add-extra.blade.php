@@ -68,9 +68,12 @@
             </div>
         </div>
 
-        <button type="submit" class="btn btn-success rounded-pill px-5 py-3 shadow-lg mt-3 fw-bold">
-            <i class="fas fa-save me-2"></i>Lưu thông tin nhập kho
-        </button>
+        <div class="d-flex justify-content-center align-items-center">
+            <button type="submit" class=" btn btn-success rounded-pill px-5 py-3 shadow-lg mt-3 fw-bold">
+                <i class="fas fa-save me-2"></i>Tạo phiếu nhập
+            </button>
+        </div>
+
     </form>
 
     <div class="modal fade" id="modal-quantity" tabindex="-1" aria-labelledby="modal-quantity-label" aria-hidden="true">
@@ -102,144 +105,420 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
+
+
     <style>
+        /* General Body and Container Styles */
         body {
-            background-color: #f8f9fa;
-            /* Light background for the page */
+            background-color: #f0f2f5;
+            /* A slightly softer, modern background */
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            color: #333;
         }
 
+        .container-fluid {
+            /* Assuming master.blade.php provides a fluid container */
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+        }
+
+        /* Card Enhancements */
         .card {
             border: none;
-            /* Remove default card border */
+            border-radius: 0.75rem;
+            /* More rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            /* Softer, more prominent shadow */
+            overflow: hidden;
+            /* Ensures rounded corners apply to children */
         }
 
-        .card-header.bg-gradient-primary {
-            background: linear-gradient(45deg, #007bff, #0056b3) !important;
-            /* Blue gradient */
+        .card-header {
+            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
+            /* Vibrant gradient */
+            color: white;
+            padding: 1.5rem 2rem;
+            /* More padding */
+            font-size: 1.25rem;
+            /* Larger header text */
+            font-weight: 700;
+            /* Bolder header */
             border-bottom: none;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            display: flex;
+            align-items: center;
         }
 
+        .card-header i {
+            font-size: 1.5rem;
+            /* Larger icons in header */
+            margin-right: 0.75rem;
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        /* Back Button */
         .btn-outline-primary {
-            border-color: #007bff;
+            border: 2px solid #007bff;
             color: #007bff;
+            padding: 0.65rem 1.5rem;
+            border-radius: 50rem;
+            /* Fully rounded */
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            /* Align icon and text vertically */
+            align-items: center;
         }
 
         .btn-outline-primary:hover {
             background-color: #007bff;
             color: white;
+            transform: translateY(-3px);
+            /* Slight lift effect */
+            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
         }
 
-        .btn-group-bulk button {
+        .btn-outline-primary i {
+            margin-right: 0.5rem;
+        }
+
+        /* Form Controls */
+        .form-label {
+            font-weight: 700;
+            /* Bolder labels */
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control-lg {
+            padding: 0.85rem 1.25rem;
+            /* Larger padding for inputs */
+            font-size: 1.1rem;
+            border-radius: 0.5rem;
+            /* Slightly more rounded */
+            border: 1px solid #ced4da;
             transition: all 0.3s ease;
         }
 
-        .btn-group-bulk button:hover {
+        .form-control-lg:focus {
+            border-color: #80bdff;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
+        }
+
+        /* Bulk Action Buttons */
+        .btn-group-bulk {
+            display: flex;
+            /* Use flexbox for button group */
+            gap: 1rem;
+            /* Space between buttons */
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-group-bulk .btn {
+            padding: 0.75rem 1.75rem;
+            border-radius: 50rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group-bulk .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Table Styling */
+        .table {
+            border-collapse: separate;
+            /* Allows border-radius on cells in some cases */
+            border-spacing: 0;
+            margin-bottom: 0;
         }
 
         .table thead th {
-            background-color: #e9eff4;
-            /* Lighter header background */
+            background-color: #e2e6ea;
+            /* Slightly darker header for better contrast */
             color: #343a40;
-            /* Darker text */
-            font-weight: 600;
-            border-bottom: 2px solid #dee2e6;
+            font-weight: 700;
+            border-bottom: 2px solid #d3d9e0;
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+        }
+
+        .table tbody tr {
+            transition: background-color 0.2s ease;
         }
 
         .table tbody tr:hover {
-            background-color: #f1f5f9;
+            background-color: #e9ecef;
+            /* Lighter hover effect */
+        }
+
+        .table tbody td {
+            padding: 1rem 1.25rem;
+            vertical-align: middle;
+            /* Center content vertically */
+            border-top: 1px solid #e9ecef;
         }
 
         .product-check {
-            transform: scale(1.3);
-            /* Slightly larger checkboxes */
+            transform: scale(1.4);
+            /* Larger checkbox */
             cursor: pointer;
+            accent-color: #007bff;
+            /* Color for checked state */
         }
 
         .img-thumbnail {
-            border: 1px solid #dee2e6;
-            padding: 2px;
+            border-radius: 0.5rem;
+            /* Rounded image corners */
+            object-fit: cover;
+            /* Ensures images cover the area without distortion */
+            width: 80px;
+            /* Consistent size */
+            height: 80px;
+            /* Consistent size */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
 
+        /* Variant Table (Inner Table) */
         .variant-table {
             width: 100%;
-            margin-top: 5px;
-            border-collapse: collapse;
-            font-size: 0.85rem;
-            /* Slightly smaller font for inner table */
+            margin-top: 10px;
+            /* More space above the table */
+            border-radius: 0.5rem;
+            /* Rounded corners for the inner table */
+            overflow: hidden;
+            /* Apply border-radius correctly */
+            border: 1px solid #e0e6eb;
+            /* Subtle border around the inner table */
         }
 
         .variant-table th,
         .variant-table td {
-            border: 1px solid #e9ecef;
-            padding: 6px 8px;
+            padding: 8px 12px;
             text-align: left;
+            border: none;
+            /* Remove inner borders for a cleaner look */
+        }
+
+        .variant-table thead {
+            background-color: #f1f4f7;
+            /* Lighter background for inner table header */
         }
 
         .variant-table th {
-            background-color: #f8f9fa;
             font-weight: 600;
-            color: #555;
+            color: #495057;
         }
 
-        .variant-table td small {
-            color: #6c757d;
+        .variant-table td {
+            color: #555;
         }
 
         .badge.bg-secondary {
             background-color: #6c757d !important;
-            font-size: 0.75em;
-            padding: 0.3em 0.6em;
-            vertical-align: middle;
-        }
-
-        .form-control-lg {
-            height: calc(3.5rem + 2px);
-            /* Larger input fields */
-            padding: 0.75rem 1rem;
-            font-size: 1.1rem;
+            font-size: 0.8em;
+            /* Slightly larger badge text */
+            padding: 0.4em 0.8em;
             border-radius: 0.3rem;
         }
 
-        /* Select2 Customizations for larger appearance */
+        /* Select2 Customizations */
         .select2-container--bootstrap-5 .select2-selection--multiple {
             min-height: calc(3.5rem + 2px) !important;
-            /* Match form-control-lg height */
             padding: 0.75rem 1rem !important;
-            border-radius: 0.3rem !important;
+            border-radius: 0.5rem !important;
+            /* Match form control radius */
             font-size: 1.1rem !important;
+            border: 1px solid #ced4da !important;
+            transition: all 0.3s ease;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--multiple:focus-within {
+            border-color: #80bdff !important;
+            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
         }
 
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
             background-color: #0d6efd;
             color: white;
             border: 1px solid #0a58ca;
-            border-radius: 0.25rem;
-            padding: 0.4rem 0.75rem;
-            /* Larger padding for choices */
+            border-radius: 0.35rem;
+            /* Slightly more rounded chips */
+            padding: 0.5rem 0.85rem;
+            /* More padding for chips */
             font-size: 0.95rem;
-            /* Slightly larger text in choices */
-            margin-top: 0.3rem;
+            margin-top: 0.4rem;
+            /* Adjust vertical alignment */
         }
 
         .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
             color: white;
-            margin-right: 0.25rem;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
+            /* Larger remove icon */
+            margin-right: 0.3rem;
         }
 
-        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__rendered {
-            padding-right: 2rem;
-            /* Give space for the clear button */
+        .select2-container--bootstrap-5 .select2-dropdown {
+            border-radius: 0.5rem;
+            /* Rounded dropdown */
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
+            border: none;
         }
 
-        .modal-header.bg-primary {
+        .select2-container--bootstrap-5 .select2-results__option {
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+
+        .select2-container--bootstrap-5 .select2-results__option.select2-results__option--highlighted {
             background-color: #007bff !important;
+            color: white !important;
+        }
+
+        /* Modal Styling */
+        .modal-content {
+            border-radius: 0.75rem;
+            /* Rounded modal corners */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background-color: #007bff !important;
+            color: white;
+            border-top-left-radius: 0.75rem;
+            border-top-right-radius: 0.75rem;
+            padding: 1.5rem;
+            border-bottom: none;
+        }
+
+        .modal-header .btn-close {
+            filter: invert(1);
+            /* White close button for dark background */
+        }
+
+        .modal-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
         }
 
         .modal-footer {
             background-color: #f8f9fa;
+            border-bottom-left-radius: 0.75rem;
+            border-bottom-right-radius: 0.75rem;
+            padding: 1.5rem;
+            border-top: none;
+            justify-content: center;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+            border-color: #28a745;
+            padding: 0.85rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 50rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        }
+
+        .btn-success:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .table-responsive {
+                border: 1px solid #e9ecef;
+                /* Add a border to the scrollable table on smaller screens */
+                border-radius: 0.5rem;
+            }
+
+            .table thead {
+                display: none;
+                /* Hide table headers on small screens */
+            }
+
+            .table tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #dee2e6;
+                border-radius: 0.75rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .table tbody td {
+                display: block;
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+                border: none;
+            }
+
+            .table tbody td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 50%;
+                padding-left: 1.25rem;
+                font-weight: 600;
+                text-align: left;
+                color: #495057;
+            }
+
+            /* Specific label for each column in responsive table */
+            .table tbody td:nth-of-type(1):before {
+                content: "Chọn";
+            }
+
+            .table tbody td:nth-of-type(2):before {
+                content: "Sản phẩm";
+            }
+
+            .table tbody td:nth-of-type(3):before {
+                content: "Hình ảnh";
+            }
+
+            .table tbody td:nth-of-type(4):before {
+                content: "Danh mục";
+            }
+
+            .table tbody td:nth-of-type(5):before {
+                content: "Thương hiệu";
+            }
+
+            .table tbody td:nth-of-type(6):before {
+                content: "Thông tin biến thể hiện có";
+            }
+
+            .table tbody td:nth-of-type(7):before {
+                content: "Giá nhập thêm (VND)";
+            }
+
+            .table tbody td:nth-of-type(8):before {
+                content: "Màu mới";
+            }
+
+            .table tbody td:nth-of-type(9):before {
+                content: "Kích cỡ & Số lượng nhập thêm";
+            }
+
+            .btn-group-bulk {
+                flex-direction: column;
+                /* Stack buttons vertically */
+            }
         }
     </style>
 @endsection
@@ -271,7 +550,8 @@
                     if (data.status_code === 200) {
                         const inventoryData = data.data;
 
-                        document.getElementById('provider_name_display').value = inventoryData.provider.name || "";
+                        document.getElementById('provider_name_display').value = inventoryData.provider.name ||
+                            "";
                         document.getElementById('provider_id_hidden').value = inventoryData.provider.id || "";
 
                         const groupedProducts = {};
@@ -279,13 +559,32 @@
                             if (!groupedProducts[item.product.id]) {
                                 groupedProducts[item.product.id] = {
                                     product: item.product,
-                                    variants: []
+                                    // Lưu trữ TẤT CẢ các biến thể của sản phẩm từ 'product-variant'
+                                    all_product_variants: item.product['product-variant'] || [],
+                                    // Vẫn giữ variants_in_slip để hiển thị số lượng từ phiếu nhập hiện tại
+                                    variants_in_slip: []
                                 };
                             }
-                            groupedProducts[item.product.id].variants.push({
-                                color: item.color,
-                                sizes: item.sizes,
-                                quantity: item.quantity,
+
+                            // Parse the "sizes" string to extract color and size for lookup
+                            const parts = item.sizes.split('-');
+                            let variantSizeFromSlip = '';
+                            let variantColorFromSlip = '';
+
+                            if (parts.length >= 3) {
+                                variantSizeFromSlip = parts[0].trim();
+                                variantColorFromSlip = parts[2].trim();
+                            } else {
+                                console.warn('Unexpected "sizes" format:', item.sizes);
+                                variantColorFromSlip = item.color || '';
+                                variantSizeFromSlip = item.sizes.trim();
+                            }
+
+                            // Thêm thông tin biến thể từ phiếu nhập vào variants_in_slip
+                            groupedProducts[item.product.id].variants_in_slip.push({
+                                color: variantColorFromSlip,
+                                sizes: variantSizeFromSlip,
+                                quantity_in_slip: item.quantity,
                                 price: item.price
                             });
                         });
@@ -298,9 +597,11 @@
                             product_image: item.product.image,
                             category_name: item.product.category.name,
                             brand_name: item.product.brand,
-                            existing_variants: item.variants,
-                            new_color: item.variants.length > 0 ? item.variants[0].color :
-                                '',
+                            // Giờ bạn có cả `all_product_variants`
+                            all_product_variants: item.all_product_variants,
+                            variants_in_slip: item
+                                .variants_in_slip, // Vẫn giữ để đối chiếu số lượng phiếu nhập
+                            new_color: '',
                             new_price: '',
                             new_sizes_quantities: {}
                         }));
@@ -309,61 +610,79 @@
                         productsTbody.innerHTML = '';
 
                         productsData.forEach((productItem, index) => {
+                            // Tạo một map để dễ dàng tra cứu số lượng từ phiếu nhập
+                            const slipVariantsMap = new Map();
+                            productItem.variants_in_slip.forEach(v => {
+                                slipVariantsMap.set(`${v.color}-${v.sizes}`, {
+                                    quantity_in_slip: v.quantity_in_slip,
+                                    price: v.price
+                                });
+                            });
+
                             const row = document.createElement('tr');
                             row.id = `product-row-${index}`;
                             row.innerHTML = `
-                                <td class="text-center">
-                                    <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
-                                    <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
-                                </td>
-                                <td>
-                                    <strong>${productItem.product_name}</strong>
-                                </td>
-                                <td>
-                                    <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
-                                </td>
-                                <td>${productItem.category_name}</td>
-                                <td>${productItem.brand_name}</td>
-                                <td>
-                                    <table class="variant-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Kích cỡ</th>
-                                                <th>SL</th>
-                                                <th>Giá</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            ${productItem.existing_variants.map(variant => `
-                                                <tr>
-                                                    <td>${variant.sizes.split(',').map(s => `<span class="badge bg-secondary me-1">${s.trim()}</span>`).join('')}</td>
-                                                    <td>${variant.quantity}</td>
-                                                    <td>${formatCurrency(variant.price)}</td>
-                                                </tr>
-                                            `).join('')}
-                                        </tbody>
-                                    </table>
-                                </td>
-                                <td>
-                                    <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
-                                </td>
-                                <td>
-                                    <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
-                                </td>
-                                <td>
-                                    <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
-                                        <option value="XS">XS</option>
-                                        <option value="S">S</option>
-                                        <option value="M">M</option>
-                                        <option value="L">L</option>
-                                        <option value="XL">XL</option>
-                                        <option value="XXL">XXL</option>
-                                    </select>
-                                    <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
-                                </td>
-                            `;
+                        <td class="text-center">
+                            <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
+                            <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
+                        </td>
+                        <td>
+                            <strong>${productItem.product_name}</strong>
+                        </td>
+                        <td>
+                            <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
+                        </td>
+                        <td>${productItem.category_name}</td>
+                        <td>${productItem.brand_name}</td>
+                        <td>
+                            <table class="variant-table">
+                            <thead>
+                                <tr>
+                                    <th>Màu</th>
+                                    <th>Kích cỡ</th>
+                                    <th>SL Tổng (Kho)</th> <th>SL(Đã thêm)</th> <th>Giá Nhập (Phiếu này)</th> </tr>
+                            </thead>
+                                                             <tbody>
+                                    ${productItem.all_product_variants.map(variant => {
+                                        const slipInfo = slipVariantsMap.get(`${variant.color}-${variant.size}`);
+                                        // Sử dụng '---' nếu không có dữ liệu từ phiếu nhập để rõ ràng hơn
+                                        const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
+                                        const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
+                                        return `
+                                                                <tr>
+                                                                    <td>${variant.color}</td>
+                                                                    <td><span class="badge bg-secondary me-1">${variant.size}</span></td>
+                                                                    <td>${variant.stock || 0}</td>
+                                                                    <td>${quantityInSlip}</td>
+                                                                    <td>${priceInSlip}</td>
+                                                                </tr>
+                                                            `;
+                                    }).join('')}
+                                </tbody>
+                            </table>
+                        </td>
+                        <td>
+                            <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
+                        </td>
+                        <td>
+                            <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
+                        </td>
+                        <td>
+                            <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
+                                <option value="XS">XS</option>
+                                <option value="S">S</option>
+                                <option value="M">M</option>
+                                <option value="L">L</option>
+                                <option value="XL">XL</option>
+                                <option value="XXL">XXL</option>
+                            </select>
+                            <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
+                        </td>
+                    `;
                             productsTbody.appendChild(row);
                         });
+
+                        // ... (phần còn lại của mã JavaScript, không thay đổi)
 
                         document.getElementById('selectAllProductsBtn').addEventListener('click', function() {
                             document.querySelectorAll('.product-check').forEach(checkbox => {
@@ -442,14 +761,6 @@
                                 productsData[productIndex].new_sizes_quantities[selectedSize] =
                                     quantity;
 
-                                if (!productsData[productIndex].new_color && productsData[productIndex]
-                                    .existing_variants.length > 0) {
-                                    productsData[productIndex].new_color = productsData[productIndex]
-                                        .existing_variants[0].color;
-                                    $(`#product-row-${productIndex} .new-color-input`).val(productsData[
-                                        productIndex].new_color);
-                                }
-
                                 const formattedSizesInput = $(
                                     `#product-row-${productIndex} .formatted-new-sizes`);
                                 formattedSizesInput.val(
@@ -503,18 +814,25 @@
                                 const index = checkbox.dataset.index;
                                 const productItem = productsData[index];
 
-                                productItem.new_price = $(`#product-row-${index} .new-price-input`).val();
-                                productItem.new_color = $(`#product-row-${index} .new-color-input`).val();
+                                productItem.new_price = $(
+                                    `#product-row-${index} .new-price-input`).val();
+                                productItem.new_color = $(
+                                    `#product-row-${index} .new-color-input`).val();
 
-                                const hasNewPrice = productItem.new_price && parseFloat(productItem.new_price) > 0;
-                                const hasNewSizesQuantities = Object.keys(productItem.new_sizes_quantities).length > 0;
-                                const hasNewColor = productItem.new_color && productItem.new_color.trim() !== '';
+                                const hasNewPrice = productItem.new_price && parseFloat(
+                                    productItem.new_price) > 0;
+                                const hasNewSizesQuantities = Object.keys(productItem
+                                    .new_sizes_quantities).length > 0;
+                                const hasNewColor = productItem.new_color && productItem
+                                    .new_color.trim() !== '';
 
-                                const hasNewData = hasNewPrice || hasNewSizesQuantities || hasNewColor;
+                                const hasNewData = hasNewPrice || hasNewSizesQuantities ||
+                                    hasNewColor;
 
                                 if (hasNewData) {
                                     // Validation: If new color or new price is provided, but no sizes/quantities are added
-                                    if ((hasNewColor || hasNewPrice) && !hasNewSizesQuantities) {
+                                    if ((hasNewColor || hasNewPrice) && !
+                                        hasNewSizesQuantities) {
                                         alert(
                                             `Lỗi: Vui lòng chọn kích cỡ và nhập số lượng nhập thêm cho sản phẩm "${productItem.product_name}" khi bạn đã nhập Màu mới hoặc Giá nhập thêm.`
                                         );
@@ -523,7 +841,8 @@
                                     }
 
                                     // Validation: if new sizes/quantities are provided, new_color and new_price must be set
-                                    if (hasNewSizesQuantities && (!hasNewColor || !hasNewPrice)) {
+                                    if (hasNewSizesQuantities && (!hasNewColor || !
+                                            hasNewPrice)) {
                                         alert(
                                             `Lỗi: Vui lòng nhập đầy đủ Màu mới và Giá nhập thêm cho các biến thể mới của sản phẩm "${productItem.product_name}".`
                                         );
@@ -535,7 +854,8 @@
                                         product_id: productItem.product_id,
                                         new_color: productItem.new_color,
                                         new_price: productItem.new_price,
-                                        new_sizes_quantities: productItem.new_sizes_quantities
+                                        new_sizes_quantities: productItem
+                                            .new_sizes_quantities
                                     });
                                 }
                             });
@@ -582,5 +902,5 @@
     </script>
 @endsection
 @else
-    {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
 @endcan
