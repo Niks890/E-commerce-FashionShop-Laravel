@@ -262,6 +262,10 @@
                                     <td style="width: 70%;"><span id="product-id"></span></td>
                                 </tr>
                                 <tr>
+                                    <td class="fw-bold text-start" style="width: 30%;">SKU:</td>
+                                    <td style="width: 70%;"><span id="product-sku"></span></td>
+                                </tr>
+                                <tr>
                                     <td class="fw-bold text-start" style="width: 30%;">Tên sản phẩm</td>
                                     <td style="width: 70%;"><span id="product-name"></span></td>
                                 </tr>
@@ -353,6 +357,7 @@
                         if (response.status_code === 200) {
                             const p = response.data;
                             $("#product-id").text(p.id);
+                            $("#product-sku").text(p.sku);
                             $("#product-name").text(p.name);
                             $("#product-brand").text(p.brand);
                             let priceHtml = '';

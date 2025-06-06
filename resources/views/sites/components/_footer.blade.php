@@ -5,7 +5,7 @@
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="footer__about">
                     <div class="footer__logo">
-                        <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
+                        <a href="{{ route('sites.home') }}" class="text-white font-weight-bold text-uppercase">
                             <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                                 alt="Logo" width="35">
                             VMT Fashion Shop

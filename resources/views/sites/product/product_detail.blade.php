@@ -253,6 +253,10 @@
                                     <a href="{{ route('sites.addToWishList', $productDetail->id) }}"><i
                                             class="fa fa-heart"></i>Thêm vào yêu thích</a>
                                     <a href="javascript:void(0);"><i class="fa fa-exchange"></i>So sánh giá</a>
+                                    <a href="https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg"
+                                        class="size-guide-trigger">
+                                        <i class="fa fa-list"></i> Hướng dẫn chọn size
+                                    </a>
                                 </div>
                                 <div class="product__details__last__option">
                                     <h5><span>Các phương thức thanh toán:</span></h5>
@@ -638,6 +642,8 @@
         </div>
     </section>
     <!-- Related Section End -->
+
+
 @endsection
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}">
@@ -677,6 +683,20 @@
             font-weight: bold;
             text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
         }
+
+        .size-guide-popover {
+            max-width: 500px !important;
+            /* Điều chỉnh kích thước tối đa */
+        }
+
+        .size-guide-popover .popover-body {
+            padding: 0;
+        }
+
+        .size-guide-popover img {
+            max-width: 100%;
+            border-radius: 5px;
+        }
     </style>
 @endsection
 @section('js')
@@ -685,6 +705,20 @@
     @if (Session::has('success'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
+
+    <script>
+        $(document).ready(function() {
+            // Khởi tạo popover
+            const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+            const popoverList = popoverTriggerList.map(function(el) {
+                return new bootstrap.Popover(el, {
+                    trigger: 'hover', // Hiện khi hover
+                    html: true, // Cho phép HTML trong content
+                    placement: 'right' // Vị trí hiển thị
+                });
+            });
+        });
+    </script>
 
     {{-- danh sách sản phẩm liên quan --}}
     <script>
