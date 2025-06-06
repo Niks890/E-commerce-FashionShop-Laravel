@@ -30,7 +30,6 @@
             </div>
         </div>
 
-        {{-- Product details will be loaded here by JavaScript --}}
         <div id="products_container" class="card shadow-lg mb-4 rounded-3">
             <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-boxes me-2"></i>Thông tin sản phẩm trong phiếu nhập</h5>
@@ -49,15 +48,12 @@
                     <table class="table table-bordered table-hover table-striped align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th scope="col" width="60px" class="text-center">Chọn</th>
-                                <th scope="col">Sản phẩm</th>
+                                <th scope="col" width="50px" class="text-center">Chọn</th>
+                                <th scope="col" width="150px">Sản phẩm</th>
                                 <th scope="col" width="100px">Hình ảnh</th>
-                                <th scope="col">Danh mục</th>
-                                <th scope="col">Thương hiệu</th>
-                                <th scope="col">Thông tin biến thể hiện có</th>
-                                <th scope="col">Giá nhập thêm (VND)</th>
-                                <th scope="col">Màu mới</th>
-                                <th scope="col" width="200px">Kích cỡ & Số lượng nhập thêm</th>
+                                <th scope="col" width="120px">Thông tin cơ bản</th>
+                                <th scope="col">Biến thể hiện có</th>
+                                <th scope="col" width="250px">Thông tin nhập thêm</th>
                             </tr>
                         </thead>
                         <tbody id="products-tbody">
@@ -69,13 +65,13 @@
         </div>
 
         <div class="d-flex justify-content-center align-items-center">
-            <button type="submit" class=" btn btn-success rounded-pill px-5 py-3 shadow-lg mt-3 fw-bold">
+            <button type="submit" class="btn btn-success rounded-pill px-5 py-3 shadow-lg mt-3 fw-bold">
                 <i class="fas fa-save me-2"></i>Tạo phiếu nhập
             </button>
         </div>
-
     </form>
 
+    <!-- Modal for quantity input -->
     <div class="modal fade" id="modal-quantity" tabindex="-1" aria-labelledby="modal-quantity-label" aria-hidden="true">
         <div class="modal-dialog modal-sm modal-dialog-centered">
             <div class="modal-content shadow-lg border-0 rounded-4">
@@ -99,6 +95,44 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal for color selection -->
+    <div class="modal fade" id="modal-colors" tabindex="-1" aria-labelledby="modal-colors-label" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white text-center rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="modal-colors-label">Chọn màu sắc</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <div class="input-group">
+                            <input type="text" id="new-color-input" class="form-control" placeholder="Thêm màu mới">
+                            <button class="btn btn-primary" id="add-color-btn">Thêm</button>
+                        </div>
+                    </div>
+
+                    <div class="color-options row">
+                        <!-- Color options will be inserted here by JavaScript -->
+                    </div>
+
+                    <div class="selected-colors mt-3">
+                        <h6 class="fw-bold">Màu đã chọn:</h6>
+                        <div id="selected-colors-container" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between border-top-0 pt-0">
+                    <button type="button" class="btn btn-danger text-white btn-colors-clear rounded-pill px-4 py-2">
+                        <i class="fas fa-trash me-2"></i>Xóa tất cả
+                    </button>
+                    <button type="button" class="btn btn-success text-white btn-colors-submit rounded-pill px-4 py-2">
+                        <i class="fas fa-check me-2"></i>Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('css')
@@ -106,419 +140,212 @@
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
 
-
     <style>
-        /* General Body and Container Styles */
+        /* General styles */
         body {
-            background-color: #f0f2f5;
-            /* A slightly softer, modern background */
+            background-color: #f8f9fa;
             font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            color: #333;
         }
 
-        .container-fluid {
-            /* Assuming master.blade.php provides a fluid container */
-            padding-top: 2rem;
-            padding-bottom: 2rem;
-        }
-
-        /* Card Enhancements */
+        /* Card styles */
         .card {
             border: none;
-            border-radius: 0.75rem;
-            /* More rounded corners */
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            /* Softer, more prominent shadow */
-            overflow: hidden;
-            /* Ensures rounded corners apply to children */
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         .card-header {
-            background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%) !important;
-            /* Vibrant gradient */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1.5rem 2rem;
-            /* More padding */
-            font-size: 1.25rem;
-            /* Larger header text */
-            font-weight: 700;
-            /* Bolder header */
-            border-bottom: none;
-            border-top-left-radius: 0.75rem;
-            border-top-right-radius: 0.75rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .card-header i {
-            font-size: 1.5rem;
-            /* Larger icons in header */
-            margin-right: 0.75rem;
-        }
-
-        .card-body {
-            padding: 2rem;
-        }
-
-        /* Back Button */
-        .btn-outline-primary {
-            border: 2px solid #007bff;
-            color: #007bff;
-            padding: 0.65rem 1.5rem;
-            border-radius: 50rem;
-            /* Fully rounded */
-            font-weight: 600;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            /* Align icon and text vertically */
-            align-items: center;
-        }
-
-        .btn-outline-primary:hover {
-            background-color: #007bff;
-            color: white;
-            transform: translateY(-3px);
-            /* Slight lift effect */
-            box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3);
-        }
-
-        .btn-outline-primary i {
-            margin-right: 0.5rem;
-        }
-
-        /* Form Controls */
-        .form-label {
-            font-weight: 700;
-            /* Bolder labels */
-            color: #555;
-            margin-bottom: 0.5rem;
-        }
-
-        .form-control-lg {
-            padding: 0.85rem 1.25rem;
-            /* Larger padding for inputs */
+            padding: 1rem 1.5rem;
             font-size: 1.1rem;
-            border-radius: 0.5rem;
-            /* Slightly more rounded */
-            border: 1px solid #ced4da;
-            transition: all 0.3s ease;
+            border-radius: 10px 10px 0 0 !important;
         }
 
-        .form-control-lg:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25);
-        }
-
-        /* Bulk Action Buttons */
-        .btn-group-bulk {
-            display: flex;
-            /* Use flexbox for button group */
-            gap: 1rem;
-            /* Space between buttons */
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-group-bulk .btn {
-            padding: 0.75rem 1.75rem;
-            border-radius: 50rem;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn-group-bulk .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Table Styling */
+        /* Table styles */
         .table {
-            border-collapse: separate;
-            /* Allows border-radius on cells in some cases */
-            border-spacing: 0;
-            margin-bottom: 0;
+            font-size: 0.9rem;
         }
 
-        .table thead th {
-            background-color: #e2e6ea;
-            /* Slightly darker header for better contrast */
-            color: #343a40;
-            font-weight: 700;
-            border-bottom: 2px solid #d3d9e0;
-            padding: 1rem 1.25rem;
+        .table th {
+            background-color: #f1f3f9;
+            font-weight: 600;
+            color: #495057;
+            vertical-align: middle;
+            white-space: nowrap;
+        }
+
+        .table td {
             vertical-align: middle;
         }
 
-        .table tbody tr {
-            transition: background-color 0.2s ease;
-        }
-
-        .table tbody tr:hover {
-            background-color: #e9ecef;
-            /* Lighter hover effect */
-        }
-
-        .table tbody td {
-            padding: 1rem 1.25rem;
-            vertical-align: middle;
-            /* Center content vertically */
-            border-top: 1px solid #e9ecef;
-        }
-
-        .product-check {
-            transform: scale(1.4);
-            /* Larger checkbox */
-            cursor: pointer;
-            accent-color: #007bff;
-            /* Color for checked state */
-        }
-
-        .img-thumbnail {
-            border-radius: 0.5rem;
-            /* Rounded image corners */
-            object-fit: cover;
-            /* Ensures images cover the area without distortion */
-            width: 80px;
-            /* Consistent size */
-            height: 80px;
-            /* Consistent size */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Variant Table (Inner Table) */
         .variant-table {
+            font-size: 0.85rem;
             width: 100%;
-            margin-top: 10px;
-            /* More space above the table */
-            border-radius: 0.5rem;
-            /* Rounded corners for the inner table */
-            overflow: hidden;
-            /* Apply border-radius correctly */
-            border: 1px solid #e0e6eb;
-            /* Subtle border around the inner table */
         }
 
         .variant-table th,
         .variant-table td {
-            padding: 8px 12px;
-            text-align: left;
-            border: none;
-            /* Remove inner borders for a cleaner look */
+            padding: 0.3rem 0.5rem;
         }
 
-        .variant-table thead {
-            background-color: #f1f4f7;
-            /* Lighter background for inner table header */
+        /* Color options */
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 auto 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            position: relative;
         }
 
-        .variant-table th {
-            font-weight: 600;
-            color: #495057;
+        .color-option:hover {
+            transform: scale(1.1);
         }
 
-        .variant-table td {
-            color: #555;
+        .color-option.selected {
+            border-color: #000;
+            box-shadow: 0 0 0 2px #4e73df;
         }
 
-        .badge.bg-secondary {
-            background-color: #6c757d !important;
-            font-size: 0.8em;
-            /* Slightly larger badge text */
-            padding: 0.4em 0.8em;
-            border-radius: 0.3rem;
+        .selected-color-badge {
+            display: inline-flex;
+            align-items: center;
+            background-color: #e9ecef;
+            border-radius: 20px;
+            padding: 3px 10px;
+            font-size: 0.85rem;
         }
 
-        /* Select2 Customizations */
-        .select2-container--bootstrap-5 .select2-selection--multiple {
-            min-height: calc(3.5rem + 2px) !important;
-            padding: 0.75rem 1rem !important;
-            border-radius: 0.5rem !important;
-            /* Match form control radius */
-            font-size: 1.1rem !important;
-            border: 1px solid #ced4da !important;
-            transition: all 0.3s ease;
+        .selected-color-badge .color-preview {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 5px;
+            border: 1px solid #ddd;
         }
 
-        .select2-container--bootstrap-5 .select2-selection--multiple:focus-within {
-            border-color: #80bdff !important;
-            box-shadow: 0 0 0 0.25rem rgba(0, 123, 255, 0.25) !important;
+        /* New styles for color management */
+        .color-options-container {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 15px;
         }
 
-        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice {
-            background-color: #0d6efd;
+        .color-option .delete-color {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            width: 20px;
+            height: 20px;
+            background-color: #dc3545;
             color: white;
-            border: 1px solid #0a58ca;
-            border-radius: 0.35rem;
-            /* Slightly more rounded chips */
-            padding: 0.5rem 0.85rem;
-            /* More padding for chips */
-            font-size: 0.95rem;
-            margin-top: 0.4rem;
-            /* Adjust vertical alignment */
-        }
-
-        .select2-container--bootstrap-5 .select2-selection--multiple .select2-selection__choice__remove {
-            color: white;
-            font-size: 1.2rem;
-            /* Larger remove icon */
-            margin-right: 0.3rem;
-        }
-
-        .select2-container--bootstrap-5 .select2-dropdown {
-            border-radius: 0.5rem;
-            /* Rounded dropdown */
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.15);
-            border: none;
-        }
-
-        .select2-container--bootstrap-5 .select2-results__option {
-            padding: 0.75rem 1rem;
-            font-size: 1rem;
-        }
-
-        .select2-container--bootstrap-5 .select2-results__option.select2-results__option--highlighted {
-            background-color: #007bff !important;
-            color: white !important;
-        }
-
-        /* Modal Styling */
-        .modal-content {
-            border-radius: 0.75rem;
-            /* Rounded modal corners */
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        }
-
-        .modal-header {
-            background-color: #007bff !important;
-            color: white;
-            border-top-left-radius: 0.75rem;
-            border-top-right-radius: 0.75rem;
-            padding: 1.5rem;
-            border-bottom: none;
-        }
-
-        .modal-header .btn-close {
-            filter: invert(1);
-            /* White close button for dark background */
-        }
-
-        .modal-title {
-            font-weight: 700;
-            font-size: 1.3rem;
-        }
-
-        .modal-body {
-            padding: 2rem;
-        }
-
-        .modal-footer {
-            background-color: #f8f9fa;
-            border-bottom-left-radius: 0.75rem;
-            border-bottom-right-radius: 0.75rem;
-            padding: 1.5rem;
-            border-top: none;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
             justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
         }
 
-        .btn-success {
+        .color-option:hover .delete-color {
+            display: flex;
+        }
+
+        .size-quantity-badge {
+            position: relative;
+            padding-right: 20px;
+        }
+
+        .size-quantity-badge .quantity-display {
+            position: absolute;
+            top: -5px;
+            right: -5px;
             background-color: #28a745;
-            border-color: #28a745;
-            padding: 0.85rem 2.5rem;
-            font-size: 1.1rem;
-            border-radius: 50rem;
-            font-weight: 700;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
-        }
-
-        .btn-success:hover {
-            background-color: #218838;
-            border-color: #1e7e34;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
         }
 
         /* Responsive adjustments */
-        @media (max-width: 768px) {
+        @media (max-width: 992px) {
             .table-responsive {
-                border: 1px solid #e9ecef;
-                /* Add a border to the scrollable table on smaller screens */
-                border-radius: 0.5rem;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
-            .table thead {
-                display: none;
-                /* Hide table headers on small screens */
+            .table th,
+            .table td {
+                white-space: nowrap;
+                min-width: 120px;
             }
+        }
 
-            .table tbody tr {
-                display: block;
-                margin-bottom: 1rem;
-                border: 1px solid #dee2e6;
-                border-radius: 0.75rem;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            }
-
-            .table tbody td {
-                display: block;
-                text-align: right;
-                padding-left: 50%;
-                position: relative;
-                border: none;
-            }
-
-            .table tbody td::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 0;
-                width: 50%;
-                padding-left: 1.25rem;
-                font-weight: 600;
-                text-align: left;
-                color: #495057;
-            }
-
-            /* Specific label for each column in responsive table */
-            .table tbody td:nth-of-type(1):before {
-                content: "Chọn";
-            }
-
-            .table tbody td:nth-of-type(2):before {
-                content: "Sản phẩm";
-            }
-
-            .table tbody td:nth-of-type(3):before {
-                content: "Hình ảnh";
-            }
-
-            .table tbody td:nth-of-type(4):before {
-                content: "Danh mục";
-            }
-
-            .table tbody td:nth-of-type(5):before {
-                content: "Thương hiệu";
-            }
-
-            .table tbody td:nth-of-type(6):before {
-                content: "Thông tin biến thể hiện có";
-            }
-
-            .table tbody td:nth-of-type(7):before {
-                content: "Giá nhập thêm (VND)";
-            }
-
-            .table tbody td:nth-of-type(8):before {
-                content: "Màu mới";
-            }
-
-            .table tbody td:nth-of-type(9):before {
-                content: "Kích cỡ & Số lượng nhập thêm";
+        @media (max-width: 768px) {
+            .card-body {
+                padding: 1rem;
             }
 
             .btn-group-bulk {
                 flex-direction: column;
-                /* Stack buttons vertically */
+                gap: 0.5rem;
             }
+
+            .btn-group-bulk .btn {
+                width: 100%;
+            }
+        }
+
+        /* Badge styles */
+        .badge {
+            font-weight: 500;
+            padding: 0.35em 0.65em;
+        }
+
+        /* Input styles */
+        .form-control,
+        .form-select {
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+        }
+
+        /* Button styles */
+        .btn {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        /* Modal styles */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+        }
+
+        /* Image styles */
+        .product-img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #eee;
+        }
+
+        /* Compact form elements */
+        .compact-form .form-group {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Scrollable table body */
+        .table-scrollable {
+            max-height: 500px;
+            overflow-y: auto;
         }
     </style>
 @endsection
@@ -538,7 +365,92 @@
             }
 
             let productsData = [];
+            let currentProductIndex = null;
+            let selectedColors = [];
+            let customColors = [];
 
+            const defaultColors = [{
+                    name: 'Đen',
+                    code: '#000000'
+                },
+                {
+                    name: 'Trắng',
+                    code: '#ffffff'
+                },
+                {
+                    name: 'Xám',
+                    code: '#808080'
+                },
+                {
+                    name: 'Xanh navy',
+                    code: '#000080'
+                },
+                {
+                    name: 'Xanh dương',
+                    code: '#0000ff'
+                },
+                {
+                    name: 'Đỏ',
+                    code: '#ff0000'
+                },
+                {
+                    name: 'Hồng',
+                    code: '#ffc0cb'
+                },
+                {
+                    name: 'Vàng',
+                    code: '#ffff00'
+                },
+                {
+                    name: 'Xanh lá',
+                    code: '#008000'
+                },
+                {
+                    name: 'Nâu',
+                    code: '#a52a2a'
+                },
+                {
+                    name: 'Be',
+                    code: '#f5f5dc'
+                },
+                {
+                    name: 'Cam',
+                    code: '#ffa500'
+                },
+                {
+                    name: 'Tím',
+                    code: '#800080'
+                }
+            ];
+
+            // Hàm hiển thị các màu có sẵn
+            function renderColorOptions() {
+                const container = $('.color-options');
+                container.empty();
+
+                defaultColors.concat(customColors).forEach(color => {
+                    container.append(`
+                <div class="col-4 col-md-3 mb-3">
+                    <div class="color-option" data-color="${color.name}" style="background-color: ${color.code};">
+                        <span class="delete-color" data-color="${color.name}">×</span>
+                    </div>
+                    <span>${color.name}</span>
+                </div>
+            `);
+                });
+            }
+
+            // Hàm tạo màu ngẫu nhiên cho màu mới
+            function getRandomColor() {
+                const letters = '0123456789ABCDEF';
+                let color = '#';
+                for (let i = 0; i < 6; i++) {
+                    color += letters[Math.floor(Math.random() * 16)];
+                }
+                return color;
+            }
+
+            // Fetch inventory data
             fetch(`http://127.0.0.1:8000/api/inventory/${inventory_id}`)
                 .then(response => {
                     if (!response.ok) {
@@ -559,14 +471,11 @@
                             if (!groupedProducts[item.product.id]) {
                                 groupedProducts[item.product.id] = {
                                     product: item.product,
-                                    // Lưu trữ TẤT CẢ các biến thể của sản phẩm từ 'product-variant'
                                     all_product_variants: item.product['product-variant'] || [],
-                                    // Vẫn giữ variants_in_slip để hiển thị số lượng từ phiếu nhập hiện tại
                                     variants_in_slip: []
                                 };
                             }
 
-                            // Parse the "sizes" string to extract color and size for lookup
                             const parts = item.sizes.split('-');
                             let variantSizeFromSlip = '';
                             let variantColorFromSlip = '';
@@ -580,7 +489,6 @@
                                 variantSizeFromSlip = item.sizes.trim();
                             }
 
-                            // Thêm thông tin biến thể từ phiếu nhập vào variants_in_slip
                             groupedProducts[item.product.id].variants_in_slip.push({
                                 color: variantColorFromSlip,
                                 sizes: variantSizeFromSlip,
@@ -597,11 +505,9 @@
                             product_image: item.product.image,
                             category_name: item.product.category.name,
                             brand_name: item.product.brand,
-                            // Giờ bạn có cả `all_product_variants`
                             all_product_variants: item.all_product_variants,
-                            variants_in_slip: item
-                                .variants_in_slip, // Vẫn giữ để đối chiếu số lượng phiếu nhập
-                            new_color: '',
+                            variants_in_slip: item.variants_in_slip,
+                            new_colors: [],
                             new_price: '',
                             new_sizes_quantities: {}
                         }));
@@ -610,7 +516,6 @@
                         productsTbody.innerHTML = '';
 
                         productsData.forEach((productItem, index) => {
-                            // Tạo một map để dễ dàng tra cứu số lượng từ phiếu nhập
                             const slipVariantsMap = new Map();
                             productItem.variants_in_slip.forEach(v => {
                                 slipVariantsMap.set(`${v.color}-${v.sizes}`, {
@@ -630,126 +535,182 @@
                             <strong>${productItem.product_name}</strong>
                         </td>
                         <td>
-                            <img src="${productItem.product_image}" width="70" height="70" class="img-thumbnail rounded" alt="${productItem.product_name}">
-                        </td>
-                        <td>${productItem.category_name}</td>
-                        <td>${productItem.brand_name}</td>
-                        <td>
-                            <table class="variant-table">
-                            <thead>
-                                <tr>
-                                    <th>Màu</th>
-                                    <th>Kích cỡ</th>
-                                    <th>SL Tổng (Kho)</th> <th>SL(Đã thêm)</th> <th>Giá Nhập (Phiếu này)</th> </tr>
-                            </thead>
-                                                             <tbody>
-                                    ${productItem.all_product_variants.map(variant => {
-                                        const slipInfo = slipVariantsMap.get(`${variant.color}-${variant.size}`);
-                                        // Sử dụng '---' nếu không có dữ liệu từ phiếu nhập để rõ ràng hơn
-                                        const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
-                                        const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
-                                        return `
-                                                                <tr>
-                                                                    <td>${variant.color}</td>
-                                                                    <td><span class="badge bg-secondary me-1">${variant.size}</span></td>
-                                                                    <td>${variant.stock || 0}</td>
-                                                                    <td>${quantityInSlip}</td>
-                                                                    <td>${priceInSlip}</td>
-                                                                </tr>
-                                                            `;
-                                    }).join('')}
-                                </tbody>
-                            </table>
+                            <img src="${productItem.product_image}" class="product-img" alt="${productItem.product_name}">
                         </td>
                         <td>
-                            <input type="number" name="products[${index}][new_price]" class="form-control new-price-input" data-index="${index}" placeholder="Nhập giá mới" min="0">
+                            <div class="d-flex flex-column">
+                                <small><strong>Danh mục:</strong> ${productItem.category_name}</small>
+                                <small><strong>Thương hiệu:</strong> ${productItem.brand_name}</small>
+                            </div>
                         </td>
                         <td>
-                            <input type="text" name="products[${index}][new_color]" class="form-control new-color-input" data-index="${index}" placeholder="Nhập màu mới" value="${productItem.new_color || ''}">
+                            <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
+                                <table class="variant-table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Màu</th>
+                                            <th>Size</th>
+                                            <th>Kho</th>
+                                            <th>Đã nhập</th>
+                                            <th>Giá</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${productItem.all_product_variants.map(variant => {
+                                            const slipInfo = slipVariantsMap.get(`${variant.color}-${variant.size}`);
+                                            const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
+                                            const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
+                                            return `
+                                                        <tr>
+                                                            <td>${variant.color}</td>
+                                                            <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                            <td>${variant.stock || 0}</td>
+                                                            <td>${quantityInSlip}</td>
+                                                            <td>${priceInSlip}</td>
+                                                        </tr>
+                                                    `;
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
                         </td>
                         <td>
-                            <select class="form-select select-sizes" name="products[${index}][new_sizes][]" multiple="multiple" data-index="${index}">
-                                <option value="XS">XS</option>
-                                <option value="S">S</option>
-                                <option value="M">M</option>
-                                <option value="L">L</option>
-                                <option value="XL">XL</option>
-                                <option value="XXL">XXL</option>
-                            </select>
-                            <input type="hidden" name="products[${index}][formatted_new_sizes]" class="formatted-new-sizes" data-index="${index}">
+                            <div class="compact-form">
+                                <div class="form-group mb-2">
+                                    <label class="form-label fw-bold small">Giá nhập:</label>
+                                    <input type="number" name="products[${index}][new_price]"
+                                           class="form-control form-control-sm new-price-input"
+                                           data-index="${index}"
+                                           placeholder="Giá nhập"
+                                           min="0">
+                                </div>
+
+                                <div class="form-group mb-2">
+                                    <label class="form-label fw-bold small">Màu mới:</label>
+                                    <button type="button" class="btn btn-sm btn-outline-primary w-100 btn-select-colors"
+                                            data-index="${index}">
+                                        <i class="fas fa-palette me-1"></i> Chọn màu
+                                    </button>
+                                    <div class="selected-colors-display mt-1" data-index="${index}"></div>
+                                    <input type="hidden" name="products[${index}][new_colors]"
+                                           class="formatted-new-colors"
+                                           data-index="${index}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label fw-bold small">Size & SL:</label>
+                                    <select class="form-select form-select-sm select-sizes"
+                                            name="products[${index}][new_sizes][]"
+                                            multiple="multiple"
+                                            data-index="${index}">
+                                        ${['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size =>
+                                            `<option value="${size}">${size}</option>`
+                                        ).join('')}
+                                    </select>
+                                    <input type="hidden" name="products[${index}][formatted_new_sizes]"
+                                           class="formatted-new-sizes"
+                                           data-index="${index}">
+                                </div>
+                            </div>
                         </td>
                     `;
                             productsTbody.appendChild(row);
                         });
 
-                        // ... (phần còn lại của mã JavaScript, không thay đổi)
-
-                        document.getElementById('selectAllProductsBtn').addEventListener('click', function() {
-                            document.querySelectorAll('.product-check').forEach(checkbox => {
-                                checkbox.checked = true;
-                                const index = checkbox.dataset.index;
-                                $(`#product-row-${index} input, #product-row-${index} select`)
-                                    .prop('disabled', false);
-                                $(`#product-row-${index} .select-sizes`).select2('enable');
-                            });
+                        // Initialize select2 for sizes
+                        $('.select-sizes').select2({
+                            theme: "bootstrap-5",
+                            placeholder: "Chọn size",
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#products_container'),
+                            templateSelection: formatSizeSelection,
+                            templateResult: formatSizeResult
                         });
 
-                        document.getElementById('deselectAllProductsBtn').addEventListener('click', function() {
-                            document.querySelectorAll('.product-check').forEach(checkbox => {
-                                checkbox.checked = false;
-                                const index = checkbox.dataset.index;
-                                $(`#product-row-${index} input:not([type="hidden"]), #product-row-${index} select`)
-                                    .prop('disabled', true);
-                                $(`#product-row-${index} .select-sizes`).select2('disable');
-                            });
-                        });
+                        // Render color options
+                        renderColorOptions();
 
-                        document.querySelectorAll('.product-check').forEach(checkbox => {
-                            checkbox.addEventListener('change', function() {
-                                const index = this.dataset.index;
-                                const isDisabled = !this.checked;
-                                $(`#product-row-${index} input:not([type="hidden"]), #product-row-${index} select`)
-                                    .prop('disabled', isDisabled);
-                                $(`#product-row-${index} .select-sizes`).select2(isDisabled ?
-                                    'disable' : 'enable');
-                            });
-                        });
-
-                        $('.select-sizes').each(function() {
-                            const selectElement = $(this);
-                            const index = selectElement.data('index');
-                            if (!productsData[index]) {
-                                productsData[index] = {
-                                    new_sizes_quantities: {},
-                                    new_color: ''
-                                };
+                        // Xử lý thêm màu mới
+                        $('#add-color-btn').click(function() {
+                            const colorName = $('#new-color-input').val().trim();
+                            if (colorName && !defaultColors.concat(customColors).some(c => c.name ===
+                                    colorName)) {
+                                customColors.push({
+                                    name: colorName,
+                                    code: getRandomColor()
+                                });
+                                renderColorOptions();
+                                $('#new-color-input').val('');
                             }
-                            let sizesWithQuantities = productsData[index].new_sizes_quantities;
+                        });
 
-                            selectElement.select2({
-                                theme: "bootstrap-5",
-                                placeholder: "Chọn kích cỡ và số lượng",
-                                allowClear: true,
-                                templateSelection: function(selection) {
-                                    if (sizesWithQuantities[selection.id]) {
-                                        return `${selection.id} (${sizesWithQuantities[selection.id]})`;
-                                    }
-                                    return selection.text;
-                                }
-                            });
+                        // Xử lý xóa màu
+                        $(document).on('click', '.delete-color', function(e) {
+                            e.stopPropagation();
+                            const colorName = $(this).data('color');
+                            customColors = customColors.filter(c => c.name !== colorName);
 
-                            selectElement.on("select2:select", function(e) {
-                                const selectedSize = e.params.data.id;
-                                $('#modal-quantity-label').text("Nhập số lượng cho size " +
-                                    selectedSize + " của sản phẩm " + productsData[index]
-                                    .product_name);
-                                $("#quantity_variant").val(sizesWithQuantities[selectedSize] ||
-                                    1);
-                                $("#modal-quantity").modal("show");
+                            // Xóa khỏi danh sách đã chọn nếu có
+                            const index = selectedColors.indexOf(colorName);
+                            if (index !== -1) {
+                                selectedColors.splice(index, 1);
+                                updateSelectedColorsDisplay();
+                            }
 
-                                $('#modal-quantity').data('product-index', index);
-                                $('#modal-quantity').data('selected-size', selectedSize);
-                            });
+                            renderColorOptions();
+                        });
+
+                        // Xử lý xóa tất cả màu đã chọn
+                        $('.btn-colors-clear').click(function() {
+                            selectedColors = [];
+                            updateSelectedColorsDisplay();
+                        });
+
+                        // Color selection modal handlers
+                        $(document).on('click', '.btn-select-colors', function() {
+                            currentProductIndex = $(this).data('index');
+                            selectedColors = productsData[currentProductIndex].new_colors || [];
+                            updateSelectedColorsDisplay();
+                            $('#modal-colors').modal('show');
+                        });
+
+                        $(document).on('click', '.color-option', function() {
+                            const color = $(this).data('color');
+                            const index = selectedColors.indexOf(color);
+
+                            if (index === -1) {
+                                selectedColors.push(color);
+                                $(this).addClass('selected');
+                            } else {
+                                selectedColors.splice(index, 1);
+                                $(this).removeClass('selected');
+                            }
+
+                            updateSelectedColorsDisplay();
+                        });
+
+                        $('.btn-colors-submit').click(function() {
+                            if (currentProductIndex !== null) {
+                                productsData[currentProductIndex].new_colors = selectedColors;
+                                updateProductColorDisplay(currentProductIndex);
+                                $('#modal-colors').modal('hide');
+                            }
+                        });
+
+                        // Quantity modal handlers
+                        $('.select-sizes').on("select2:select", function(e) {
+                            const selectedSize = e.params.data.id;
+                            const productIndex = $(this).data('index');
+
+                            $('#modal-quantity-label').text(`Nhập số lượng cho size ${selectedSize}`);
+                            $("#quantity_variant").val(
+                                productsData[productIndex].new_sizes_quantities[selectedSize] || 1
+                            );
+
+                            $('#modal-quantity').data('product-index', productIndex);
+                            $('#modal-quantity').data('selected-size', selectedSize);
+                            $("#modal-quantity").modal("show");
                         });
 
                         $(".btn-quantity-submit").on("click", function() {
@@ -760,15 +721,7 @@
                             if (quantity > 0) {
                                 productsData[productIndex].new_sizes_quantities[selectedSize] =
                                     quantity;
-
-                                const formattedSizesInput = $(
-                                    `#product-row-${productIndex} .formatted-new-sizes`);
-                                formattedSizesInput.val(
-                                    Object.entries(productsData[productIndex].new_sizes_quantities)
-                                    .map(([size, qty]) => `${size}-${qty}`)
-                                    .join(',')
-                                );
-                                $(`#product-row-${productIndex} .select-sizes`).trigger("change");
+                                updateProductSizesDisplay(productIndex);
                                 $("#modal-quantity").modal("hide");
                             } else {
                                 alert("Vui lòng nhập số lượng hợp lệ!");
@@ -779,109 +732,145 @@
                             const unselectedSize = e.params.data.id;
                             const productIndex = $(this).data('index');
                             delete productsData[productIndex].new_sizes_quantities[unselectedSize];
-                            const formattedSizesInput = $(
-                                `#product-row-${productIndex} .formatted-new-sizes`);
-                            formattedSizesInput.val(
-                                Object.entries(productsData[productIndex].new_sizes_quantities)
-                                .map(([size, qty]) => `${size}-${qty}`)
-                                .join(',')
-                            );
+                            updateProductSizesDisplay(productIndex);
                         });
 
-                        $(document).on('change', '.new-price-input', function() {
-                            const index = $(this).data('index');
-                            productsData[index].new_price = $(this).val();
+                        // Product selection handlers
+                        document.getElementById('selectAllProductsBtn').addEventListener('click', function() {
+                            document.querySelectorAll('.product-check').forEach(checkbox => {
+                                checkbox.checked = true;
+                                const index = checkbox.dataset.index;
+                                toggleProductRow(index, true);
+                            });
                         });
 
-                        $(document).on('change', '.new-color-input', function() {
-                            const index = $(this).data('index');
-                            const newColor = $(this).val().trim();
+                        document.getElementById('deselectAllProductsBtn').addEventListener('click', function() {
+                            document.querySelectorAll('.product-check').forEach(checkbox => {
+                                checkbox.checked = false;
+                                const index = checkbox.dataset.index;
+                                toggleProductRow(index, false);
 
-                            if (newColor.includes(',')) {
-                                alert('Vui lòng chỉ nhập MỘT màu duy nhất cho sản phẩm này.');
-                                $(this).val(productsData[index].new_color || '');
-                                return;
-                            }
+                                // Reset data when deselecting
+                                productsData[index].new_colors = [];
+                                productsData[index].new_price = '';
+                                productsData[index].new_sizes_quantities = {};
 
-                            productsData[index].new_color = newColor;
+                                // Update UI
+                                $(`#product-row-${index} .selected-colors-display`).empty();
+                                $(`#product-row-${index} .formatted-new-colors`).val('');
+                                $(`#product-row-${index} .new-price-input`).val('');
+                                $(`#product-row-${index} .select-sizes`).val(null).trigger(
+                                    'change');
+                                $(`#product-row-${index} .formatted-new-sizes`).val('');
+                            });
                         });
 
+                        document.querySelectorAll('.product-check').forEach(checkbox => {
+                            checkbox.addEventListener('change', function() {
+                                const index = this.dataset.index;
+                                const isChecked = this.checked;
+                                toggleProductRow(index, isChecked);
+
+                                if (!isChecked) {
+                                    // Reset data when unchecking
+                                    productsData[index].new_colors = [];
+                                    productsData[index].new_price = '';
+                                    productsData[index].new_sizes_quantities = {};
+
+                                    // Update UI
+                                    $(`#product-row-${index} .selected-colors-display`).empty();
+                                    $(`#product-row-${index} .formatted-new-colors`).val('');
+                                    $(`#product-row-${index} .new-price-input`).val('');
+                                    $(`#product-row-${index} .select-sizes`).val(null).trigger(
+                                        'change');
+                                    $(`#product-row-${index} .formatted-new-sizes`).val('');
+                                }
+                            });
+                        });
+
+                        // Form submission
                         $("#formCreateInventory").on("submit", function(e) {
+                            e.preventDefault();
+
+                            // Remove any existing hidden input
+                            $(this).find('input[name="products_to_add"]').remove();
+
                             const selectedProductsToSend = [];
                             let validationError = false;
+                            let hasSelectedProducts = false;
 
-                            document.querySelectorAll('.product-check:checked').forEach(checkbox => {
-                                const index = checkbox.dataset.index;
-                                const productItem = productsData[index];
+                            // Loop through all products
+                            productsData.forEach((productItem, index) => {
+                                const isChecked = $(`#product-row-${index} .product-check`).is(
+                                    ':checked');
 
-                                productItem.new_price = $(
-                                    `#product-row-${index} .new-price-input`).val();
-                                productItem.new_color = $(
-                                    `#product-row-${index} .new-color-input`).val();
+                                if (isChecked) {
+                                    hasSelectedProducts = true;
 
-                                const hasNewPrice = productItem.new_price && parseFloat(
-                                    productItem.new_price) > 0;
-                                const hasNewSizesQuantities = Object.keys(productItem
-                                    .new_sizes_quantities).length > 0;
-                                const hasNewColor = productItem.new_color && productItem
-                                    .new_color.trim() !== '';
+                                    // Get values from form
+                                    productItem.new_price = $(
+                                        `#product-row-${index} .new-price-input`).val();
+                                    productItem.new_colors = $(
+                                            `#product-row-${index} .formatted-new-colors`).val()
+                                        ?.split(',') || [];
 
-                                const hasNewData = hasNewPrice || hasNewSizesQuantities ||
-                                    hasNewColor;
+                                    const hasNewPrice = productItem.new_price && parseFloat(
+                                        productItem.new_price) > 0;
+                                    const hasNewSizesQuantities = Object.keys(productItem
+                                        .new_sizes_quantities).length > 0;
+                                    const hasNewColors = productItem.new_colors.length > 0;
 
-                                if (hasNewData) {
-                                    // Validation: If new color or new price is provided, but no sizes/quantities are added
-                                    if ((hasNewColor || hasNewPrice) && !
-                                        hasNewSizesQuantities) {
-                                        alert(
-                                            `Lỗi: Vui lòng chọn kích cỡ và nhập số lượng nhập thêm cho sản phẩm "${productItem.product_name}" khi bạn đã nhập Màu mới hoặc Giá nhập thêm.`
-                                        );
-                                        validationError = true;
-                                        return; // Break out of forEach
+                                    const hasNewData = hasNewPrice || hasNewSizesQuantities ||
+                                        hasNewColors;
+
+                                    if (hasNewData) {
+                                        if ((hasNewColors || hasNewPrice) && !
+                                            hasNewSizesQuantities) {
+                                            alert(
+                                                `Lỗi: Vui lòng chọn size và số lượng cho sản phẩm "${productItem.product_name}"`
+                                                );
+                                            validationError = true;
+                                            return;
+                                        }
+
+                                        if (hasNewSizesQuantities && (!hasNewColors || !
+                                                hasNewPrice)) {
+                                            alert(
+                                                `Lỗi: Vui lòng nhập đủ màu và giá cho sản phẩm "${productItem.product_name}"`
+                                                );
+                                            validationError = true;
+                                            return;
+                                        }
+
+                                        selectedProductsToSend.push({
+                                            product_id: productItem.product_id,
+                                            new_colors: productItem.new_colors,
+                                            new_price: productItem.new_price,
+                                            new_sizes_quantities: productItem
+                                                .new_sizes_quantities
+                                        });
                                     }
-
-                                    // Validation: if new sizes/quantities are provided, new_color and new_price must be set
-                                    if (hasNewSizesQuantities && (!hasNewColor || !
-                                            hasNewPrice)) {
-                                        alert(
-                                            `Lỗi: Vui lòng nhập đầy đủ Màu mới và Giá nhập thêm cho các biến thể mới của sản phẩm "${productItem.product_name}".`
-                                        );
-                                        validationError = true;
-                                        return; // Break out of forEach
-                                    }
-
-                                    selectedProductsToSend.push({
-                                        product_id: productItem.product_id,
-                                        new_color: productItem.new_color,
-                                        new_price: productItem.new_price,
-                                        new_sizes_quantities: productItem
-                                            .new_sizes_quantities
-                                    });
                                 }
                             });
 
                             if (validationError) {
-                                e.preventDefault();
                                 return;
                             }
 
-                            if (selectedProductsToSend.length === 0) {
-                                alert(
-                                    "Vui lòng chọn ít nhất một sản phẩm và nhập thông tin bổ sung (giá, màu hoặc kích cỡ/số lượng)!"
-                                );
-                                e.preventDefault();
+                            if (!hasSelectedProducts || selectedProductsToSend.length === 0) {
+                                alert("Vui lòng chọn ít nhất một sản phẩm và nhập thông tin bổ sung!");
                                 return;
                             }
 
+                            // Create hidden input with selected products data
                             const input = document.createElement('input');
                             input.type = 'hidden';
                             input.name = 'products_to_add';
                             input.value = JSON.stringify(selectedProductsToSend);
                             this.appendChild(input);
 
-                            $(this).find('input[name^="products["]:not([type="hidden"])').prop(
-                                'disabled', true);
-                            $(this).find('select[name^="products["]').prop('disabled', true);
+                            // Submit form
+                            this.submit();
                         });
                     }
                 })
@@ -889,14 +878,167 @@
                     console.error("Lỗi khi lấy API:", error);
                     alert(
                         "Không thể tải thông tin phiếu nhập. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau."
-                    );
+                        );
                 });
+
+            // Hàm định dạng hiển thị size trong dropdown (có số lượng)
+            function formatSizeSelection(state) {
+                if (!state.id) {
+                    return state.text;
+                }
+
+                const $option = $(state.element);
+                const size = state.id;
+                const productIndex = $option.closest('select').data('index');
+                const qty = productsData[productIndex]?.new_sizes_quantities[size] || 0;
+
+                if (qty > 0) {
+                    return $(`<span>${size} <span class="badge bg-success ms-1">${qty}</span></span>`);
+                }
+                return state.text;
+            }
+
+            // Hàm định dạng hiển thị size trong kết quả tìm kiếm dropdown
+            function formatSizeResult(state) {
+                if (!state.id) {
+                    return state.text;
+                }
+
+                const $option = $(state.element);
+                const size = state.id;
+                const productIndex = $option.closest('select').data('index');
+                const qty = productsData[productIndex]?.new_sizes_quantities[size] || 0;
+
+                if (qty > 0) {
+                    return $(`<span>${size} <small class="text-muted">(Đã chọn: ${qty})</small></span>`);
+                }
+                return state.text;
+            }
 
             function formatCurrency(amount) {
                 return new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
                     currency: 'VND'
                 }).format(amount);
+            }
+
+            function toggleProductRow(index, isEnabled) {
+                $(`#product-row-${index} input:not([type="hidden"]), #product-row-${index} select`)
+                    .prop('disabled', !isEnabled);
+                $(`#product-row-${index} .select-sizes`).select2(isEnabled ? 'enable' : 'disable');
+                $(`#product-row-${index} .btn-select-colors`).prop('disabled', !isEnabled);
+            }
+
+            function updateSelectedColorsDisplay() {
+                const container = $('#selected-colors-container');
+                container.empty();
+
+                selectedColors.forEach(color => {
+                    const colorCode = getColorCode(color);
+                    container.append(`
+                <div class="selected-color-badge">
+                    <div class="color-preview" style="background-color: ${colorCode};"></div>
+                    ${color}
+                </div>
+            `);
+                });
+
+                // Highlight selected options in modal
+                $('.color-option').removeClass('selected');
+                selectedColors.forEach(color => {
+                    $(`.color-option[data-color="${color}"]`).addClass('selected');
+                });
+            }
+
+            function updateProductColorDisplay(index) {
+                const displayContainer = $(`#product-row-${index} .selected-colors-display`);
+                const hiddenInput = $(`#product-row-${index} .formatted-new-colors`);
+
+                displayContainer.empty();
+                hiddenInput.val(selectedColors.join(','));
+
+                selectedColors.forEach(color => {
+                    const colorCode = getColorCode(color);
+                    displayContainer.append(`
+                <span class="badge me-1 mb-1" style="background-color: ${colorCode}; color: ${getTextColor(colorCode)}">
+                    ${color}
+                </span>
+            `);
+                });
+            }
+
+            function updateProductSizesDisplay(index) {
+                const formattedSizesInput = $(`#product-row-${index} .formatted-new-sizes`);
+                const selectElement = $(`#product-row-${index} .select-sizes`);
+
+                // Cập nhật giá trị ẩn
+                formattedSizesInput.val(
+                    Object.entries(productsData[index].new_sizes_quantities)
+                    .map(([size, qty]) => `${size}-${qty}`)
+                    .join(',')
+                );
+
+                // Cập nhật hiển thị trên select2
+                selectElement.find('option').each(function() {
+                    const size = $(this).val();
+                    const qty = productsData[index].new_sizes_quantities[size] || 0;
+
+                    if (qty > 0) {
+                        $(this).text(`${size} (${qty})`);
+                    } else {
+                        $(this).text(size);
+                    }
+                });
+
+                // Cập nhật hiển thị badge số lượng trên các tag đã chọn
+                setTimeout(() => {
+                    selectElement.next('.select2-container').find('.select2-selection__choice').each(
+                        function() {
+                            const $choice = $(this);
+                            const size = $choice.attr('title');
+                            const qty = productsData[index].new_sizes_quantities[size] || 0;
+
+                            // Xóa badge cũ nếu có
+                            $choice.find('.size-quantity-badge').remove();
+
+                            if (qty > 0) {
+                                // Thêm badge mới
+                                $choice.append(`
+                        <span class="size-quantity-badge">
+                            <span class="quantity-display">${qty}</span>
+                        </span>
+                    `);
+                            }
+                        });
+                }, 100);
+
+                selectElement.trigger("change");
+            }
+
+            function getColorCode(colorName) {
+                // Kiểm tra trong defaultColors trước
+                const defaultColor = defaultColors.find(c => c.name === colorName);
+                if (defaultColor) return defaultColor.code;
+
+                // Kiểm tra trong customColors
+                const customColor = customColors.find(c => c.name === colorName);
+                if (customColor) return customColor.code;
+
+                // Nếu không tìm thấy, trả về màu mặc định
+                return '#cccccc';
+            }
+
+            function getTextColor(bgColor) {
+                // Convert hex to RGB
+                const r = parseInt(bgColor.substr(1, 2), 16);
+                const g = parseInt(bgColor.substr(3, 2), 16);
+                const b = parseInt(bgColor.substr(5, 2), 16);
+
+                // Calculate luminance
+                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+                // Return black or white depending on luminance
+                return luminance > 0.5 ? '#000000' : '#ffffff';
             }
         });
     </script>

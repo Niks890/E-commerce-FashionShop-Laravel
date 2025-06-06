@@ -41,24 +41,6 @@
                     </div>
                 </div>
                 <div class="row">
-                    {{-- @php
-                        // Thu thập tất cả hình ảnh vào một mảng duy nhất
-                        $allImages = [];
-                        // Thêm ảnh gốc (nếu có)
-                        if ($productDetail->image) {
-                            $allImages[] = $productDetail->image;
-                        }
-                        // Thêm ảnh từ các biến thể
-                        foreach ($productDetail->ProductVariants as $variant) {
-                            foreach ($variant->ImageVariants as $image) {
-                                $allImages[] = $image->url; // Lấy URL từ ImageVariant
-                            }
-                        }
-                        // Loại bỏ các ảnh trùng lặp (nếu có)
-                        $allImages = array_unique($allImages);
-                        $imageIndex = 0; // Biến đếm để tạo ID duy nhất
-                    @endphp --}}
-
                     @php
                         // Thu thập ảnh và đánh dấu màu sắc tương ứng
                         $allImages = [];
@@ -92,15 +74,15 @@
                         <ul class="nav nav-tabs" role="tablist" id="productThumbnails">
                             @forelse ($allImages as $index => $image)
                                 {{--
-                Điều chỉnh:
-                - Bổ sung `id` và `aria-controls` cho `a.nav-link`
-                - Thêm `data-bs-toggle` thay vì `data-toggle`
-                - Thêm class `thumbnail-{{ $image['color'] }}` để JS dễ dàng chọn theo màu.
-                - Ban đầu, nếu không phải ảnh đầu tiên của sản phẩm TỔNG THỂ,
-                  thì thêm `d-none` để ẩn nó (JS sẽ quản lý sau).
-                  Lưu ý: Bạn cần logic để xác định đâu là màu mặc định khi tải trang.
-                  Giả sử màu đầu tiên trong `$allImages` là màu mặc định.
-            --}}
+                                Điều chỉnh:
+                                - Bổ sung `id` và `aria-controls` cho `a.nav-link`
+                                - Thêm `data-bs-toggle` thay vì `data-toggle`
+                                - Thêm class `thumbnail-{{ $image['color'] }}` để JS dễ dàng chọn theo màu.
+                                - Ban đầu, nếu không phải ảnh đầu tiên của sản phẩm TỔNG THỂ,
+                                thì thêm `d-none` để ẩn nó (JS sẽ quản lý sau).
+                                Lưu ý: Bạn cần logic để xác định đâu là màu mặc định khi tải trang.
+                                Giả sử màu đầu tiên trong `$allImages` là màu mặc định.
+                            --}}
                                 <li class="nav-item thumbnail-{{ $image['color'] }} {{ $index == 0 ? '' : 'd-none' }}"
                                     role="presentation">
                                     <a class="nav-link {{ $index == 0 ? 'active' : '' }}"
@@ -131,14 +113,14 @@
                         <div class="tab-content" id="productMainImages">
                             @forelse ($allImages as $index => $image)
                                 {{--
-                Điều chỉnh:
-                - Thay đổi `id` để khớp với `data-bs-target` của nav-link.
-                - Thêm `aria-labelledby` để trỏ đến `id` của nav-link tương ứng.
-                - Thêm class `main-image-{{ $image['color'] }}` để JS dễ dàng chọn theo màu.
-                - Thêm `fade` class để có hiệu ứng chuyển đổi mượt mà hơn.
-                - Ban đầu, nếu không phải ảnh đầu tiên của sản phẩm TỔNG THỂ,
-                  thì chỉ active cho cái đầu tiên, còn lại không có `show` và `active`.
-            --}}
+                                Điều chỉnh:
+                                - Thay đổi `id` để khớp với `data-bs-target` của nav-link.
+                                - Thêm `aria-labelledby` để trỏ đến `id` của nav-link tương ứng.
+                                - Thêm class `main-image-{{ $image['color'] }}` để JS dễ dàng chọn theo màu.
+                                - Thêm `fade` class để có hiệu ứng chuyển đổi mượt mà hơn.
+                                - Ban đầu, nếu không phải ảnh đầu tiên của sản phẩm TỔNG THỂ,
+                                thì chỉ active cho cái đầu tiên, còn lại không có `show` và `active`.
+                            --}}
                                 <div class="tab-pane fade main-image-{{ $image['color'] }} {{ $index == 0 ? 'show active' : '' }}"
                                     id="main-image-{{ $index + 1 }}" {{-- ID duy nhất cho tab-pane --}} role="tabpanel"
                                     aria-labelledby="thumbnail-{{ $index + 1 }}-tab" {{-- Trỏ đến ID của nav-link --}}
@@ -242,9 +224,10 @@
                                         @foreach ($colors as $index => $color)
                                             <label class="color-box" style="background-color: {{ getColorHex($color) }};"
                                                 for="color-{{ $index }}" title="{{ $color }}">
-                                                {{-- bỏ required với js --}}
                                                 <input type="radio" name="color" id="color-{{ $index }}"
-                                                    class="color-choice-item" value="{{ $color }}">
+                                                    class="color-choice-item" value="{{ $color }}"
+                                                    style="display: none;">
+                                                <span class="checkmark"></span>
                                             </label>
                                         @endforeach
                                     </div>
@@ -392,7 +375,7 @@
                     const selectedSizeInput = document.querySelector('input[name="size"]:checked');
                     const selectedColorInput = document.querySelector('input[name="color"]:checked');
 
-                    console.log(selectedSizeInput, selectedColorInput);
+                    // console.log(selectedSizeInput, selectedColorInput);
                     const selectedSize = selectedSizeInput ? selectedSizeInput.value : null;
                     const selectedColor = selectedColorInput ? selectedColorInput.value : null;
 
@@ -661,6 +644,40 @@
     <link rel="stylesheet" href="{{ asset('client/css/comment.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/stock.css') }}">
+    <style>
+        .color-box {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+            cursor: pointer;
+            margin-right: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .color-box:hover {
+            transform: scale(1.1);
+            border-color: #333;
+        }
+
+        .color-box input[type="radio"] {
+            display: none;
+        }
+
+        .color-box input[type="radio"]:checked+.color-box::after,
+        .color-box:has(input[type="radio"]:checked)::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.7);
+        }
+    </style>
 @endsection
 @section('js')
     <!-- Thêm này nếu chưa có -->

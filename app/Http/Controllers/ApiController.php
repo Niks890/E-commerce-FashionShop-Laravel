@@ -271,7 +271,14 @@ class ApiController extends Controller
 
     public function product($id)
     {
-        $products = Product::with('Category', 'ProductVariants', 'Discount')->find($id);
+        // $products = Product::with('Category', 'ProductVariants', 'Discount')->find($id);
+        $products = Product::with([
+            'Category',
+            'Discount',
+            'ProductVariants' => function ($query) {
+                $query->where('active', true);
+            }
+        ])->find($id);
         $productResource = new ProductResource($products);
         if ($productResource) {
             return $this->apiStatus($productResource, 200, 1, 'ok');

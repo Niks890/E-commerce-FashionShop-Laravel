@@ -34,21 +34,21 @@ class HomeController extends Controller
         $data = Blog::with('staff')->paginate(5);
 
 
-       $highestDiscountProduct = Product::whereHas('discount', function($query) {
-        $query->where('start_date', '<=', now())
-              ->where('end_date', '>=', now());
-    })
-    ->with('discount')
-    ->get()
-    ->sortByDesc(function($product) {
-        return $product->discount->percent_discount;
-    })
-    ->first();
+        $highestDiscountProduct = Product::whereHas('discount', function ($query) {
+            $query->where('start_date', '<=', now())
+                ->where('end_date', '>=', now());
+        })
+            ->with('discount')
+            ->get()
+            ->sortByDesc(function ($product) {
+                return $product->discount->percent_discount;
+            })
+            ->first();
 
-    // Format lại ngày nếu cần
-    if ($highestDiscountProduct && $highestDiscountProduct->discount) {
-        $highestDiscountProduct->discount->formatted_end_date = $highestDiscountProduct->discount->end_date->format('Y-m-d H:i:s');
-    }
+        // Format lại ngày nếu cần
+        if ($highestDiscountProduct && $highestDiscountProduct->discount) {
+            $highestDiscountProduct->discount->formatted_end_date = $highestDiscountProduct->discount->end_date->format('Y-m-d H:i:s');
+        }
         return view('sites.home.index', compact('data', 'productRecentInfo', 'highestDiscountProduct'));
     }
 
@@ -176,7 +176,14 @@ class HomeController extends Controller
     public function productDetail(ProductRecent $productRecent, Product $productDetail, $slug)
     {
         $productDetail = Product::where('slug', $slug)
-            ->with(['ProductVariants', 'Category', 'Discount', 'ProductVariants.ImageVariants'])
+            ->with([
+                'Category',
+                'Discount',
+                'ProductVariants' => function ($query) {
+                    $query->where('active', true);
+                },
+                'ProductVariants.ImageVariants'
+            ])
             ->firstOrFail();
         $prices = $productDetail->ProductVariants->pluck('price');
         // Lấy danh sách size của sản phẩm

@@ -61,7 +61,8 @@
                             <option value="500001-1000000"
                                 {{ request('price_range') == '500001-1000000' ? 'selected' : '' }}>500.000đ - 1.000.000đ
                             </option>
-                            <option value="1000001-max" {{ request('price_range') == '1000001-max' ? 'selected' : '' }}>Trên
+                            <option value="1000001-max" {{ request('price_range') == '1000001-max' ? 'selected' : '' }}>
+                                Trên
                                 1.000.000đ</option>
                         </select>
                     </div>
@@ -73,9 +74,11 @@
                         <label for="status" class="form-label">Trạng thái</label>
                         <select name="status" id="status" class="form-select">
                             <option value="">Tất cả trạng thái</option>
-                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Trên kệ</option>
-                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Trong kho</option>
-                            <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Đang chờ duyệt vào kho
+                            <option value="1" {{ request('status') === '1' ? 'selected' : '' }}>Trên kệ (hiển thị)
+                            </option>
+                            <option value="0" {{ request('status') === '0' ? 'selected' : '' }}>Trong kho (ẩn)
+                            </option>
+                            <option value="2" {{ request('status') === '2' ? 'selected' : '' }}>Chờ duyệt vào kho (ẩn)
                             </option>
                         </select>
                     </div>
@@ -183,7 +186,7 @@
                                 <td>
                                     <span
                                         class="badge bg-{{ $model->status == 1 ? 'success' : ($model->status == 2 ? 'warning' : 'secondary') }}">
-                                        {{ $model->status == 1 ? 'Trên kệ' : ($model->status == 2 ? 'Đang chờ duyệt vào kho' : 'Trong kho') }}
+                                        {{ $model->status == 1 ? 'Trên kệ (hiện)' : ($model->status == 2 ? 'Chờ duyệt vào kho (ẩn)' : 'Trong kho(ẩn)') }}
                                     </span>
                                 </td>
                                 <td>

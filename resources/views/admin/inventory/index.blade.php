@@ -609,25 +609,25 @@
 
                             // Tạo nút hành động
                             actionButtons = `
-    <div class="btn-action-group">
-        <button type="button" class="btn btn-sm btn-outline-secondary btn-inventory-detail"
-                data-inventory-id="${inventory.id}">
-            <i class="fas fa-eye"></i>
-        </button>
-`;
+                                <div class="btn-action-group">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary btn-inventory-detail"
+                                            data-inventory-id="${inventory.id}">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                            `;
 
                             @can('warehouse workers')
                                 if (inventory.status === 'pending') {
                                     actionButtons += `
-            <button type="button" class="btn btn-sm btn-success btn-approve"
-                    data-inventory-id="${inventory.id}">
-                <i class="fas fa-check"></i>
-            </button>
-            <button type="button" class="btn btn-sm btn-danger btn-reject"
-                    data-inventory-id="${inventory.id}">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
+                                    <button type="button" class="btn btn-sm btn-success btn-approve"
+                                            data-inventory-id="${inventory.id}">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger btn-reject"
+                                            data-inventory-id="${inventory.id}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                `;
                                 }
                             @endcan
 
@@ -773,7 +773,8 @@
                                 .toLocaleDateString('vi-VN'));
                             $('#iventory-updated').text(new Date(inventory_detail.updatedate)
                                 .toLocaleDateString('vi-VN'));
-                            $('#inventory-vat').text(inventory_detail.vat);
+                            $('#inventory-vat').text(parseFloat(inventory_detail.vat)
+                                .toLocaleString('vi-VN') + " đ");
                             $('#inventory-note').text(inventory_detail.note);
 
                             // Hiển thị trạng thái
