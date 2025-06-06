@@ -24,6 +24,39 @@ use Illuminate\Support\Facades\Validator;
 
 class InventoryController extends Controller
 {
+
+
+    /**
+     * Generate SKU based on product information
+     * Format: BRAND-CATEGORY-PRODUCT-TIMESTAMP
+     */
+    private function generateSku($productName, $categoryId, $brandName)
+    {
+        // Lấy 3 chữ cái đầu của brand (loại bỏ ký tự đặc biệt, viết hoa)
+        $brandPart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $brandName), 0, 3));
+        if (empty($brandPart)) {
+            $brandPart = 'BRN'; // Fallback nếu brand không có chữ cái
+        }
+
+        // Lấy thông tin category từ database
+        $category = Category::find($categoryId);
+        $categoryName = $category ? $category->name : 'unknown';
+        $categoryPart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $categoryName), 0, 3));
+        if (empty($categoryPart)) {
+            $categoryPart = 'CAT'; // Fallback
+        }
+
+        // Lấy 3 chữ cái đầu của product name
+        $productPart = strtoupper(substr(preg_replace('/[^a-zA-Z]/', '', $productName), 0, 3));
+        if (empty($productPart)) {
+            $productPart = 'PRD'; // Fallback
+        }
+
+        // Thêm timestamp để đảm bảo unique
+        $timePart = substr(time(), -4);
+
+        return $brandPart . '-' . $categoryPart . '-' . $productPart . '-' . $timePart;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -314,7 +347,8 @@ class InventoryController extends Controller
                     'price' => $productData['price'],
                     'brand' => $productData['brand_name'],
                     'status' => 2, // Sản phẩm mới tạo chưa active
-                    'sku' => strtoupper(Str::random(6)),
+                    // 'sku' => strtoupper(Str::random(6)),
+                    'sku' => $this->generateSku($productData['product_name'], $productData['category_id'], $productData['brand_name']),
                     'category_id' => $productData['category_id'],
                     'image' => 'temp', // Tạm thời
                     'slug' => Str::slug($productData['product_name'])
