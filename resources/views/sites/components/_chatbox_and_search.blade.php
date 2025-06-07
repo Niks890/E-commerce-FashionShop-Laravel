@@ -335,7 +335,7 @@
 
                                 discountBadge = `
                                 <div class="mt-1">
-                                    <span class="badge bg-danger">Giảm ${product.discount_percent}%</span>
+                                    <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
                                     ${product.discount_code ? `<span class="badge bg-success ms-1">Mã: ${product.discount_code}</span>` : ''}
                                 </div>
                             `;

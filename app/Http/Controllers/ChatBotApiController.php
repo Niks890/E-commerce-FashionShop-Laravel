@@ -388,17 +388,19 @@ class ChatBotApiController extends Controller
     {
         switch ($intent['intent']) {
             case 'cheapest':
-                $product = $products[0];
                 return [
-                    'type' => 'text',
-                    'content' => "Sản phẩm {$intent['matched_term']} là: **{$product['name']}** - {$product['price']}. Bạn có muốn xem chi tiết không?"
+                    'type' => 'product_list',
+                    'intro_message' => "Đây là top 3 sản phẩm {$intent['matched_term']}:",
+                    'products' => array_slice($products, 0, 3), // Lấy 3 sản phẩm đầu tiên
+                    'outro_message' => "Bạn muốn xem chi tiết sản phẩm nào ạ?"
                 ];
 
             case 'most_expensive':
-                $product = $products[0];
                 return [
-                    'type' => 'text',
-                    'content' => "Sản phẩm {$intent['matched_term']} là: **{$product['name']}** - {$product['price']}. Bạn có muốn xem chi tiết không?"
+                    'type' => 'product_list',
+                    'intro_message' => "Đây là top 3 sản phẩm {$intent['matched_term']}:",
+                    'products' => array_slice($products, 0, 3), // Lấy 3 sản phẩm đầu tiên
+                    'outro_message' => "Bạn muốn xem chi tiết sản phẩm nào ạ?"
                 ];
 
             case 'under_price':
@@ -427,9 +429,6 @@ class ChatBotApiController extends Controller
                 return $this->formatProductResponse($products);
         }
     }
-
-
-
 
 
 
@@ -472,7 +471,7 @@ class ChatBotApiController extends Controller
         return [];
     }
 
-    // HÀM MỚI: Phát hiện intent về giá
+    // Ham xu ly intent về giá
     protected function detectPriceIntent(string $message): ?array
     {
         // Detect category trước
@@ -488,7 +487,7 @@ class ChatBotApiController extends Controller
                 'intent' => 'cheapest',
                 'category' => $category,
                 'keywords' => $category ? [$category] : [],
-                'matched_term' => $category ? "$category rẻ nhất" : "sản phẩm rẻ nhất"
+                'matched_term' => $category ? "top {$category} rẻ nhất" : "top sản phẩm rẻ nhất"
             ];
         }
 
@@ -498,7 +497,7 @@ class ChatBotApiController extends Controller
                 'intent' => 'most_expensive',
                 'category' => $category,
                 'keywords' => $category ? [$category] : [],
-                'matched_term' => $category ? "$category đắt nhất" : "sản phẩm đắt nhất"
+                'matched_term' => $category ? "top {$category} đắt nhất" : "top sản phẩm đắt nhất"
             ];
         }
 
@@ -738,6 +737,7 @@ class ChatBotApiController extends Controller
                 'discount_name' => $product->discount->name ?? null,
                 'link' => '/product/' . $product->slug,
                 'image' => $product->image,
+                'image_url' => $product->image,
                 'has_discount' => !is_null($discountPercent)
             ];
         }
@@ -781,6 +781,7 @@ class ChatBotApiController extends Controller
                 'discount_name' => $product->discount->name,
                 'link' => '/product/' . $product->slug,
                 'image' => $product->image,
+                'image_url' => $product->image,
                 'has_discount' => true
             ];
         }
@@ -799,7 +800,7 @@ class ChatBotApiController extends Controller
     {
         $productData = [];
         foreach ($products as $product) {
-            $discountPercentDisplay = $product['discount_percent'] ? round($product['discount_percent'] * 100) : 0;
+            $discountPercentDisplay = $product['discount_percent'] ? $product['discount_percent'] : 0;
 
             $productData[] = [
                 'name' => $product['name'],
