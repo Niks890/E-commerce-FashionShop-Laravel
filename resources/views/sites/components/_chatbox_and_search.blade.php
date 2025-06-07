@@ -26,8 +26,12 @@
                         <div class="bot-icon">
                             <i class="fas fa-robot"></i>
                         </div>
+
                         <h4>Chào mừng bạn!</h4>
                         <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết!</p>
+                        <strong style="color: red; font-weight: bold; font-size: 18px;">(*Do còn trong quá trình phát
+                            triển, Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin tư vấn chỉ là tham
+                            khảo!*)</strong>
                     </div>
 
 
@@ -57,14 +61,6 @@
                         <button class="quick-reply-btn" data-message="Quần cotton có mẫu nào?">
                             <i class="fas fa-user"></i>
                             Quần cotton
-                        </button>
-                        <button class="quick-reply-btn" data-message="Áo hoddie có những mẫu nào?">
-                            <i class="fas fa-female"></i>
-                            Áo hoddie
-                        </button>
-                        <button class="quick-reply-btn" data-message="Áo Polo có những mẫu nào?">
-                            <i class="fas fa-female"></i>
-                            Áo Polo
                         </button>
                         <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
                             <i class="fas fa-tags"></i>
@@ -240,15 +236,16 @@
                     })
                     .then(async res => { // Sử dụng async để có thể dùng await
                         if (!res.ok) {
-                            // Nếu phản hồi không thành công, cố gắng đọc nó như văn bản để debug
+                            // Nếu status code là 5xx (server error)
+                            if (res.status >= 500) {
+                                const errorData = await res.json();
+                                throw new Error(errorData.reply ||
+                                    'Server đang gặp sự cố. Vui lòng thử lại sau.');
+                            }
+                            // Xử lý các lỗi khác (4xx)
                             const errorText = await res.text();
-                            console.error('Server responded with an error:', res.status, res.statusText,
-                                errorText);
-                            throw new Error(
-                                `HTTP error! Status: ${res.status} - ${errorText.substring(0, 200)}...`
-                            ); // Giới hạn độ dài lỗi
+                            throw new Error(errorText);
                         }
-                        // Nếu thành công, mới parse JSON
                         return res.json();
                     })
                     .then(response => {
@@ -272,9 +269,11 @@
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();
 
+                        // appendBotMessage(
+                        //     "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại. (Lỗi: " +
+                        //     error.message + ")");
                         appendBotMessage(
-                            "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại. (Lỗi: " +
-                            error.message + ")");
+                            "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại sau.");
                         scrollToBottom();
                     });
             }
@@ -336,7 +335,7 @@
 
                                 discountBadge = `
                                 <div class="mt-1">
-                                    <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
+                                    <span class="badge bg-danger">Giảm ${product.discount_percent}%</span>
                                     ${product.discount_code ? `<span class="badge bg-success ms-1">Mã: ${product.discount_code}</span>` : ''}
                                 </div>
                             `;

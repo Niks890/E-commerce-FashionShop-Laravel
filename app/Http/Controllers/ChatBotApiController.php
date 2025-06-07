@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class ChatBotApiController extends Controller
@@ -42,61 +44,7 @@ class ChatBotApiController extends Controller
 
 
     // https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg --size guide
-    // CÁCH CŨ DÙNG CONTEXT
-    // public function sendMessage(Request $request)
-    // {
-    //     // $userId = 'user_123'; // tuỳ hệ thống, bạn có thể lấy từ Auth::id()
-    //     $userId = 'user_gemma3';
-    //     // $userId = 'user_gemma3_12b';
 
-    //     $prompt = $request->input('message');
-
-    //     // Lấy context từ Redis nếu có
-    //     $contextJson = Redis::get("chat_context:$userId");
-    //     $context = $contextJson ? json_decode($contextJson) : null;
-
-    //     // Gửi tới OLLama
-    //     $payload = [
-    //         // 'model' => 'llama3.2:latest',
-    //         'model' => 'gemma3:4b',
-    //         // 'model' => 'gemma3:12b',
-    //         'prompt' => $prompt,
-    //         'stream' => false
-    //     ];
-
-    //     if ($context) {
-    //         $payload['context'] = $context;
-    //     }
-
-    //     $response = Http::post('http://localhost:11434/api/generate', $payload);
-
-    //     if (!$response->successful()) {
-    //         return response()->json(['error' => 'Failed to connect to OLLama.'], 500);
-    //     }
-
-    //     $data = $response->json();
-
-    //     // Lưu context mới nếu có
-    //     if (!empty($data['context'])) {
-    //         Redis::set("chat_context:$userId", json_encode($data['context']));
-    //     }
-
-    //     // Giả sử bạn muốn trả về ảnh từ URL trong response nếu có
-    //     $imageUrl = null;
-    //     if (preg_match('/image-url-pattern/', $data['response'])) {  // Nếu có URL ảnh trong phản hồi
-    //         $imageUrl = 'https://example.com/path/to/image.jpg';  // Cập nhật URL ảnh thực tế từ phản hồi
-    //     }
-
-    //     return response()->json([
-    //         'reply' => $data['response'] ?? '[Không có phản hồi từ AI]',
-    //         'imageUrl' => $imageUrl // Trả về URL ảnh nếu có
-    //     ]);
-    // }
-
-    // public function chatbot()
-    // {
-    //     return view('sites.chatbotRedis.chatbot');
-    // }
 
     // PROMPT MẶC ĐỊNH
     protected $defaultPrompt = "
@@ -112,7 +60,7 @@ class ChatBotApiController extends Controller
         - Sử dụng thông tin sản phẩm có sẵn trong context nếu có
         - Cung cấp thông tin chi tiết: chất liệu, size, màu sắc, giá
         - So sánh, tư vấn dựa trên sản phẩm đã biết
-        - Kèm link sản phẩm khi có thể
+        - Kèm link sản phẩm khi có thể, nếu sản phẩm có link hãy gửi kèm thẻ <a> để truy cập thay vì text
 
         2. Tương tác thông minh:
         - Khi khách hỏi 'cái nào đẹp hơn' → So sánh các sản phẩm đã show
@@ -125,97 +73,118 @@ class ChatBotApiController extends Controller
         - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
         - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
         - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
+        ### QUY TẮC HIỂN THỊ:
+        - Khi cần hiển thị ảnh, sử dụng thẻ HTML <img> với style phù hợp
+        - Đảm bảo ảnh responsive: style='max-width: 100%; height: auto;'
+        - Thêm border-radius và margin để ảnh đẹp hơn
         ";
 
 
     // Hàm xử lý gửi tin nhắn
     public function sendMessage(Request $request)
     {
-        // KEY USER CÓ THỂ THAY ĐỔI BẰNG AUTH
-        $userId = 'user_gemma3_newway';
-        $userMessage = $request->input('message');
-        // KEY HISTORY_CHAT TRONG REDIS
-        $historyKey = "chat_history:$userId";
-        // KEY PRODUCT_CONTEXT TRONG REDIS
-        $productContextKey = "product_context:$userId";
-        $maxMessages = 50; // GIỚ HẠN TIN NHẮN
-        $summarizeThreshold = 50;
 
-        // Xử lý hỏi thêm
-        $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
-        if ($moreProductsResponse) {
-            return response()->json([
-                'reply_data' => $moreProductsResponse,
-                'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
-            ]);
-        }
+        try {
+            // KEY USER CÓ THỂ THAY ĐỔI BẰNG AUTH
+            $userId = 'user_gemma3_newway';
+            $userMessage = $request->input('message');
+            // KEY HISTORY_CHAT TRONG REDIS
+            $historyKey = "chat_history:$userId";
+            // KEY PRODUCT_CONTEXT TRONG REDIS
+            $productContextKey = "product_context:$userId";
+            $maxMessages = 50; // GIỚ HẠN TIN NHẮN
+            $summarizeThreshold = 50;
 
-        // Kiểm tra special cases trước
-        $specialResponse = $this->handleSpecialCases($userMessage, $userId);
-        if ($specialResponse) {
-            return response()->json([
-                'reply_data' => $specialResponse,
-                'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
-            ]);
-        }
-
-        // Lấy và xử lý lịch sử chat vào redis
-        $historyRaw = Redis::lrange($historyKey, 0, -1);
-        $history = array_map('json_decode', $historyRaw);
-
-        // Tóm tắt nếu cần
-        if (count($history) >= $summarizeThreshold) {
-            $toSummarize = array_slice($history, 0, 40);
-            $summaryText = $this->summarizeHistory($toSummarize);
-
-            if ($summaryText) {
-                $history = array_slice($history, 40);
-                array_unshift($history, (object)[
-                    'role' => 'system',
-                    'message' => $summaryText
+            // Xử lý hỏi thêm
+            $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
+            if ($moreProductsResponse) {
+                return response()->json([
+                    'reply_data' => $moreProductsResponse,
+                    'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
                 ]);
+            }
 
-                Redis::del($historyKey);
-                foreach ($history as $item) {
-                    Redis::rpush($historyKey, json_encode($item));
+            // Kiểm tra special cases trước
+            $specialResponse = $this->handleSpecialCases($userMessage, $userId);
+            if ($specialResponse) {
+                return response()->json([
+                    'reply_data' => $specialResponse,
+                    'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
+                ]);
+            }
+
+            // Lấy và xử lý lịch sử chat vào redis
+            $historyRaw = Redis::lrange($historyKey, 0, -1);
+            $history = array_map('json_decode', $historyRaw);
+
+            // Tóm tắt nếu cần
+            if (count($history) >= $summarizeThreshold) {
+                $toSummarize = array_slice($history, 0, 40);
+                $summaryText = $this->summarizeHistory($toSummarize);
+
+                if ($summaryText) {
+                    $history = array_slice($history, 40);
+                    array_unshift($history, (object)[
+                        'role' => 'system',
+                        'message' => $summaryText
+                    ]);
+
+                    Redis::del($historyKey);
+                    foreach ($history as $item) {
+                        Redis::rpush($historyKey, json_encode($item));
+                    }
                 }
             }
+
+            // Lấy 20 tin nhắn cuối
+            $recentRaw = Redis::lrange($historyKey, -20, -1);
+            $recentHistory = array_map('json_decode', $recentRaw);
+
+            // Xây dựng system prompt với product context
+            $fullSystemPrompt = $this->buildSystemPromptWithProductContext($userId);
+
+            // Xây dựng chat prompt
+            $chatPrompt = $this->buildChatPrompt($recentHistory, $fullSystemPrompt, $userMessage);
+
+            // Gửi tới AI
+            $payload = [
+                'model' => 'gemma3:4b',
+                'prompt' => $chatPrompt,
+                'stream' => false
+            ];
+
+            $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
+
+            if (!$response->successful()) {
+                return response()->json(['error' => 'Failed to connect to OLLama.'], 500);
+            }
+
+            $data = $response->json();
+            $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
+            $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
+            // xử lý ảnh
+            $reply = $this->processContentWithImages($reply);
+
+
+            // Lưu tin nhắn vào history
+            Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
+            Redis::rpush($historyKey, json_encode(['role' => 'assistant', 'message' => $reply]));
+            Redis::ltrim($historyKey, -$maxMessages, -1);
+            Redis::expire($historyKey, 60 * 60 * 24);
+
+            return response()->json(['reply' => $reply]);
+        } catch (Exception $e) {
+            Log::error('Chatbot API Error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'request' => $request->all()
+            ]);
+            // Phản hồi thân thiện với người dùng
+            return response()->json([
+                'error' => 'Xin lỗi, đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+                'technical_message' => env('APP_DEBUG') ? $e->getMessage() : null,
+                'reply' => 'Xin lỗi, hiện tại hệ thống đang gặp sự cố. Vui lòng thử lại sau hoặc liên hệ bộ phận hỗ trợ nếu sự cố tiếp diễn.'
+            ], 500);
         }
-
-        // Lấy 20 tin nhắn cuối
-        $recentRaw = Redis::lrange($historyKey, -20, -1);
-        $recentHistory = array_map('json_decode', $recentRaw);
-
-        // Xây dựng system prompt với product context
-        $fullSystemPrompt = $this->buildSystemPromptWithProductContext($userId);
-
-        // Xây dựng chat prompt
-        $chatPrompt = $this->buildChatPrompt($recentHistory, $fullSystemPrompt, $userMessage);
-
-        // Gửi tới AI
-        $payload = [
-            'model' => 'gemma3:4b',
-            'prompt' => $chatPrompt,
-            'stream' => false
-        ];
-
-        $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
-
-        if (!$response->successful()) {
-            return response()->json(['error' => 'Failed to connect to OLLama.'], 500);
-        }
-
-        $data = $response->json();
-        $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
-        $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
-
-        // Lưu tin nhắn vào history
-        Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
-        Redis::rpush($historyKey, json_encode(['role' => 'assistant', 'message' => $reply]));
-        Redis::ltrim($historyKey, -$maxMessages, -1);
-        Redis::expire($historyKey, 60 * 60 * 24);
-
-        return response()->json(['reply' => $reply]);
     }
 
 
@@ -355,9 +324,9 @@ class ChatBotApiController extends Controller
             return ['type' => 'text', 'content' => "Hiện tại chúng tôi miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên. Đơn dưới 500.000đ phí ship là 25.000đ."];
         }
 
-        // Hỏi về khuyến mãi
         if (str_contains($message, 'khuyến mãi') || str_contains($message, 'giảm giá') || str_contains($message, 'sale')) {
-            return ['type' => 'text', 'content' => "Hiện đang có chương trình cho một số sản phẩm . Bạn có thể xem chi tiết tại <a href='http://127.0.0.1:8000/shop'>đây</a>."];
+            $products = $this->getDiscountedProducts(5);
+            return $this->formatProductResponse($products);
         }
 
         // Hỏi về hướng dẫn chọn size
@@ -373,64 +342,121 @@ class ChatBotApiController extends Controller
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
         }
 
-        // XỬ LÝ SẢN PHẨM - ĐƯỢC CẬP NHẬT VỚI KEYWORD MATCHING THÔNG MINH
         $productKeywords = $this->detectProductKeywords($message);
         if (!empty($productKeywords)) {
+
+            // XỬ LÝ PRICE INTENT
+            if (isset($productKeywords['intent'])) {
+                $products = $this->getProductRecommendations(
+                    $productKeywords['category'] ?? null,
+                    $productKeywords['keywords'] ?? [],
+                    5, // limit
+                    0, // offset
+                    $productKeywords['intent'], // intent mới
+                    $productKeywords['min_price'] ?? null,
+                    $productKeywords['max_price'] ?? null
+                );
+
+                if (!empty($products)) {
+                    $this->saveProductsToContext($userId, $products, $message);
+
+                    // CUSTOM RESPONSE THEO INTENT
+                    return $this->formatPriceIntentResponse($products, $productKeywords);
+                } else {
+                    return [
+                        'type' => 'text',
+                        'content' => "Xin lỗi, không tìm thấy sản phẩm phù hợp với yêu cầu '{$productKeywords['matched_term']}' của bạn."
+                    ];
+                }
+            }
+
+            // XỬ LÝ THÔNG THƯỜNG (không có intent về giá)
             $products = $this->getProductRecommendations($productKeywords['category'], $productKeywords['keywords']);
             if (!empty($products)) {
-                // LƯU SẢN PHẨM VÀO REDIS CONTEXT
                 $this->saveProductsToContext($userId, $products, $message);
-
                 return $this->formatProductResponse($products);
             } else {
-                return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm '{$productKeywords['matched_term']}' phù hợp. Bạn có muốn xem các sản phẩm tương tự không?"];
+                return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm '{$productKeywords['matched_term']}' phù hợp."];
             }
         }
+
         return null;
     }
 
-    // Phát hiện từ khóa sản phẩm thông minh
+
+    protected function formatPriceIntentResponse(array $products, array $intent): array
+    {
+        switch ($intent['intent']) {
+            case 'cheapest':
+                $product = $products[0];
+                return [
+                    'type' => 'text',
+                    'content' => "Sản phẩm {$intent['matched_term']} là: **{$product['name']}** - {$product['price']}. Bạn có muốn xem chi tiết không?"
+                ];
+
+            case 'most_expensive':
+                $product = $products[0];
+                return [
+                    'type' => 'text',
+                    'content' => "Sản phẩm {$intent['matched_term']} là: **{$product['name']}** - {$product['price']}. Bạn có muốn xem chi tiết không?"
+                ];
+
+            case 'under_price':
+            case 'price_range':
+                $productData = [];
+                foreach ($products as $product) {
+                    $productData[] = [
+                        'name' => $product['name'],
+                        'price' => $product['price'],
+                        'original_price' => $product['original_price'] ?? null,
+                        'discount_percent' => $product['discount_percent'] ?? null,
+                        'link' => $product['link'],
+                        'image_url' => $product['image'],
+                        'has_discount' => $product['has_discount'] ?? false
+                    ];
+                }
+
+                return [
+                    'type' => 'product_list',
+                    'intro_message' => "Dưới đây là các sản phẩm {$intent['matched_term']}:",
+                    'products' => $productData,
+                    'outro_message' => "Bạn muốn xem chi tiết sản phẩm nào ạ?"
+                ];
+
+            default:
+                return $this->formatProductResponse($products);
+        }
+    }
+
+
+
+
+
+
     protected function detectProductKeywords(string $message): array
     {
         $message = mb_strtolower(trim($message));
 
-        // Định nghĩa từ khóa sản phẩm chi tiết
+        // DETECT PRICE INTENT TRƯỚC
+        $priceIntent = $this->detectPriceIntent($message);
+        if ($priceIntent) {
+            return $priceIntent;
+        }
+
+        // Định nghĩa từ khóa sản phẩm chi tiết (giữ nguyên)
         $productMap = [
-            // Áo sơ mi
             'áo sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
             'sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
-            'áo sơ mi linen' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'linen']],
-            'áo sơ mi cotton' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'cotton']],
-
-            // Áo thun
             'áo thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
-            'áo tshirt' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
-            'áo t-shirt' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
             'thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt']],
-
-            // Áo polo
-            'áo polo' => ['category' => 'áo polo', 'keywords' => ['polo']],
-            'polo' => ['category' => 'áo polo', 'keywords' => ['polo']],
-
-            // Áo khoác
-            'áo khoác' => ['category' => 'áo khoác', 'keywords' => ['khoác', 'jacket']],
-            'jacket' => ['category' => 'áo khoác', 'keywords' => ['khoác', 'jacket']],
-
-            // Quần
-            'quần jean' => ['category' => 'quần', 'keywords' => ['jean', 'jeans']],
-            'quần jeans' => ['category' => 'quần', 'keywords' => ['jean', 'jeans']],
-            'quần tây' => ['category' => 'quần', 'keywords' => ['tây', 'trousers']],
-            'quần short' => ['category' => 'quần', 'keywords' => ['short', 'shorts']],
             'quần' => ['category' => 'quần', 'keywords' => ['pants', 'trousers']],
-
-            // Tổng quát
             'áo' => ['category' => 'áo', 'keywords' => ['shirt', 'top']],
         ];
 
-        // Tìm kiếm exact match trước (ưu tiên từ khóa dài hơn)
+        // Tìm kiếm exact match
         $sortedKeys = array_keys($productMap);
         usort($sortedKeys, function ($a, $b) {
-            return strlen($b) - strlen($a); // Sắp xếp từ dài đến ngắn
+            return strlen($b) - strlen($a);
         });
 
         foreach ($sortedKeys as $keyword) {
@@ -443,16 +469,74 @@ class ChatBotApiController extends Controller
             }
         }
 
-        // Kiểm tra từ khóa chung
-        if (str_contains($message, 'sản phẩm') || str_contains($message, 'hàng')) {
+        return [];
+    }
+
+    // HÀM MỚI: Phát hiện intent về giá
+    protected function detectPriceIntent(string $message): ?array
+    {
+        // Detect category trước
+        $category = null;
+        if (str_contains($message, 'áo thun')) $category = 'áo thun';
+        elseif (str_contains($message, 'áo sơ mi') || str_contains($message, 'sơ mi')) $category = 'áo sơ mi';
+        elseif (str_contains($message, 'quần')) $category = 'quần';
+        elseif (str_contains($message, 'áo')) $category = 'áo';
+
+        // 1. RẺ NHẤT
+        if (str_contains($message, 'rẻ nhất') || str_contains($message, 'giá rẻ nhất')) {
             return [
-                'category' => null,
-                'keywords' => [],
-                'matched_term' => 'sản phẩm'
+                'intent' => 'cheapest',
+                'category' => $category,
+                'keywords' => $category ? [$category] : [],
+                'matched_term' => $category ? "$category rẻ nhất" : "sản phẩm rẻ nhất"
             ];
         }
 
-        return [];
+        // 2. ĐẮT NHẤT
+        if (str_contains($message, 'đắt nhất') || str_contains($message, 'giá cao nhất')) {
+            return [
+                'intent' => 'most_expensive',
+                'category' => $category,
+                'keywords' => $category ? [$category] : [],
+                'matched_term' => $category ? "$category đắt nhất" : "sản phẩm đắt nhất"
+            ];
+        }
+
+        // 3. DƯỚI GIÁ X
+        if (preg_match('/dưới\s*(\d+[\d\.,]*)[k]?/u', $message, $matches)) {
+            $price = (int)str_replace(['.', ','], '', $matches[1]);
+            if (str_contains($matches[1], 'k') || $price < 10000) {
+                $price *= 1000; // Convert 500k -> 500000
+            }
+
+            return [
+                'intent' => 'under_price',
+                'max_price' => $price,
+                'category' => $category,
+                'keywords' => $category ? [$category] : [],
+                'matched_term' => "dưới " . number_format($price) . "đ"
+            ];
+        }
+
+        // 4. KHOẢNG GIÁ
+        if (preg_match('/từ\s*(\d+[\d\.,]*)[k]?\s*[-đến]*\s*(\d+[\d\.,]*)[k]?/u', $message, $matches)) {
+            $minPrice = (int)str_replace(['.', ','], '', $matches[1]);
+            $maxPrice = (int)str_replace(['.', ','], '', $matches[2]);
+
+            if ($minPrice < 10000) $minPrice *= 1000;
+            if ($maxPrice < 10000) $maxPrice *= 1000;
+
+            return [
+                'intent' => 'price_range',
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+                'category' => $category,
+                'keywords' => $category ? [$category] : [],
+                'matched_term' => number_format($minPrice) . "đ - " . number_format($maxPrice) . "đ"
+            ];
+        }
+
+        return null;
     }
 
     // Lưu context của sản phẩm vào redis
@@ -555,24 +639,30 @@ class ChatBotApiController extends Controller
 
 
     // Hàm xử lý sản phẩm
-    protected function getProductRecommendations(?string $category = null, array $keywords = [],  int $limit = 5,  int $offset = 0): array
-    {
-        $now = now(); // Lấy thời gian hiện tại để kiểm tra khuyến mãi
+    protected function getProductRecommendations(
+        ?string $category = null,
+        array $keywords = [],
+        int $limit = 5,
+        int $offset = 0,
+        ?string $intent = null,
+        ?int $minPrice = null,
+        ?int $maxPrice = null
+    ): array {
+        $now = now();
 
         $query = Product::with(['category', 'discount' => function ($query) use ($now) {
             $query->where('status', 'active')
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now);
         }])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id');
-        // Nếu có category cụ thể
+
+        // FILTER THEO CATEGORY/KEYWORDS
         if ($category) {
             $query->where(function ($q) use ($category, $keywords) {
-                // Kiểm tra theo category name
                 $q->whereHas('category', function ($subQ) use ($category) {
                     $subQ->where('category_name', 'like', '%' . $category . '%');
                 });
 
-                // Hoặc kiểm tra theo product name với keywords
                 if (!empty($keywords)) {
                     $q->orWhere(function ($subQ) use ($keywords) {
                         foreach ($keywords as $keyword) {
@@ -581,9 +671,7 @@ class ChatBotApiController extends Controller
                     });
                 }
             });
-        }
-        // Nếu chỉ có keywords mà không có category
-        elseif (!empty($keywords)) {
+        } elseif (!empty($keywords)) {
             $query->where(function ($q) use ($keywords) {
                 foreach ($keywords as $keyword) {
                     $q->orWhere('product_name', 'like', '%' . $keyword . '%');
@@ -591,8 +679,37 @@ class ChatBotApiController extends Controller
             });
         }
 
-        // $dbProducts = $query->limit(5)->get();
+        // FILTER THEO GIÁ
+        if ($minPrice !== null) {
+            $query->where('price', '>=', $minPrice);
+        }
+        if ($maxPrice !== null) {
+            $query->where('price', '<=', $maxPrice);
+        }
+
+        // ORDER BY THEO INTENT
+        switch ($intent) {
+            case 'cheapest':
+                $query->orderBy('price', 'asc');
+                $limit = 3;
+                break;
+
+            case 'most_expensive':
+                $query->orderBy('price', 'desc');
+                $limit = 3;
+                break;
+
+            case 'under_price':
+            case 'price_range':
+                $query->orderBy('price', 'asc');
+                break;
+
+            default:
+                $query->orderBy('created_at', 'desc');
+        }
+
         $dbProducts = $query->offset($offset)->limit($limit)->get();
+
         $formattedProducts = [];
         foreach ($dbProducts as $product) {
             $price = $product->price;
@@ -600,18 +717,16 @@ class ChatBotApiController extends Controller
             $discountPercent = null;
             $discountCode = null;
 
-            // Kiểm tra khuyến mãi hợp lệ
             if (
                 $product->relationLoaded('discount') &&
                 $product->discount &&
                 $product->discount->status === 'active' &&
-                $now->between($product->discount->start_date, $product->discount->end_date)
+                now()->between($product->discount->start_date, $product->discount->end_date)
             ) {
-
                 $originalPrice = $price;
-                $discountPercent = $product->discount->percent_discount;
+                $discountPercent = $product->discount->percent_discount; // Giả sử đây là float (0.1 = 10%)
                 $discountCode = $product->discount->code;
-                $price = $price * (1 - $discountPercent);
+                $price = $price * (1 - $discountPercent); // Nhân với % khuyến mãi (float)
             }
 
             $formattedProducts[] = [
@@ -630,6 +745,49 @@ class ChatBotApiController extends Controller
         return $formattedProducts;
     }
 
+
+    protected function getDiscountedProducts(int $limit = 5): array
+    {
+        $now = now();
+
+        $products = Product::with(['category', 'discount' => function ($query) use ($now) {
+            $query->where('status', 'active')
+                ->where('start_date', '<=', $now)
+                ->where('end_date', '>=', $now);
+        }])
+            ->whereHas('discount', function ($query) use ($now) {
+                $query->where('status', 'active')
+                    ->where('start_date', '<=', $now)
+                    ->where('end_date', '>=', $now);
+            })
+            ->orderBy('created_at', 'desc')
+            ->limit($limit)
+            ->get();
+
+        // Xử lý định dạng trực tiếp ở đây
+        $formattedProducts = [];
+        foreach ($products as $product) {
+            $price = $product->price;
+            $originalPrice = $price;
+            $discountPercent = $product->discount->percent_discount;
+            $price = $price * (1 - $discountPercent); // Nhân với % khuyến mãi (float)
+
+            $formattedProducts[] = [
+                'name' => $product->product_name,
+                'price' => $this->formatPrice($price),
+                'original_price' => $this->formatPrice($originalPrice),
+                'discount_percent' => $discountPercent,
+                'discount_code' => $product->discount->code,
+                'discount_name' => $product->discount->name,
+                'link' => '/product/' . $product->slug,
+                'image' => $product->image,
+                'has_discount' => true
+            ];
+        }
+
+        return $formattedProducts;
+    }
+
     // Định dạng tiền
     protected function formatPrice($price)
     {
@@ -637,16 +795,17 @@ class ChatBotApiController extends Controller
     }
 
 
-    // Định dạng sản phẩm trên giao diện
     protected function formatProductResponse(array $products, bool $isMoreRequest = false): array
     {
         $productData = [];
         foreach ($products as $product) {
+            $discountPercentDisplay = $product['discount_percent'] ? round($product['discount_percent'] * 100) : 0;
+
             $productData[] = [
                 'name' => $product['name'],
                 'price' => $product['price'],
                 'original_price' => $product['original_price'] ?? null,
-                'discount_percent' => $product['discount_percent'] ?? null,
+                'discount_percent' => $discountPercentDisplay,
                 'discount_code' => $product['discount_code'] ?? null,
                 'discount_name' => $product['discount_name'] ?? null,
                 'link' => $product['link'],
@@ -663,5 +822,19 @@ class ChatBotApiController extends Controller
             'products' => $productData,
             'outro_message' => "\nBạn muốn xem chi tiết sản phẩm nào ạ?",
         ];
+    }
+
+
+    protected function processContentWithImages(string $content): string
+    {
+        // Tìm và thay thế các URL ảnh thành img tags
+        $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/i';
+
+        $processedContent = preg_replace_callback($imagePattern, function ($matches) {
+            $imageUrl = $matches[0];
+            return "<img src='{$imageUrl}' alt='Hình ảnh' style='max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;'>";
+        }, $content);
+
+        return $processedContent;
     }
 }
