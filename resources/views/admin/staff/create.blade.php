@@ -133,6 +133,7 @@
                         <option value="">-- Chọn chức vụ --</option>
                         <option value="Quản lý">Quản lý</option>
                         <option value="Nhân viên bán hàng">Nhân viên bán hàng</option>
+                        <option value="Quản lý kho">Quản lý kho</option>
                         <option value="Nhân viên kho">Nhân viên kho</option>
                         <option value="Nhân viên giao hàng">Nhân viên giao hàng</option>
                     </select>

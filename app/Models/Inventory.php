@@ -15,11 +15,13 @@ class Inventory extends Model
         'staff_id',
         'vat',
         'status',
-        'note'
+        'note',
+        'approved_by'
     ];
 
     //1 PhieuNhap cho 1 NCC
-    public function Provider() {
+    public function Provider()
+    {
         return $this->belongsTo(Provider::class);
     }
 
@@ -30,7 +32,13 @@ class Inventory extends Model
     }
 
     //1 PhieuNhap duoc tao boi 1 NhanVien
-    public function Staff() {
+    public function Staff()
+    {
         return $this->belongsTo(Staff::class);
+    }
+
+    public function approvedBy()
+    {
+        return $this->belongsTo(Staff::class, 'approved_by');
     }
 }

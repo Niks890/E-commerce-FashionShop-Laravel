@@ -1,4 +1,4 @@
-@can('delivery workers')
+@can('salers')
 @extends('admin.master')
 @section('title', "Đơn hàng #".$data[0]->id)
 
@@ -176,6 +176,7 @@
                     <tr>
                         <th>#</th>
                         <th>Tên sản phẩm</th>
+                        <th>SKU</th>
                         <th>Hình ảnh</th>
                         <th>Số lượng</th>
                         <th>Size & Màu sắc</th>
@@ -205,6 +206,7 @@
                         <tr>
                             <td>{{ $i++ }}</td>
                             <td class="text-start">{{ $item->product_name }}</td>
+                            <td>{{ $item->sku }}</td>
                             <td>
                                 <img src="{{$item->image}}" alt="{{ $item->product_name }}" class="product-img" />
                             </td>

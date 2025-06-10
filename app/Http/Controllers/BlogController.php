@@ -22,7 +22,7 @@ class BlogController extends Controller
     {
         $data = $request->validate([
             'title' => 'required',
-            'content' => 'required',
+            'content' => 'required|not_regex:/@\w+\(.*\)/',
             'image' => 'required|file|image|max:2048',
             'blog_tag' => 'required',
             'status' => 'required',
@@ -44,7 +44,8 @@ class BlogController extends Controller
 
         $blog = new Blog();
         $blog->title = $data['title'];
-        $blog->content = $data['content'];
+        $content = preg_replace('/@(\w+)(\(.*\))?/', '&#64;$1$2', $request->input('content'));
+        $blog->content = $content;
         $blog->image = $uploadResult['url']; // Lưu URL từ Cloudinary
         $blog->slug = Str::slug($data['title']);
         $blog->tags = $data['blog_tag'];
@@ -60,7 +61,7 @@ class BlogController extends Controller
     {
         $data = $request->validate([
             'title' => 'required',
-            'content' => 'required',
+            'content' => 'required|not_regex:/@\w+\(.*\)/',
             'blog_tag' => 'required',
             'status' => 'required',
             'staff_id' => 'required',
@@ -74,7 +75,8 @@ class BlogController extends Controller
 
         $blog->title = $data['title'];
         $blog->slug = Str::slug($data['title']);
-        $blog->content = $data['content'];
+        $content = preg_replace('/@(\w+)(\(.*\))?/', '&#64;$1$2', $request->input('content'));
+        $blog->content = $content;
         $blog->tags = $data['blog_tag'];
         $blog->status = $data['status'];
         $blog->staff_id = $data['staff_id'];

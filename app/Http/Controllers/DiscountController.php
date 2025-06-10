@@ -6,6 +6,7 @@ use App\Models\Discount;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class DiscountController extends Controller
 {
@@ -57,9 +58,10 @@ class DiscountController extends Controller
      */
     public function store(Request $request)
     {
+        // dd($request->all());
         $data = $request->validate([
             'name' => 'required|string|min:0|max:255',
-            'percent_discount' => 'required|numeric|min:0',
+            'percent_discount' => 'required',
             'start_date' => 'required',
             'end_date' => 'required'
         ], [
@@ -72,13 +74,13 @@ class DiscountController extends Controller
         ]);
         $discount = new Discount();
         $discount->name = $data['name'];
-        $discount->percent_discount = $data['percent_discount'] / 100;
+        $discount->code = Str::random(6);
+        $discount->percent_discount = $data['percent_discount'];
         $discount->start_date = $data['start_date'];
         $discount->end_date = $data['end_date'];
         $discount->save();
         return redirect()->route('discount.index')->with('success', 'Thêm chương trình khuyến mãi mới thành công!');
     }
-
 
 
     /**
@@ -88,7 +90,7 @@ class DiscountController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string|min:0|max:255',
-            'percent_discount' => 'required|numeric|min:0',
+            'percent_discount' => 'required',
             'start_date' => 'required',
             'end_date' => 'required'
         ], [
@@ -100,7 +102,7 @@ class DiscountController extends Controller
             'end_date.required' => 'Vui lòng nhập ngày kết thúc cho chương trình.'
         ]);
         $discount->name = $data['name'];
-        $discount->percent_discount = $data['percent_discount'] / 100;
+        $discount->percent_discount = $data['percent_discount'];
         $discount->start_date = $data['start_date'];
         $discount->end_date = $data['end_date'];
         $discount->save();

@@ -11,12 +11,13 @@ class InventoryResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'vat'=>$this->vat,
+            'vat' => $this->vat,
             'status' => $this->status,
             'total_price' => $this->total,
             'createdate' => $this->created_at,
             'updatedate' => $this->updated_at,
             'note' => $this->note,
+            'staff_approve' => $this->approvedBy?->name ?? 'N/A',
             'staff' => [
                 'id' => $this->staff->id,
                 'name' => $this->staff->name,

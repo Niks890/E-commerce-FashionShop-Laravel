@@ -62,64 +62,15 @@ class InventoryController extends Controller
      */
     public function index()
     {
-        return view('admin.inventory.index');
+        $providers = Provider::all();
+        return view('admin.inventory.index', compact('providers'));
     }
-
-
-
-    // public function search(Request $request)
-    // {
-    //     try {
-    //         $query = $request->input('query');
-    //         $status = $request->input('status');
-    //         $startDate = $request->input('start_date');
-    //         $endDate = $request->input('end_date');
-
-    //         $inventories = Inventory::with(['staff', 'provider', 'detail.product.category'])
-    //             ->when($query, function ($q) use ($query) {
-    //                 $q->where('id', 'LIKE', '%' . $query . '%')
-    //                     ->orWhereHas('staff', function ($staffQuery) use ($query) {
-    //                         $staffQuery->where('name', 'LIKE', '%' . $query . '%');
-    //                     })
-    //                     ->orWhereHas('provider', function ($providerQuery) use ($query) {
-    //                         $providerQuery->where('name', 'LIKE', '%' . $query . '%');
-    //                     })
-    //                     ->orWhereHas('detail.product', function ($productQuery) use ($query) {
-    //                         $productQuery->where('name', 'LIKE', '%' . $query . '%');
-    //                     });
-    //             })
-    //             ->when($status, function ($q) use ($status) {
-    //                 $q->where('status', $status);
-    //             })
-    //             ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
-    //                 $q->whereBetween('created_at', [
-    //                     Carbon::parse($startDate)->startOfDay(),
-    //                     Carbon::parse($endDate)->endOfDay()
-    //                 ]);
-    //             })
-    //             ->orderBy('created_at', 'desc')
-    //             ->paginate(10);
-
-    //         $inventories->appends([
-    //             'query' => $query,
-    //             'status' => $status,
-    //             'start_date' => $startDate,
-    //             'end_date' => $endDate
-    //         ]);
-
-    //         return view('admin.inventory.index', compact('inventories', 'query', 'status', 'startDate', 'endDate'));
-    //     } catch (\Exception $e) {
-    //         return redirect()->route('inventory.index')
-    //             ->with('error', 'Có lỗi xảy ra khi tìm kiếm: ' . $e->getMessage());
-    //     }
-    // }
-
 
 
     public function generatePDF($id)
     {
         // Get inventory data
-        $inventory = Inventory::with(['staff', 'provider', 'InventoryDetails.product.category', 'InventoryDetails.ProductVariant'])
+        $inventory = Inventory::with(['staff','approvedBy', 'provider', 'InventoryDetails.product.category', 'InventoryDetails.ProductVariant'])
             ->findOrFail($id);
 
         // Prepare data for PDF
@@ -311,6 +262,7 @@ class InventoryController extends Controller
             $data = $request->validate([
                 'id' => 'required',
                 'provider_id' => 'required|exists:providers,id',
+                'note_inventory' => 'required',
                 'products' => 'required|array|min:1',
                 'products.*.product_name' => 'required|min:3|max:150|unique:products,product_name',
                 'products.*.brand_name' => 'required|max:100',
@@ -331,7 +283,8 @@ class InventoryController extends Controller
                 'staff_id' => $data['id'],
                 'total' => 0,
                 'vat' => 0,
-                'status' => 'pending' // Thêm trạng thái chờ duyệt
+                'status' => 'pending', // Thêm trạng thái chờ duyệt
+                'note' => $data['note_inventory'],
             ]);
 
             $totalInventoryValue = 0;
@@ -613,7 +566,7 @@ class InventoryController extends Controller
             $inventory->update([
                 'status' => 'approved',
                 'updated_at' => now(),
-                'staff_id' => auth()->user()->id - 1
+                'approved_by' => auth()->user()->id - 1
             ]);
             Log::debug('Đã cập nhật trạng thái phiếu nhập thành duyệt', ['inventory_id' => $inventory->id]);
 
@@ -759,6 +712,7 @@ class InventoryController extends Controller
 
             // Decode products_to_add
             $productsToAdd = json_decode($request->input('products_to_add'), true);
+            $note = $request->input('note');
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
             }
@@ -796,11 +750,12 @@ class InventoryController extends Controller
             $inventory->provider_id = $request->provider_id;
             $inventory->staff_id = $request->id;
             $inventory->status = 'pending';
-            $inventory->note = 'yêu cầu nhập thêm sản phẩm';
+            $inventory->note = $note;
             $inventory->total = 0;
             $inventory->save();
 
             $totalInventoryValue = 0;
+            $vatRate = 0.1;
 
             foreach ($validatedProducts as $productData) {
                 $colors = $productData['new_colors'];
@@ -847,6 +802,7 @@ class InventoryController extends Controller
             }
 
             $inventory->total = $totalInventoryValue;
+            $inventory->vat = $totalInventoryValue * $vatRate;
             $inventory->save();
 
             DB::commit();

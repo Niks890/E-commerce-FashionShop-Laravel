@@ -30,8 +30,15 @@ class Discount extends Model
         return $this->hasMany(Product::class);
     }
 
+    public function setPercentDiscountAttribute($value)
+    {
+        // Loại bỏ % và chuyển thành decimal
+        $cleanValue = (float) str_replace('%', '', $value);
+        $this->attributes['percent_discount'] = $cleanValue / 100;
+    }
 
-     protected static function booted()
+
+    protected static function booted()
     {
         // Sự kiện này được kích hoạt mỗi khi một model được lấy ra từ database.
         static::retrieved(function (Discount $discount) {
@@ -42,7 +49,7 @@ class Discount extends Model
             if ($discount->end_date < $now && $discount->status === 'active') {
                 $discount->status = 'inactive';
                 $discount->saveQuietly(); // saveQuietly() để tránh lặp vô hạn sự kiện retrieved
-            }else{
+            } else {
                 $discount->status = 'active';
                 $discount->saveQuietly();
             }
@@ -50,7 +57,7 @@ class Discount extends Model
     }
 
 
-  public function getCalculatedStatusAttribute()
+    public function getCalculatedStatusAttribute()
     {
         $now = Carbon::now();
 

@@ -75,8 +75,24 @@
                         </select>
                     </div>
                 </div>
+                <!-- Add Provider Filter -->
+                <div class="col-md-3">
+                    <label for="provider-filter" class="form-label small text-muted">Nhà cung cấp</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="fas fa-truck"></i></span>
+                        <select name="provider_id" id="provider-filter" class="form-select">
+                            <option value="">Tất cả</option>
+                            @foreach ($providers as $provider)
+                                <option value="{{ $provider->id }}"
+                                    {{ request('provider_id') == $provider->id ? 'selected' : '' }}>
+                                    {{ $provider->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
 
-                <div class="col-md-9 text-end">
+                <div class="col-md-6 text-end">
                     <div class="d-flex justify-content-end gap-2">
                         <button type="button" class="btn btn-outline-danger" id="clear-filters-button">
                             <i class="fas fa-eraser me-1"></i> Xóa bộ lọc
@@ -158,6 +174,10 @@
                                             <span id="iventory-updated"></span>
                                         </div>
                                         <div class="col-12">
+                                            <strong>Người duyệt phiếu:</strong>
+                                            <span id="staff-name-approved" class="text-info"></span>
+                                        </div>
+                                        <div class="col-12">
                                             <strong>Trạng thái:</strong>
                                             <span id="inventory-status" class="badge bg-info"></span>
                                         </div>
@@ -184,7 +204,7 @@
                         <div class="col-md-6">
                             <div class="card h-100">
                                 <div class="card-header bg-light">
-                                    <h6 class="mb-0"><i class="fas fa-box me-2"></i>Thông tin sản phẩm</h6>
+                                    <h6 class="mb-0"><i class="fas fa-box me-2"></i>Thông tin sản phẩm đã nhập</h6>
                                 </div>
                                 <div class="card-body" id="products-list-container"
                                     style="max-height: 380px; overflow-y: auto;">
@@ -251,7 +271,8 @@
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn duyệt phiếu nhập này?</p>
-                    <p class="text-danger"><strong>Lưu ý:</strong> Sau khi duyệt, phiếu nhập sẽ không thể chỉnh sửa.</p>
+                    <p class="text-danger"><strong>Lưu ý:</strong> Sau khi duyệt, phiếu nhập sẽ không thể hoàn tác lại!.
+                    </p>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
@@ -394,14 +415,16 @@
             const initialStartDate = urlParams.get('start_date') || '';
             const initialEndDate = urlParams.get('end_date') || '';
             const initialStatus = urlParams.get('status') || '';
+            const initialProviderId = urlParams.get('provider_id') || '';
 
             $('#search-input').val(initialQuery);
             $('#start-date-input').val(initialStartDate);
             $('#end-date-input').val(initialEndDate);
             $('#status-filter').val(initialStatus);
+            $('#provider-filter').val(initialProviderId);
 
             // Gọi hàm fetchInventories lần đầu khi tải trang
-            fetchInventories(1, initialQuery, initialStartDate, initialEndDate, initialStatus);
+            fetchInventories(1, initialQuery, initialStartDate, initialEndDate, initialStatus, initialProviderId);
 
             // Xử lý sự kiện khi submit form tìm kiếm
             $('#search-form').on('submit', function(e) {
@@ -410,20 +433,22 @@
                 const startDate = $('#start-date-input').val();
                 const endDate = $('#end-date-input').val();
                 const status = $('#status-filter').val();
+                const providerId = $('#provider-filter').val();
 
-                updateUrl(searchTerm, startDate, endDate, status);
-                fetchInventories(1, searchTerm, startDate, endDate, status);
+                updateUrl(searchTerm, startDate, endDate, status, providerId);
+                fetchInventories(1, searchTerm, startDate, endDate, status, providerId);
             });
 
             // Xử lý sự kiện khi thay đổi giá trị của ô input ngày hoặc trạng thái
-            $('#start-date-input, #end-date-input, #status-filter').on('change', function() {
+            $('#start-date-input, #end-date-input, #status-filter', '#provider-filter').on('change', function() {
                 const searchTerm = $('#search-input').val().trim();
                 const startDate = $('#start-date-input').val();
                 const endDate = $('#end-date-input').val();
                 const status = $('#status-filter').val();
+                const providerId = $('#provider-filter').val();
 
-                updateUrl(searchTerm, startDate, endDate, status);
-                fetchInventories(1, searchTerm, startDate, endDate, status);
+                updateUrl(searchTerm, startDate, endDate, status, providerId);
+                fetchInventories(1, searchTerm, startDate, endDate, status, providerId);
             });
 
             // Xử lý sự kiện khi bấm nút "Xóa bộ lọc"
@@ -432,13 +457,14 @@
                 $('#start-date-input').val('');
                 $('#end-date-input').val('');
                 $('#status-filter').val('');
+                $('#provider-filter').val('');
 
-                updateUrl('', '', '', '');
-                fetchInventories(1, '', '', '', '');
+                updateUrl('', '', '', '', '');
+                fetchInventories(1, '', '', '', '', '');
             });
 
             // Hàm hỗ trợ cập nhật URL trình duyệt
-            function updateUrl(query, startDate, endDate, status) {
+            function updateUrl(query, startDate, endDate, status, providerId) {
                 let newUrl = `${window.location.pathname}`;
                 const params = new URLSearchParams();
 
@@ -446,6 +472,7 @@
                 if (startDate) params.append('start_date', startDate);
                 if (endDate) params.append('end_date', endDate);
                 if (status) params.append('status', status);
+                if (providerId) params.append('provider_id', providerId);
 
                 if (params.toString()) {
                     newUrl += `?${params.toString()}`;
@@ -457,7 +484,7 @@
             }
         });
 
-        function fetchInventories(page, searchTerm = '', startDate = '', endDate = '', status = '') {
+        function fetchInventories(page, searchTerm = '', startDate = '', endDate = '', status = '', providerId = '') {
             // Làm sạch searchTerm
             searchTerm = searchTerm ? searchTerm.trim() : '';
 
@@ -475,6 +502,9 @@
             }
             if (status && status !== '') {
                 apiUrl += `&status=${encodeURIComponent(status)}`;
+            }
+            if (providerId && providerId !== '') {
+                apiUrl += `&provider_id=${encodeURIComponent(providerId)}`;
             }
 
             console.log('API URL:', apiUrl); // Debug log
@@ -616,20 +646,21 @@
                                     </button>
                             `;
 
-                            @can('warehouse workers')
+                            @can('warehouse workers managers')
                                 if (inventory.status === 'pending') {
                                     actionButtons += `
-                                    <button type="button" class="btn btn-sm btn-success btn-approve"
-                                            data-inventory-id="${inventory.id}">
-                                        <i class="fas fa-check"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger btn-reject"
-                                            data-inventory-id="${inventory.id}">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                `;
+                                        <button type="button" class="btn btn-sm btn-success btn-approve"
+                                                data-inventory-id="${inventory.id}">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-danger btn-reject"
+                                                data-inventory-id="${inventory.id}">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    `;
                                 }
                             @endcan
+
 
                             // Thêm nút nhập thêm nếu phiếu đã được duyệt
                             if (inventory.status === 'approved') {
@@ -689,7 +720,7 @@
         }
 
         // Sửa hàm renderPagination để nhận đầy đủ tham số
-        function renderPagination(pagination, searchTerm = '', startDate = '', endDate = '', status = '') {
+        function renderPagination(pagination, searchTerm = '', startDate = '', endDate = '', status = '', providerId = '') {
             let paginationDiv = $("#pagination");
             paginationDiv.empty();
 
@@ -715,8 +746,9 @@
                     let escapedStartDate = (startDate || '').replace(/'/g, "\\'");
                     let escapedEndDate = (endDate || '').replace(/'/g, "\\'");
                     let escapedStatus = (status || '').replace(/'/g, "\\'");
+                    let escapedProviderId = (providerId || '').replace(/'/g, "\\'");
 
-                    return `<button class="${btnClass}" onclick="fetchInventories(${page}, '${escapedSearchTerm}', '${escapedStartDate}', '${escapedEndDate}', '${escapedStatus}')">${displayText}</button>`;
+                    return `<button class="${btnClass}" onclick="fetchInventories(${page}, '${escapedSearchTerm}', '${escapedStartDate}', '${escapedEndDate}', '${escapedStatus}', '${escapedProviderId}')">${displayText}</button>`;
                 }
             }
 
@@ -766,6 +798,8 @@
                             // Thông tin cơ bản phiếu nhập
                             $('#inventory-id').text(inventory_detail.id);
                             $('#staff-name').text(inventory_detail.staff.name);
+                            $('#staff-name-approved').text(inventory_detail.staff_approve ??
+                                'N/A');
                             $('#provider-name').text(inventory_detail.provider.name);
                             $('#total_price').text(parseFloat(inventory_detail.total_price)
                                 .toLocaleString('vi-VN') + " đ");

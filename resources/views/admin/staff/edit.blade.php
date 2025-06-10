@@ -121,6 +121,7 @@
                         <option value="">-- Chọn chức vụ --</option>
                         <option value="Quản lý" @selected($staff->position === "Quản lý")>Quản lý</option>
                         <option value="Nhân viên bán hàng" @selected($staff->position === "Nhân viên bán hàng")>Nhân viên bán hàng</option>
+                        <option value="Quản lý kho" @selected($staff->position === "Quản lý kho")>Quản lý kho</option>
                         <option value="Nhân viên kho" @selected($staff->position === "Nhân viên kho")>Nhân viên kho</option>
                         <option value="Nhân viên giao hàng" @selected($staff->position === "Nhân viên giao hàng")>Nhân viên giao hàng</option>
                     </select>

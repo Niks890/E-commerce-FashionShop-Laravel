@@ -1,6 +1,6 @@
 @php
     // dd($totalSale);
-    // dd($productDetail);
+    // dd($productDetail->discount->name);
     // Session::forget('product_recent');
     // dd(Session::get('product_recent'));
 
@@ -40,6 +40,34 @@
                         </div>
                     </div>
                 </div>
+                {{-- Di chuyển phần khuyến mãi lên trên cùng của ảnh sản phẩm --}}
+                @if ($productDetail->discount_id && $productDetail->discount)
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="product__promotion__banner mb-4">
+                                <div class="promotion-badge">
+                                    <i class="fa fa-bolt"></i>
+                                    <span class="promotion-text">KHUYẾN MÃI ĐẶC BIỆT</span>
+                                    <span
+                                        class="discount-value">-{{ $productDetail->discount->percent_discount * 100 }}%</span>
+                                </div>
+                                <div class="promotion-details mt-2">
+                                    <span class="discount-name"><i class="fa fa-tag"></i>
+                                        {{ $productDetail->discount->name }}</span>
+                                    <div class="promotion-countdown">
+                                        <span class="countdown-label">
+                                            <i class="fa fa-clock-o"></i>
+                                            Kết thúc sau:
+                                            <span id="countdown-timer" class="fw-bold"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+                {{-- Hiển thị tên khuyến mãi nếu có --}}
+
                 <div class="row">
                     @php
                         // Thu thập ảnh và đánh dấu màu sắc tương ứng
@@ -202,6 +230,7 @@
                                             style="text-decoration: line-through; color: gray;">
                                             {{ number_format($productDetail->price) }}đ
                                         </span>
+                                        <p class="badge bg-danger text-white">-{{ $productDetail->Discount->percent_discount * 100 }}%</p>
                                     @endif
                                 </h3>
 
@@ -209,7 +238,7 @@
                                 <p>{{ $productDetail->short_description }}</p>
                                 <div class="product__details__option">
                                     <div class="product__details__option__size">
-                                        <span>Kích cỡ:</span>
+                                        <span>Chọn kích cỡ:</span>
                                         @foreach ($sizes as $size)
                                             <label for="size-{{ $size }}">{{ $size }}
                                                 {{-- bỏ required với js --}}
@@ -220,7 +249,7 @@
                                         @endforeach
                                     </div>
                                     <div class="product__details__option__color">
-                                        <span>Màu Sắc:</span>
+                                        <span>Chọn màu sắc:</span>
                                         @foreach ($colors as $index => $color)
                                             <label class="color-box" style="background-color: {{ getColorHex($color) }};"
                                                 for="color-{{ $index }}" title="{{ $color }}">
@@ -697,6 +726,137 @@
             max-width: 100%;
             border-radius: 5px;
         }
+
+        .product__promotion__banner {
+            background: linear-gradient(135deg, #fff8e1, #ffecb3);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 5px solid #ff6f00;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .promotion-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(45deg, #ff6f00, #ffa000);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .promotion-badge i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .discount-value {
+            background-color: rgba(255, 255, 255, 0.3);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 8px;
+        }
+
+        .promotion-details {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .discount-name {
+            font-weight: 600;
+            color: #d84315;
+        }
+
+        .discount-name i {
+            margin-right: 5px;
+        }
+
+        .promotion-countdown {
+            background-color: #f5f5f5;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .countdown-label {
+            font-size: 14px;
+            color: #616161;
+        }
+
+        .countdown-label i {
+            margin-right: 5px;
+            color: #ff6f00;
+        }
+
+        #countdown-timer {
+            color: #d84315;
+            font-weight: bold;
+        }
+
+
+
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes glow {
+            from {
+                box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+            }
+
+            to {
+                box-shadow: 0 4px 16px rgba(255, 71, 87, 0.8);
+            }
+        }
+
+        @keyframes bounce {
+
+            0%,
+            20%,
+            50%,
+            80%,
+            100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-3px);
+            }
+
+            60% {
+                transform: translateY(-2px);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .product__discount__banner {
+                padding: 10px;
+            }
+
+            .discount-tag {
+                font-size: 16px;
+            }
+
+            .promotion-badge {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+        }
     </style>
 @endsection
 @section('js')
@@ -707,16 +867,53 @@
     @endif
 
     <script>
-        $(document).ready(function() {
-            // Khởi tạo popover
-            const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-            const popoverList = popoverTriggerList.map(function(el) {
-                return new bootstrap.Popover(el, {
-                    trigger: 'hover', // Hiện khi hover
-                    html: true, // Cho phép HTML trong content
-                    placement: 'right' // Vị trí hiển thị
-                });
-            });
+        // Hàm đếm ngược
+        function updateCountdown(startDate, endDate) {
+            const now = new Date().getTime();
+            const start = new Date(startDate).getTime();
+            const end = new Date(endDate).getTime();
+
+            // Kiểm tra nếu chương trình chưa bắt đầu
+            if (now < start) {
+                document.getElementById('countdown-timer').innerHTML = "Chưa bắt đầu";
+                return;
+            }
+
+            // Kiểm tra nếu chương trình đã kết thúc
+            if (now > end) {
+                document.getElementById('countdown-timer').innerHTML = "Đã kết thúc";
+                return;
+            }
+
+            // Tính thời gian còn lại
+            const distance = end - now;
+
+            // Tính toán ngày, giờ, phút, giây
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            // Hiển thị kết quả
+            let countdownText = "";
+            if (days > 0) {
+                countdownText += `${days} ngày `;
+            }
+            countdownText += `${hours} giờ ${minutes} phút ${seconds} giây`;
+
+            document.getElementById('countdown-timer').innerHTML = countdownText;
+
+            // Cập nhật mỗi giây
+            setTimeout(() => updateCountdown(startDate, endDate), 1000);
+        }
+
+        // Gọi hàm khi trang tải xong
+        document.addEventListener('DOMContentLoaded', function() {
+            @if ($productDetail->discount_id && $productDetail->discount)
+                const startDate = '{{ $productDetail->discount->start_date }}';
+                const endDate = '{{ $productDetail->discount->end_date }}';
+                updateCountdown(startDate, endDate);
+            @endif
         });
     </script>
 

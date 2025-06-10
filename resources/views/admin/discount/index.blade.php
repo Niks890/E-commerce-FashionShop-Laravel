@@ -50,6 +50,7 @@
                         <th>ID</th>
                         <th>Tên chương trình</th>
                         <th>% KM</th>
+                        <th>Code</th>
                         <th>Bắt đầu</th>
                         <th>Kết thúc</th>
                         <th>Trạng thái</th>
@@ -62,6 +63,7 @@
                             <td>{{ $model->id }}</td>
                             <td class="fw-semibold">{{ $model->name }}</td>
                             <td><span class="badge bg-success">{{ round($model->percent_discount, 2) * 100 }}%</span></td>
+                            <td class="fw-semibold">{{ $model->code }}</td>
                             <td>{{ $model->start_date->format('d/m/Y H:i') }}</td>
                             <td>{{ $model->end_date->format('d/m/Y H:i') }}</td>
                             <td>
@@ -169,6 +171,7 @@
                                     class="fw-bold text-primary"></span></p>
                             <p><strong>Phần trăm khuyến mãi:</strong> <span id="promo-percent"
                                     class="badge bg-success"></span></p>
+                            <p><strong>Code:</strong> <span id="promo-code" class="badge bg-success"></span></p>
                             <p><strong>Ngày bắt đầu:</strong> <span id="promo-start" class="text-muted"></span></p>
                             <p><strong>Ngày kết thúc:</strong> <span id="promo-end" class="text-muted"></span></p>
                             <p><strong>Trạng thái:</strong> <span id="promo-status" class="fw-bold badge-info"></span></p>
@@ -253,38 +256,6 @@
 
     <script>
         $(document).ready(function() {
-            // $(".btn-detail").click(function(event) {
-            //     event.preventDefault();
-            //     let row = $(this).closest("tr");
-            //     let promoId = row.find("td:first").text().trim();
-            //     $.ajax({
-            //         url: `http://127.0.0.1:8000/api/discount/${promoId}`, //url, type, datatype, success,
-            //         type: "GET",
-            //         dataType: "json",
-            //         success: function(response) {
-            //             if (response.status_code === 200) {
-            //                 let promo = response.data;
-            //                 $("#promo-id").text(promo.id);
-            //                 $("#promo-name").text(promo.name);
-            //                 $("#promo-percent").text((parseFloat(promo.percent_discount) *
-            //                     100) + "%");
-            //                 $("#promo-start").text(new Date(promo.start_date).toLocaleString(
-            //                     'vi-VN'));
-            //                 $("#promo-end").text(new Date(promo.end_date).toLocaleString(
-            //                     'vi-VN')); //text->h1,..h7, p, span,...
-            //                 $("#promo-status").text(promo.status);
-            //                 $("#detailModal").modal("show");
-            //                 // console.log(response);
-            //             } else {
-            //                 alert("Không thể lấy dữ liệu chi tiết!");
-            //             }
-            //         },
-            //         error: function() {
-            //             alert("Đã có lỗi xảy ra, vui lòng thử lại!");
-            //         }
-            //     });
-            // });
-
             $(".btn-detail").click(function(event) {
                 event.preventDefault();
                 let row = $(this).closest("tr");
@@ -299,6 +270,7 @@
                             // Set basic discount info
                             $("#promo-id").text(promo.id);
                             $("#promo-name").text(promo.name);
+                            $("#promo-code").text(promo.code);
                             $("#promo-percent").text((parseFloat(promo.percent_discount) *
                                 100) + "%");
                             $("#promo-start").text(new Date(promo.start_date).toLocaleString(

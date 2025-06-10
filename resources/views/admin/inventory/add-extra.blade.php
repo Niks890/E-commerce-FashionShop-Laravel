@@ -18,7 +18,7 @@
 
         <div class="card shadow-lg mb-4 rounded-3">
             <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-truck me-2"></i>Thông tin nhà cung cấp</h5>
+                <h5 class="mb-0 fw-bold"><i class="fas fa-truck me-2"></i>Thông tin nhà cung cấp và ghi chú</h5>
             </div>
             <div class="card-body">
                 <div class="mb-3">
@@ -26,6 +26,11 @@
                     <input type="text" id="provider_name_display" class="form-control form-control-lg" readonly
                         placeholder="Tên nhà cung cấp">
                     <input type="hidden" name="provider_id" id="provider_id_hidden">
+                </div>
+                <div class="mb-3">
+                    <label for="note" class="form-label fw-bold">Ghi chú:</label>
+                    <textarea id="note" name="note" class="form-control" rows="3" placeholder="Nhập ghi chú cho phiếu nhập"
+                        required></textarea>
                 </div>
             </div>
         </div>
@@ -52,7 +57,7 @@
                                 <th scope="col" width="150px">Sản phẩm</th>
                                 <th scope="col" width="100px">Hình ảnh</th>
                                 <th scope="col" width="120px">Thông tin cơ bản</th>
-                                <th scope="col">Biến thể hiện có</th>
+                                <th scope="col" class="text-center">Biến thể hiện có</th>
                                 <th scope="col" width="250px">Thông tin nhập thêm</th>
                             </tr>
                         </thead>
@@ -357,6 +362,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const inventory_id = urlParams.get('inventory_id');
 
+            document.getElementById('note').value = `nhập thêm từ phiếu #${inventory_id}`;
+
             if (!inventory_id) {
                 console.error("Không tìm thấy inventory_id trong URL.");
                 alert("Không tìm thấy ID phiếu nhập. Vui lòng thử lại.");
@@ -561,14 +568,14 @@
                                             const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
                                             const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
                                             return `
-                                                        <tr>
-                                                            <td>${variant.color}</td>
-                                                            <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                            <td>${variant.stock || 0}</td>
-                                                            <td>${quantityInSlip}</td>
-                                                            <td>${priceInSlip}</td>
-                                                        </tr>
-                                                    `;
+                                                            <tr>
+                                                                <td>${variant.color}</td>
+                                                                <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                                <td>${variant.stock || 0}</td>
+                                                                <td>${quantityInSlip}</td>
+                                                                <td>${priceInSlip}</td>
+                                                            </tr>
+                                                        `;
                                         }).join('')}
                                     </tbody>
                                 </table>
@@ -792,6 +799,8 @@
                         $("#formCreateInventory").on("submit", function(e) {
                             e.preventDefault();
 
+                            const note = $('#note').val().trim();
+
                             // Remove any existing hidden input
                             $(this).find('input[name="products_to_add"]').remove();
 
@@ -828,7 +837,7 @@
                                             hasNewSizesQuantities) {
                                             alert(
                                                 `Lỗi: Vui lòng chọn size và số lượng cho sản phẩm "${productItem.product_name}"`
-                                                );
+                                            );
                                             validationError = true;
                                             return;
                                         }
@@ -837,7 +846,7 @@
                                                 hasNewPrice)) {
                                             alert(
                                                 `Lỗi: Vui lòng nhập đủ màu và giá cho sản phẩm "${productItem.product_name}"`
-                                                );
+                                            );
                                             validationError = true;
                                             return;
                                         }
@@ -869,6 +878,16 @@
                             input.value = JSON.stringify(selectedProductsToSend);
                             this.appendChild(input);
 
+
+                            if (note) {
+                                const noteInput = document.createElement('input');
+                                noteInput.type = 'hidden';
+                                noteInput.name = 'note';
+                                noteInput.value = note;
+                                this.appendChild(noteInput);
+                            }
+
+
                             // Submit form
                             this.submit();
                         });
@@ -878,7 +897,7 @@
                     console.error("Lỗi khi lấy API:", error);
                     alert(
                         "Không thể tải thông tin phiếu nhập. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau."
-                        );
+                    );
                 });
 
             // Hàm định dạng hiển thị size trong dropdown (có số lượng)

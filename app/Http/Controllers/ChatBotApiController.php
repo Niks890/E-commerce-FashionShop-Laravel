@@ -342,6 +342,19 @@ class ChatBotApiController extends Controller
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
         }
 
+
+        if (str_contains($message, 'hôm nay là ngày mấy') || str_contains($message, 'ngày hôm nay')) {
+            return ['type' => 'text', 'content' => "Hôm nay là ngày: ".date('d/m/Y')];
+        }
+
+        if(str_contains($message, 'mấy giờ rồi') || str_contains($message, 'giờ hôm nay')) {
+            return ['type' => 'text', 'content' => "Bây giờ là: ".date('H:i')];
+        }
+
+
+
+
+
         $productKeywords = $this->detectProductKeywords($message);
         if (!empty($productKeywords)) {
 

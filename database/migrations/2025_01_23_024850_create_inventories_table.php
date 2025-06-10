@@ -19,6 +19,8 @@ return new class extends Migration
             $table->enum('status', ['approved', 'pending', 'rejected'])->default('pending');
             $table->unsignedInteger('provider_id');
             $table->unsignedInteger('staff_id');
+            $table->unsignedInteger('approved_by')->nullable();
+            $table->foreign('approved_by')->references('id')->on('staff');
             $table->foreign('provider_id')->references('id')->on('providers');
             $table->foreign('staff_id')->references('id')->on('staff');
             $table->timestamps();

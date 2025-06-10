@@ -88,7 +88,7 @@ class StaffController extends Controller
             'sex' => 'required',
             'username' => 'required|unique:staff,username',
             'password' => 'required',
-            'position' => ['required', Rule::in(['Quản lý', 'Nhân viên bán hàng', 'Nhân viên kho', 'Nhân viên giao hàng'])],
+            'position' => ['required', Rule::in(['Quản lý', 'Nhân viên bán hàng', 'Nhân viên kho', 'Nhân viên giao hàng', 'Quản lý kho'])],
             'status' => 'required',
         ];
 
@@ -140,6 +140,8 @@ class StaffController extends Controller
             $user->roles = 'inventory';
         } else if ($data['position'] === 'Nhân viên giao hàng') {
             $user->roles = 'delivery';
+        } else if ($data['position'] === 'Quản lý kho') {
+            $user->roles = 'inventory,warehouse_manager';
         } else {
             $user->roles = '';
         }
@@ -194,7 +196,9 @@ class StaffController extends Controller
             $user->roles = 'inventory';
         } else if ($data['position'] === 'Nhân viên giao hàng') {
             $user->roles = 'delivery';
-        } else {
+        } else if($data['position'] === 'Quản lý kho') {
+            $user->roles = 'warehouse_manager';
+        }else {
             $user->roles = '';
         }
         $user->save();
@@ -287,7 +291,12 @@ class StaffController extends Controller
                 $user->roles = 'sale';
             } elseif ($data['position'] === 'Nhân viên kho') {
                 $user->roles = 'inventory';
-            } else {
+            } elseif ($data['position'] === 'Nhân viên giao hàng') {
+                $user->roles = 'delivery';
+            } elseif($data['position'] === 'Quản lý kho') {
+                $user->roles = 'warehouse_manager';
+            }
+            else {
                 $user->roles = '';
             }
             $user->save();

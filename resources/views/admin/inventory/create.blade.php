@@ -24,7 +24,8 @@
                     <!-- Thông tin nhà cung cấp -->
                     <div class="row mb-4">
                         <div class="col-12">
-                            <h5 class="text-primary mb-3"><i class="fas fa-truck me-2"></i>Thông tin nhà cung cấp</h5>
+                            <h5 class="text-primary mb-3"><i class="fas fa-truck me-2"></i>Thông tin chung nhà cung cấp và
+                                ghi chú</h5>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold">Nhà cung cấp <span class="text-danger">*</span></label>
@@ -35,6 +36,15 @@
                                 @endforeach
                             </select>
                             @error('provider_id')
+                                <div class="invalid-feedback d-block">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Ghi chú<span class="text-danger">*</span></label>
+                            <textarea class="form-control" name="note_inventory" cols="60" rows="5" required></textarea>
+                            @error('note_inventory')
                                 <div class="invalid-feedback d-block">
                                     <i class="fas fa-exclamation-triangle me-1"></i>{{ $message }}
                                 </div>
@@ -229,11 +239,144 @@
             </div>
         </div>
     </div>
+
+
+
+    <!-- Color Selection Modal -->
+    <div class="modal fade" id="colorSelectionModal" tabindex="-1" aria-labelledby="colorSelectionModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="colorSelectionModalLabel">Chọn màu sắc</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <div class="input-group">
+                            <input type="text" id="newColorInput" class="form-control"
+                                placeholder="Nhập tên màu mới">
+                            <button class="btn btn-primary" id="addColorBtn">Thêm</button>
+                        </div>
+                        <small class="text-muted">Ví dụ: Đỏ, Xanh lá, Xanh dương...</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <h6 class="fw-bold mb-3">Màu sắc phổ biến:</h6>
+                        <div class="color-options d-flex flex-wrap gap-2">
+                            <!-- Default color options will be added by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div>
+                        <h6 class="fw-bold mb-3">Màu đã chọn:</h6>
+                        <div id="selectedColorContainer" class="d-flex">
+                            <span class="badge bg-primary p-2 d-none" id="selectedColorBadge">
+                                <span id="selectedColorText"></span>
+                                <button class="btn-close btn-close-white ms-2" id="removeSelectedColor"></button>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirmColorSelection">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+@endsection
+
+@section('css')
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .btn {
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            border: none;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .position-fixed.alert {
+            animation: slideInRight 0.3s ease-out;
+        }
+
+
+        /* Color Selection Styles */
+        .color-options .color-option {
+            width: 60px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+            transition: all 0.2s ease;
+            border: 2px solid transparent;
+        }
+
+        .color-options .color-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .color-options .color-option.selected {
+            border: 2px solid #000;
+            transform: scale(1.05);
+        }
+
+        #selectedColorBadge {
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            border-radius: 20px;
+        }
+    </style>
 @endsection
 
 @section('js')
-
-
     <script>
         // Validate form trước khi submit
         $('#formCreateInventory').on('submit', function(e) {
@@ -693,54 +836,5 @@
         });
     </script>
 
-    <style>
-        .bg-gradient-primary {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-        }
 
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-        }
-
-        .card {
-            transition: all 0.3s ease;
-        }
-
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .btn {
-            transition: all 0.3s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .alert {
-            border: none;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .position-fixed.alert {
-            animation: slideInRight 0.3s ease-out;
-        }
-    </style>
 @endsection

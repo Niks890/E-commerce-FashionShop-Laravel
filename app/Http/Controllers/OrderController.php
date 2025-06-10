@@ -379,6 +379,7 @@ class OrderController extends Controller
                 'p.product_name',
                 'p.id as product_id',
                 'p.image',
+                'p.sku',
                 'od.quantity',
                 'od.price',
                 'od.code',
@@ -576,7 +577,7 @@ class OrderController extends Controller
             ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
             ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->where('o.id', $order->id)
-            ->select('o.*', 'c.name as customer_name', 'p.product_name as product_name', 'p.image', 'pv.size', 'pv.color', 'od.quantity', 'od.price', 'od.code')
+            ->select('o.*', 'c.name as customer_name', 'p.product_name as product_name', 'p.image', 'pv.size','p.sku', 'pv.color', 'od.quantity', 'od.price', 'od.code')
             ->get();
         return view('admin.order.order_detail', compact('data'));
     }

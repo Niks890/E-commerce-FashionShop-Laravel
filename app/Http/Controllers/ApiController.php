@@ -68,60 +68,6 @@ class ApiController extends Controller
     }
 
 
-    // public function inventories(Request $request)
-    // {
-    //     $query = Inventory::with([
-    //         'Staff',
-    //         'Provider',
-    //         'InventoryDetails.Product.Category',
-    //         'InventoryDetails.ProductVariant'
-    //     ])
-    //         ->orderBy('id', 'DESC');
-
-    //     // Lọc theo từ khóa tìm kiếm (ID phiếu nhập, tên nhân viên, tên sản phẩm)
-    //     if ($request->has('query') && !empty($request->input('query'))) {
-    //         $searchTerm = $request->input('query');
-    //         $query->where(function ($q) use ($searchTerm) {
-    //             // Tìm kiếm theo ID phiếu nhập (chính xác)
-    //             $q->where('id', $searchTerm)
-    //                 // Tìm kiếm theo tên nhân viên (gần đúng)
-    //                 ->orWhereHas('Staff', function ($subQuery) use ($searchTerm) {
-    //                     $subQuery->where('name', 'like', '%' . $searchTerm . '%');
-    //                 })
-    //                 // Tìm kiếm theo tên sản phẩm (gần đúng)
-    //                 ->orWhereHas('InventoryDetails.Product', function ($subQuery) use ($searchTerm) {
-    //                     $subQuery->where('product_name', 'like', '%' . $searchTerm . '%');
-    //                 });
-    //         });
-    //     }
-
-    //     // Lọc theo ngày tạo (created_at)
-    //     if ($request->has('start_date') && !empty($request->input('start_date'))) {
-    //         $startDate = $request->input('start_date');
-    //         $query->whereDate('created_at', '>=', $startDate);
-    //     }
-
-    //     if ($request->has('end_date') && !empty($request->input('end_date'))) {
-    //         $endDate = $request->input('end_date');
-    //         $query->whereDate('created_at', '<=', $endDate);
-    //     }
-
-    //     $inventories = $query->paginate(10);
-
-    //     return response()->json([
-    //         'status_code' => 200,
-    //         'data' => InventoryResource::collection($inventories),
-    //         'pagination' => [
-    //             'current_page' => $inventories->currentPage(),
-    //             'last_page' => $inventories->lastPage(),
-    //             'total' => $inventories->total(),
-    //             'per_page' => $inventories->perPage(),
-    //             'next_page_url' => $inventories->nextPageUrl(),
-    //             'prev_page_url' => $inventories->previousPageUrl(),
-    //         ],
-    //     ]);
-    // }
-
 
     public function inventories(Request $request)
     {
@@ -162,6 +108,12 @@ class ApiController extends Controller
         if ($request->has('end_date') && !empty($request->input('end_date'))) {
             $endDate = $request->input('end_date');
             $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        // Lọc theo nhà cung cấp
+        if ($request->has('provider_id') && !empty($request->input('provider_id'))) {
+            $providerId = $request->input('provider_id');
+            $query->where('provider_id', $providerId);
         }
 
         $inventories = $query->paginate(10);
@@ -207,7 +159,7 @@ class ApiController extends Controller
             'Staff',
             'Provider',
             'InventoryDetails.Product.Category',
-            'InventoryDetails.Product.ProductVariants'
+            'InventoryDetails.Product.ProductVariants',
         ])->find($id);
         $inventoriesResource = new InventoryResource($inventories);
         if ($inventories) {

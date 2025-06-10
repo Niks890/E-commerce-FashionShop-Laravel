@@ -37,7 +37,7 @@
             <div class="card shadow-sm border-0 h-100">
                 <div class="card-body">
                     <h5 class="text-success text-center mb-3">Thông Tin Đơn Hàng</h5>
-                    <p><strong>Mã Đơn:</strong> {{$orderDetail[0]->id}}</p>
+                    <p><strong>Mã Đơn Hàng:</strong> {{$orderDetail[0]->id}}</p>
                     <p><strong>Ngày Đặt:</strong> {{\Carbon\Carbon::parse($orderDetail[0]->created_at)->format('d/m/Y H:i')}}</p>
                     <p><strong>Thanh Toán:</strong> {{$orderDetail[0]->payment}}</p>
                     <p><strong>Ghi Chú:</strong> {{$orderDetail[0]->note}}</p>
@@ -54,6 +54,7 @@
                 <tr>
                     <th>#</th>
                     <th>Sản Phẩm</th>
+                    <th>SKU</th>
                     <th>Ảnh</th>
                     <th>Số Lượng</th>
                     <th>Size / Màu</th>
@@ -83,6 +84,7 @@
                 <tr>
                     <td>{{$i++}}</td>
                     <td>{{$items->product_name}}</td>
+                    <td>{{$items->sku}}</td>
                     <td><img src="{{$items->image}}" width="50" class="rounded"></td>
                     <td>{{$items->quantity}}</td>
                     <td>{{$items->size}} - {{$items->color}}</td>
