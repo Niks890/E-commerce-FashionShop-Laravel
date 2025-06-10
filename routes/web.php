@@ -11,6 +11,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ForgotPasswordController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\OrderController;
@@ -43,7 +44,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/'], function () {
     Route::get('/', [HomeController::class, 'home'])->name('sites.home');
-
+    // Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
+    // Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');
     // Xử lý đăng nhập user
     Route::group(['prefix' => 'user'], function () {
         Route::get('/login', [CustomerController::class, 'login'])->name('user.login');
