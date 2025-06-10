@@ -568,14 +568,14 @@
                                             const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
                                             const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
                                             return `
-                                                            <tr>
-                                                                <td>${variant.color}</td>
-                                                                <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                                <td>${variant.stock || 0}</td>
-                                                                <td>${quantityInSlip}</td>
-                                                                <td>${priceInSlip}</td>
-                                                            </tr>
-                                                        `;
+                                                                <tr>
+                                                                    <td>${variant.color}</td>
+                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                                    <td>${variant.stock || 0}</td>
+                                                                    <td>${quantityInSlip}</td>
+                                                                    <td>${priceInSlip}</td>
+                                                                </tr>
+                                                            `;
                                         }).join('')}
                                     </tbody>
                                 </table>

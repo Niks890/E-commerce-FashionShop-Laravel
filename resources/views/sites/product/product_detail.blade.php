@@ -230,7 +230,8 @@
                                             style="text-decoration: line-through; color: gray;">
                                             {{ number_format($productDetail->price) }}đ
                                         </span>
-                                        <p class="badge bg-danger text-white">-{{ $productDetail->Discount->percent_discount * 100 }}%</p>
+                                        <p class="badge bg-danger text-white">
+                                            -{{ $productDetail->Discount->percent_discount * 100 }}%</p>
                                     @endif
                                 </h3>
 
@@ -338,6 +339,7 @@
                                     </div>
                                 </div>
                                 {{-- phần đánh giá nữa chỉnh giao diện sau --}}
+                                {{-- phần đánh giá nữa chỉnh giao diện sau --}}
                                 <div class="tab-pane" id="tabs-6" role="tabpanel">
                                     <div class="product__details__tab__content">
                                         <!-- Danh sách bình luận -->
@@ -345,7 +347,7 @@
                                             <h5 class="comment-title">Đánh giá sản phẩm
                                                 ({{ count($commentCustomers ?? []) }})</h5>
                                             <hr>
-                                            <ul id="review-list">
+                                            <ul id="review-list" style="max-height: 400px; overflow-y: auto;">
                                                 @if ($commentCustomers != null)
                                                     @foreach ($commentCustomers as $commentCustomer)
                                                         <li>
@@ -381,6 +383,24 @@
                                                                 <p>Nội dung:
                                                                     {{ $commentCustomer->content ?? 'Không có nội dung' }}
                                                                 </p>
+
+                                                                {{-- Thêm phần trả lời mặc định --}}
+                                                                @if ($commentCustomer->content)
+                                                                    <div class="seller-response bg-light p-3 mt-3 rounded">
+                                                                        <strong class="text-primary">Phản hồi từ cửa
+                                                                            hàng:</strong>
+                                                                        <p class="mb-1">Cảm ơn bạn đã mua hàng tại cửa
+                                                                            hàng chúng tôi!</p>
+                                                                        <p class="mb-0">
+                                                                            Nếu có bất kỳ vấn đề gì với sản phẩm, vui lòng
+                                                                            liên hệ hỗ trợ qua
+                                                                            <a href="tel:0123456789"
+                                                                                class="text-danger">0123.456.789</a>
+                                                                            hoặc email <a href="mailto:TFashionShop@gmail.com"
+                                                                                class="text-danger">TFashionShop@gmail.com</a>
+                                                                        </p>
+                                                                    </div>
+                                                                @endif
                                                             </div>
                                                         </li>
                                                     @endforeach
@@ -680,6 +700,19 @@
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
     <link rel="stylesheet" href="{{ asset('client/css/stock.css') }}">
     <style>
+        .seller-response {
+            border-left: 4px solid #007bff;
+            font-size: 0.9rem;
+        }
+
+        .seller-response p {
+            margin-bottom: 0.3rem;
+        }
+
+        .seller-response a {
+            text-decoration: underline;
+        }
+
         .color-box {
             display: inline-block;
             width: 30px;

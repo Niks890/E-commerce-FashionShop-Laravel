@@ -70,7 +70,7 @@ class InventoryController extends Controller
     public function generatePDF($id)
     {
         // Get inventory data
-        $inventory = Inventory::with(['staff','approvedBy', 'provider', 'InventoryDetails.product.category', 'InventoryDetails.ProductVariant'])
+        $inventory = Inventory::with(['staff', 'approvedBy', 'provider', 'InventoryDetails.product.category', 'InventoryDetails.ProductVariant'])
             ->findOrFail($id);
 
         // Prepare data for PDF
@@ -383,27 +383,7 @@ class InventoryController extends Controller
         }
     }
 
-    // Hàm riêng xử lý ảnh (có thể đưa vào queue)
-    protected function processProductImage(Product $product, $imageFile, CloudinaryService $cloudinaryService)
-    {
-        try {
-            $uploadResult = $cloudinaryService->uploadImage($imageFile->getPathname(), 'product_images');
 
-            if (isset($uploadResult['error'])) {
-                Log::error('Image upload failed for product: ' . $product->id, [
-                    'error' => $uploadResult['error']
-                ]);
-                return;
-            }
-
-            $product->update(['image' => $uploadResult['url']]);
-        } catch (Exception $e) {
-            Log::error('Error processing product image:', [
-                'product_id' => $product->id,
-                'error' => $e->getMessage()
-            ]);
-        }
-    }
     // Hàm gốc
     // public function add_extra()
     // {
@@ -505,13 +485,36 @@ class InventoryController extends Controller
     //     return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công!");
     // }
 
-
-    // Nhập đc nhiều sp, nhiều size, nhiều màu, nhiều kích thước
     public function add_extra()
     {
         $providers = Provider::all();
         return view('admin.inventory.add-extra', compact('providers'));
     }
+
+    // Hàm riêng xử lý ảnh (có thể đưa vào queue)
+    protected function processProductImage(Product $product, $imageFile, CloudinaryService $cloudinaryService)
+    {
+        try {
+            $uploadResult = $cloudinaryService->uploadImage($imageFile->getPathname(), 'product_images');
+
+            if (isset($uploadResult['error'])) {
+                Log::error('Image upload failed for product: ' . $product->id, [
+                    'error' => $uploadResult['error']
+                ]);
+                return;
+            }
+
+            $product->update(['image' => $uploadResult['url']]);
+        } catch (Exception $e) {
+            Log::error('Error processing product image:', [
+                'product_id' => $product->id,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    // Nhập đc nhiều sp, nhiều size, nhiều màu, nhiều kích thước
+
 
     public function approve($id)
     {
@@ -819,4 +822,124 @@ class InventoryController extends Controller
             return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
         }
     }
+
+
+    // Hàm xử lý nâng cao nhập mới trong phiếu nhập th
+    // public function post_add_extra(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         $request->validate([
+    //             'id' => 'required',
+    //             'provider_id' => 'required|exists:providers,id',
+    //         ]);
+
+    //         $isAddingNewProducts = $request->has('new_products');
+    //         $isAddingExistingProducts = $request->has('products_to_add');
+
+    //         if (!$isAddingNewProducts && !$isAddingExistingProducts) {
+    //             throw new Exception('Vui lòng chọn ít nhất một sản phẩm để nhập kho.');
+    //         }
+
+    //         // Create inventory
+    //         $inventory = new Inventory();
+    //         $inventory->provider_id = $request->provider_id;
+    //         $inventory->staff_id = $request->id;
+    //         $inventory->status = 'pending';
+    //         $inventory->note = $request->note;
+    //         $inventory->total = 0;
+    //         $inventory->save();
+
+    //         $totalInventoryValue = 0;
+    //         $vatRate = 0.1;
+
+    //         // Process existing products
+    //         if ($isAddingExistingProducts) {
+    //             $productsToAdd = json_decode($request->input('products_to_add'), true);
+
+    //             if (json_last_error() !== JSON_ERROR_NONE) {
+    //                 throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
+    //             }
+
+    //             foreach ($productsToAdd as $productData) {
+    //                 // Your existing product processing logic here
+    //                 // (Keep your current code for processing existing products)
+    //             }
+    //         }
+
+    //         // Process new products
+    //         if ($isAddingNewProducts) {
+    //             foreach ($request->new_products as $newProductData) {
+    //                 // Validate new product data
+    //                 $validator = Validator::make($newProductData, [
+    //                     'name' => 'required|string|max:255',
+    //                     'category_id' => 'required|exists:categories,id',
+    //                     'brand' => 'required|string|max:100',
+    //                     'price' => 'required|numeric|min:1',
+    //                     'quantity' => 'required|integer|min:1',
+    //                     'color' => 'required|string|max:50',
+    //                     'size' => 'required|string|max:10',
+    //                 ]);
+
+    //                 if ($validator->fails()) {
+    //                     throw new Exception($validator->errors()->first());
+    //                 }
+
+    //                 // Create new product
+    //                 $product = new Product();
+    //                 $product->name = $newProductData['name'];
+    //                 $product->category_id = $newProductData['category_id'];
+    //                 $product->brand = $newProductData['brand'];
+    //                 $product->description = 'Nhập mới từ phiếu nhập kho';
+    //                 $product->status = 0; // Active
+    //                 $product->save();
+
+    //                 // Process image if uploaded
+    //                 if (isset($newProductData['image']) {
+    //                     $this->processProductImage($product, $newProductData['image'], $cloudinaryService);
+    //                 }
+
+    //                 // Create product variant
+    //                 $variant = new ProductVariant();
+    //                 $variant->product_id = $product->id;
+    //                 $variant->color = strtolower(trim($newProductData['color']));
+    //                 $variant->size = $newProductData['size'];
+    //                 $variant->price = $newProductData['price'];
+    //                 $variant->stock = $newProductData['quantity'];
+    //                 $variant->active = true;
+    //                 $variant->save();
+
+    //                 // Create inventory detail
+    //                 $inventoryDetail = new InventoryDetail();
+    //                 $inventoryDetail->product_id = $product->id;
+    //                 $inventoryDetail->inventory_id = $inventory->id;
+    //                 $inventoryDetail->product_variant_id = $variant->id;
+    //                 $inventoryDetail->price = $newProductData['price'];
+    //                 $inventoryDetail->quantity = $newProductData['quantity'];
+    //                 $inventoryDetail->size = $newProductData['size'] . '-' . $newProductData['quantity'] . '-' . $newProductData['color'];
+    //                 $inventoryDetail->save();
+
+    //                 $totalInventoryValue += ($newProductData['price'] * $newProductData['quantity']);
+    //             }
+    //         }
+
+    //         $inventory->total = $totalInventoryValue;
+    //         $inventory->vat = $totalInventoryValue * $vatRate;
+    //         $inventory->save();
+
+    //         DB::commit();
+
+    //         return redirect()->route('inventory.index')
+    //             ->with('success', 'Yêu cầu nhập kho đã được tạo thành công!');
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error in post_add_extra', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //             'request' => $request->all()
+    //         ]);
+    //         return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    //     }
+    // }
 }
