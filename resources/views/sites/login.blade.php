@@ -458,11 +458,16 @@
         let resendTimer;
         let timeLeft = 60;
 
-        // Hàm bắt đầu đếm ngược
         function startResendTimer() {
             const resendBtn = document.getElementById('resendOtpBtn');
             const countdown = document.getElementById('countdown');
             const resendText = document.getElementById('resendText');
+
+            // KIỂM TRA XEM CÁC ELEMENT CÓ TỒN TẠI KHÔNG
+            if (!resendBtn || !countdown || !resendText) {
+                console.error('Không tìm thấy elements cần thiết cho timer');
+                return;
+            }
 
             // Vô hiệu hóa nút
             resendBtn.disabled = true;
@@ -472,17 +477,31 @@
             // Cập nhật thời gian mỗi giây
             resendTimer = setInterval(function() {
                 timeLeft--;
-                countdown.textContent = ` (${timeLeft}s)`;
+
+                // KIỂM TRA LẠI ELEMENT TRƯỚC KHI CẬP NHẬT
+                const currentCountdown = document.getElementById('countdown');
+                if (currentCountdown) {
+                    currentCountdown.textContent = ` (${timeLeft}s)`;
+                }
 
                 if (timeLeft <= 0) {
                     clearInterval(resendTimer);
-                    resendBtn.disabled = false;
-                    countdown.style.display = 'none';
+
+                    // KIỂM TRA CÁC ELEMENT TRƯỚC KHI CẬP NHẬT
+                    const currentResendBtn = document.getElementById('resendOtpBtn');
+                    const currentCountdownEl = document.getElementById('countdown');
+
+                    if (currentResendBtn) {
+                        currentResendBtn.disabled = false;
+                    }
+                    if (currentCountdownEl) {
+                        currentCountdownEl.style.display = 'none';
+                    }
                 }
             }, 1000);
         }
 
-        // Hàm gửi lại OTP
+        // Hàm gửi lại OTP - ĐÃ SỬA LỖI
         async function resendOtp() {
             const identifier = document.getElementById('identifierHidden').value;
             const resendBtn = document.getElementById('resendOtpBtn');
@@ -492,15 +511,25 @@
                 return;
             }
 
+            // KIỂM TRA ELEMENT TỒN TẠI
+            if (!resendBtn) {
+                console.error('Không tìm thấy nút gửi lại OTP');
+                return;
+            }
+
             try {
                 resendBtn.disabled = true;
                 resendBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang gửi...';
+
+                // LẤY CSRF TOKEN
+                const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content ||
+                    document.querySelector('input[name="_token"]')?.value;
 
                 const response = await fetch('{{ route('password.send_otp') }}', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-CSRF-TOKEN': csrfToken,
                         'Accept': 'application/json'
                     },
                     body: JSON.stringify({
@@ -512,40 +541,80 @@
 
                 if (response.ok) {
                     alert('Mã OTP mới đã được gửi! Vui lòng kiểm tra email của bạn.');
-                    // Reset timer
+
+                    // Reset timer và bắt đầu đếm ngược mới
                     clearInterval(resendTimer);
                     timeLeft = 60;
+
+                    // Đặt lại nội dung nút trước khi bắt đầu timer
+                    resendBtn.innerHTML =
+                        '<span id="resendText">Gửi lại mã</span><span id="countdown"> (60s)</span>';
+
+                    // Bắt đầu timer mới
                     startResendTimer();
                 } else {
                     alert(data.message || 'Có lỗi xảy ra khi gửi lại mã OTP');
+                    // Nếu có lỗi, reset lại nút về trạng thái ban đầu
+                    resendBtn.innerHTML =
+                        '<span id="resendText">Gửi lại mã</span><span id="countdown"></span>';
+                    resendBtn.disabled = false;
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('Có lỗi xảy ra khi gửi yêu cầu. Vui lòng thử lại.');
+
+                // Nếu có lỗi, reset lại nút về trạng thái ban đầu
+                if (resendBtn) {
+                    resendBtn.innerHTML =
+                        '<span id="resendText">Gửi lại mã</span><span id="countdown"></span>';
+                    resendBtn.disabled = false;
+                }
             } finally {
-                resendBtn.innerHTML = '<span id="resendText">Gửi lại mã</span><span id="countdown"></span>';
+                // KHÔNG GHI ĐÈ INNERHTML Ở ĐÂY VÌ SẼ LÀM MẤT TIMER ELEMENTS
+                // Timer sẽ tự động reset innerHTML khi cần thiết
             }
         }
 
+        // Hàm reset timer khi cần
+        function resetTimer() {
+            if (resendTimer) {
+                clearInterval(resendTimer);
+                resendTimer = null;
+            }
+            timeLeft = 60;
+
+            const resendBtn = document.getElementById('resendOtpBtn');
+            const countdown = document.getElementById('countdown');
+            const resendText = document.getElementById('resendText');
+
+            if (resendBtn) {
+                resendBtn.disabled = false;
+            }
+            if (countdown) {
+                countdown.style.display = 'none';
+            }
+            if (resendText) {
+                resendText.style.display = 'inline';
+            }
+        }
+
+        // Cập nhật function showSendOtpForm
         function showSendOtpForm() {
             document.getElementById('sendOtpForm').style.display = 'block';
             document.getElementById('verifyOtpForm').style.display = 'none';
-            document.getElementById('otpIdentifierError').innerText = ''; // Clear previous errors
+            document.getElementById('otpIdentifierError').innerText = '';
             document.getElementById('otpCodeError').innerText = '';
             document.getElementById('newPasswordError').innerText = '';
             document.getElementById('confirmNewPasswordError').innerText = '';
-            document.getElementById('otpCode').value = ''; // Clear OTP field
-            document.getElementById('newPassword').value = ''; // Clear password field
-            document.getElementById('confirmNewPassword').value = ''; // Clear confirm password field
-            document.getElementById('emailOrUsername').value = ''; // Clear email/username field
+            document.getElementById('otpCode').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            document.getElementById('emailOrUsername').value = '';
 
-            // Clear timer when going back to send OTP form
-            clearInterval(resendTimer);
-            const countdown = document.getElementById('countdown');
-            const resendText = document.getElementById('resendText');
-            countdown.style.display = 'none';
-            resendText.style.display = 'inline';
+            // Reset timer khi quay lại form gửi OTP
+            resetTimer();
         }
+
 
         function showVerifyOtpForm(identifier) {
             document.getElementById('sendOtpForm').style.display = 'none';
@@ -759,6 +828,18 @@
         setTimeout(() => {
             container.classList.remove("no-transition");
         }, 100);
+    });
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('forgotPasswordModal');
+        if (modal) {
+            modal.addEventListener('hidden.bs.modal', function() {
+                resetTimer();
+                showSendOtpForm();
+            });
+        }
     });
 </script>
 
