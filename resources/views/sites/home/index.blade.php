@@ -836,25 +836,13 @@
                     <div class="cart-item d-flex align-items-center">
                         <img src="{{ $items->image }}" alt="{{ $items->name }}" class="cart-item-image rounded">
                         <div class="cart-item-info flex-grow-1">
-                            <div class="cart-item-name text-truncate">{{ Str::words($items->name, 6) }}</div>
-                            <div class="cart-item-price text-muted">{{ number_format($items->price, 0, ',', '.') . ' đ' }}
+                            <div class="cart-item-name text-truncate">Tên: {{ Str::words($items->name, 6) }}</div>
+                            <div class="cart-item-color">Size-Màu: {{ $items->color }} - {{ $items->size }}</div>
+                            <div class="cart-item-price text-muted">Giá: {{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
-                            {{-- @if (isset($item->size) || isset($item->color))
-                            <div class="cart-item-variants text-muted small">
-                                @if (isset($item->size))
-                                    <span>Size: {{ $item->size }}</span>
-                                @endif
-                                @if (isset($item->color))
-                                    @if (isset($item->size))
-                                        <span> | </span>
-                                    @endif
-                                    <span>Màu: {{ $item->color }}</span>
-                                @endif
-                            </div>
-                        @endif --}}
                         </div>
                         <span class="cart-item-quantity badge bg-danger ms-2">
-                            {{ $items->quantity }}
+                            Qty: {{ $items->quantity }}
                         </span>
                     </div>
                 @endforeach
@@ -966,7 +954,7 @@
                         <h2>Instagram</h2>
                         <p>Tìm hiểu thêm về chúng tôi qua instagram, cập nhật những thông tin và xu hướng thời trang mới
                             nhất !</p>
-                        <h3>#TST_Fashion</h3>
+                        <h3>#TFashionShop</h3>
                     </div>
                 </div>
             </div>

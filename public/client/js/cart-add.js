@@ -19,58 +19,58 @@ function addToCart(productId, event) {
         method: "GET",
         headers: { "X-Requested-With": "XMLHttpRequest" },
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Cập nhật số lượng trong badge
-            document.getElementById("cartCount").innerText = data.cart_count;
-            animateToCart(event);
-            shakeCartIcon();
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Cập nhật số lượng trong badge
+                document.getElementById("cartCount").innerText = data.cart_count;
+                animateToCart(event);
+                shakeCartIcon();
 
-            let cartList = document.getElementById("cartList");
+                let cartList = document.getElementById("cartList");
 
-            // Cập nhật header count
-            document.querySelectorAll('.cart-quantity-header').forEach((element) => {
-                element.textContent = data.cart_product_count;
-            });
+                // Cập nhật header count
+                document.querySelectorAll('.cart-quantity-header').forEach((element) => {
+                    element.textContent = data.cart_product_count;
+                });
 
-            // Debug logs
-            // console.log("Dữ liệu data từ backend:", data);
-            // console.log("productId:", productId);
+                // Debug logs
+                // console.log("Dữ liệu data từ backend:", data);
+                // console.log("productId:", productId);
 
-            // Tạo itemKey - đảm bảo format nhất quán
-            let itemKey = `${productId}-${data.color || 'default'}-${data.size || 'default'}`;
-            // console.log("itemKey được tạo:", itemKey);
+                // Tạo itemKey - đảm bảo format nhất quán
+                let itemKey = `${productId}-${data.color || 'default'}-${data.size || 'default'}`;
+                // console.log("itemKey được tạo:", itemKey);
 
-            // Tìm item trong response từ backend
-            let item = data.cart.items[itemKey];
+                // Tìm item trong response từ backend
+                let item = data.cart.items[itemKey];
 
-            if (item) {
-                // console.log("Tìm thấy item:", item);
+                if (item) {
+                    // console.log("Tìm thấy item:", item);
 
-                // Kiểm tra stock
-                if (item.quantity > item.stock) {
-                    showToast(`Không thể thêm số lượng sản phẩm vượt quá tồn kho! (Tồn kho: ${item.stock})`, "error");
-                    return;
+                    // Kiểm tra stock
+                    if (item.quantity > item.stock) {
+                        showToast(`Không thể thêm số lượng sản phẩm vượt quá tồn kho! (Tồn kho: ${item.stock})`, "error");
+                        return;
+                    }
+
+                    // GIẢI PHÁP: Rebuild toàn bộ cart thay vì update từng phần
+                    rebuildCartDisplay(data.cart.items);
+                    showToast("Cập nhật giỏ hàng thành công!", "success");
+
+                } else {
+                    // console.error("Không tìm thấy item với key:", itemKey);
+                    // console.log("Các keys có sẵn:", Object.keys(data.cart.items));
+                    showToast("Thêm vào giỏ hàng thất bại do lỗi dữ liệu!", "error");
                 }
-
-                // GIẢI PHÁP: Rebuild toàn bộ cart thay vì update từng phần
-                rebuildCartDisplay(data.cart.items);
-                showToast("Cập nhật giỏ hàng thành công!", "success");
-
             } else {
-                // console.error("Không tìm thấy item với key:", itemKey);
-                // console.log("Các keys có sẵn:", Object.keys(data.cart.items));
-                showToast("Thêm vào giỏ hàng thất bại do lỗi dữ liệu!", "error");
+                showToast(data.message || "Thêm vào giỏ hàng thất bại!", "error");
             }
-        } else {
-            showToast(data.message || "Thêm vào giỏ hàng thất bại!", "error");
-        }
-    })
-    .catch(error => {
-        console.error("Lỗi fetch:", error);
-        showToast("Có lỗi xảy ra khi kết nối đến máy chủ!", "error");
-    });
+        })
+        .catch(error => {
+            console.error("Lỗi fetch:", error);
+            showToast("Có lỗi xảy ra khi kết nối đến máy chủ!", "error");
+        });
 }
 
 // Hàm mới để rebuild toàn bộ giỏ hàng
@@ -107,29 +107,15 @@ function rebuildCartDisplay(cartItems) {
         cartItem.setAttribute('data-item-key', key);
 
         let priceProduct = formatNumber(item.price);
-
-        // let variantsHtml = '';
-        // if (item.size || item.color) { // Kiểm tra nếu có size hoặc color
-        //     variantsHtml += '<div class="cart-item-variants text-muted small">';
-        //     if (item.size) {
-        //         variantsHtml += `<span>Size: ${item.size}</span>`;
-        //     }
-        //     if (item.color) {
-        //         if (item.size) { // Chỉ thêm dấu phân cách nếu có cả size
-        //             variantsHtml += `<span> | </span>`;
-        //         }
-        //         variantsHtml += `<span>Màu: ${item.color}</span>`;
-        //     }
-        //     variantsHtml += '</div>';
-        // }
-
+        // console.log(item);
         cartItem.innerHTML = `
             <img src="${item.image}" alt="${item.name}" class="cart-item-image rounded">
             <div class="cart-item-info flex-grow-1 ms-2">
-                <div class="cart-item-name text-truncate">${words(item.name, 5)}</div>
-                <div class="cart-item-price text-muted">${priceProduct} đ</div>
+                <div class="cart-item-name text-truncate">Tên: ${words(item.name, 5)}</div>
+                <div class="cart-item-color">Size-Màu: ${item.color} - ${item.size}</div>
+                <div class="cart-item-price text-muted">Giá: ${priceProduct} đ</div>
             </div>
-            <span class="cart-item-quantity badge bg-danger ms-2">${item.quantity}</span>
+            <span class="cart-item-quantity badge bg-danger ms-2">Qty: ${item.quantity}</span>
         `;
 
         cartList.appendChild(cartItem);

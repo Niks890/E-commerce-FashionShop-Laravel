@@ -44,7 +44,7 @@
                     <div class="footer__newslatter">
                         <p>Trở thành người đầu tiên nhận thông báo khuyến mãi, thông tin sản phẩm mới nhất!</p>
                         <form action="{{ route('sites.contact') }}#contact-page">
-                            <input type="text" placeholder="Your email">
+                            <input type="text" placeholder="Your email" class="text-white">
                             <button type="submit"><span class="icon_mail_alt"></span></button>
                         </form>
                     </div>
@@ -58,7 +58,7 @@
                         <script>
                             document.write(new Date().getFullYear());
                         </script>
-                        Bản quyền thuộc về VMT Fashion Shop by <a href={{ route('sites.home') }} target="#">VMT</a>
+                        Bản quyền thuộc về TFashionShop by <a href={{ route('sites.home') }} target="#">VMT</a>
                     </p>
                 </div>
             </div>
