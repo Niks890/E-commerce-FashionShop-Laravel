@@ -489,8 +489,8 @@
             });
         });
     </script>
-
-
+    {{--
+    cart total checkbox --}}
     <script>
         $(document).ready(function() {
             function updateCartTotalForCheckbox() {
@@ -532,6 +532,7 @@
         });
     </script>
 
+    {{-- checkbox --}}
     <script>
         $(document).ready(function() {
             $(".product-checkbox, #check-all").change(function() {
