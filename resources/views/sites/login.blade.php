@@ -24,7 +24,7 @@
                     <a href="javascript:void(0);" class="icon"><i class="fa-brands fa-github"></i></a>
                     <a href="javascript:void(0);" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
                 </div>
-                <span>hoặc sử dụng email của bạn cho việc đăng ký</span>
+                <span>Sử dụng email của bạn cho việc đăng ký</span>
                 <input type="text" placeholder="Họ và tên" name="name" id="regName">
                 @error('name')
                     <small class="text-danger validate-error">{{ $message }}</small>
@@ -68,7 +68,7 @@
                     <a href="javascript:void(0);" class="icon"><i class="fa-brands fa-github"></i></a>
                     <a href="javascript:void(0);" class="icon"><i class="fa-brands fa-linkedin-in"></i></a>
                 </div>
-                <span>hoặc sử dụng tài khoản của bạn cho việc đăng nhập</span>
+                <span>Dùng email đã đăng ký của bạn cho việc đăng nhập</span>
                 <input type="text" placeholder="Email hoặc Username" name="login" required id="loginField">
                 @error('login')
                     <small class="text-danger validate-error">{{ $message }}</small>
@@ -806,28 +806,72 @@
         const container = document.getElementById('container');
         const registerBtn = document.getElementById('register');
         const loginBtn = document.getElementById('login');
+
         registerBtn.addEventListener('click', () => {
             container.classList.add("active");
+            localStorage.setItem("activeForm", "register");
         });
+
         loginBtn.addEventListener('click', () => {
             container.classList.remove("active");
+            localStorage.setItem("activeForm", "login");
         });
-        //Kiểm tra nếu quay lại từ trang đăng ký thành công, reset về đăng nhập
-        if (!document.referrer.includes("register")) {}
-        const hasErrors = {{ session('register_form') || ($errors->any() && old('name')) ? 'true' : 'false' }};
-        if (hasErrors) {
+
+        // Kiểm tra trạng thái form khi load trang
+        const registerErrors = {{ $errors->any() && old('name') ? 'true' : 'false' }};
+        const loginErrors = {{ $errors->any() && old('login') ? 'true' : 'false' }};
+
+        if (registerErrors) {
             container.classList.add("active", "no-transition");
+        } else if (loginErrors) {
+            container.classList.remove("active", "no-transition");
         } else {
-            if (localStorage.getItem("activeForm") === "register") {
-                container.classList.add("active");
-            } else {
-                container.classList.remove("active");
-            }
+            // Mặc định hiển thị form đăng nhập
+            container.classList.remove("active");
         }
-        // Xóa class "no-transition" sau khi trang đã load để không ảnh hưởng đến các lần chuyển đổi tiếp theo
+
+        // Xóa class "no-transition" sau khi trang đã load
         setTimeout(() => {
             container.classList.remove("no-transition");
         }, 100);
+
+        // Xử lý khi submit form đăng nhập thất bại
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            const login = document.getElementById('loginField').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            let isValid = true;
+
+            // Validate Login Field
+            if (login === '') {
+                showError('loginField', 'loginFieldError', 'Email hoặc Username không được để trống');
+                isValid = false;
+            } else if (!validateLoginField(login)) {
+                showError('loginField', 'loginFieldError',
+                    'Email hoặc Username phải có ít nhất 3 ký tự');
+                isValid = false;
+            } else {
+                showSuccess('loginField', 'loginFieldError');
+            }
+
+            // Validate Password
+            if (password === '') {
+                showError('loginPassword', 'loginPasswordError', 'Mật khẩu không được để trống');
+                isValid = false;
+            } else if (password.length < 6) {
+                showError('loginPassword', 'loginPasswordError', 'Mật khẩu phải có ít nhất 6 ký tự');
+                isValid = false;
+            } else {
+                showSuccess('loginPassword', 'loginPasswordError');
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                // Đảm bảo hiển thị form đăng nhập khi có lỗi
+                container.classList.remove("active");
+                localStorage.setItem("activeForm", "login");
+            }
+        });
     });
 </script>
 
