@@ -309,7 +309,7 @@ class ChatBotApiController extends Controller
         return $chatPrompt;
     }
 
-    // Hàm xử lý trường hợp đặc biệt
+    // Hàm xử lý trường hợp đặc biệt (rule based)
     protected function handleSpecialCases(string $message, string $userId): ?array
     {
         $message = mb_strtolower(trim($message));
@@ -338,7 +338,7 @@ class ChatBotApiController extends Controller
             ];
         }
         // Từ ngữ không phù hợp
-        if (preg_match('/\b(xấu|dở|tệ|chán|đểu|ngu)\b/u', $message)) {
+        if (preg_match('/\b(xấu|dở|tệ|chán|đểu|ngu|tồi|dốt|kém)\b/u', $message)) {
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
         }
 
@@ -495,7 +495,7 @@ class ChatBotApiController extends Controller
         elseif (str_contains($message, 'áo')) $category = 'áo';
 
         // 1. RẺ NHẤT
-        if (str_contains($message, 'rẻ nhất') || str_contains($message, 'giá rẻ nhất')) {
+        if (str_contains($message, 'rẻ nhất') || str_contains($message, 'giá rẻ nhất') || str_contains($message, 'sản phẩm giá rẻ') || preg_match('/rẻ\s*(\d+[\d\.,]*)[k]?/u', $message)) {
             return [
                 'intent' => 'cheapest',
                 'category' => $category,

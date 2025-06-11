@@ -14,7 +14,7 @@
                 <div class="modal-header">
                     <h5 class="modal-title mb-0">
                         <i class="fas fa-robot"></i>
-                        Trợ Lý Thông Minh
+                        Trợ Lý Tư Vấn TFashionShop
                     </h5>
                     <button type="button" class="btn-close-chatbot" data-bs-dismiss="modal" aria-label="Close">
                         <i class="fas fa-times"></i>
@@ -27,9 +27,9 @@
                             <i class="fas fa-robot"></i>
                         </div>
 
-                        <h4>Chào mừng bạn!</h4>
-                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết!</p>
-                        <strong style="color: red; font-weight: bold; font-size: 18px;">(*Do còn trong quá trình phát
+                        <h4>Chào mừng bạn đến với TFashionShop!</h4>
+                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản phẩm...)!</p>
+                        <strong style="color: red; font-weight: bold; font-size: 14px;">(*Do còn trong quá trình phát
                             triển, Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin tư vấn chỉ là tham
                             khảo!*)</strong>
                     </div>
@@ -54,13 +54,13 @@
                             <i class="fas fa-user-tie"></i>
                             Áo sơ mi
                         </button>
-                        <button class="quick-reply-btn" data-message="Quần jean có mẫu nào?">
-                            <i class="fas fa-user"></i>
-                            Quần jean
-                        </button>
                         <button class="quick-reply-btn" data-message="Quần cotton có mẫu nào?">
                             <i class="fas fa-user"></i>
                             Quần cotton
+                        </button>
+                        <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
+                            <i class="fas fa-tags"></i>
+                            Sản phẩm giá mềm
                         </button>
                         <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
                             <i class="fas fa-tags"></i>
@@ -336,7 +336,6 @@
                                 discountBadge = `
                                 <div class="mt-1">
                                     <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
-                                    ${product.discount_code ? `<span class="badge bg-success ms-1">Mã: ${product.discount_code}</span>` : ''}
                                 </div>
                             `;
                             }
