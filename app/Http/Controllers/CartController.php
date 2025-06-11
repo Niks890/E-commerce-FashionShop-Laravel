@@ -42,7 +42,9 @@ class CartController extends Controller
 
 
             $cartItems = Session::get('cart', []);
-            $variantKey = $product->id . '-' . $productVariant->color . '-' . $productVariant->size;
+            $normalizedColor = str_replace(' ', '', $productVariant->color);
+
+            $variantKey = $product->id . '-' . $normalizedColor . '-' . $productVariant->size;
 
             // Lấy số lượng đang có trong giỏ cho biến thể này (nếu có)
             $currentItem = isset($cartItems[$variantKey]) ? (array) $cartItems[$variantKey] : [];
@@ -89,7 +91,8 @@ class CartController extends Controller
 
 
             $cartItems = Session::get('cart', []);
-            $variantKey = $product->id . '-' . $productVariant->color . '-' . $productVariant->size;
+            $normalizedColor = str_replace(' ', '', $productVariant->color);
+            $variantKey = $product->id . '-' .  $normalizedColor . '-' . $productVariant->size;
 
             $currentItem = isset($cartItems[$variantKey]) ? (array)$cartItems[$variantKey] : [];
             $currentQty = isset($currentItem['quantity']) ? $currentItem['quantity'] : 0;
@@ -143,14 +146,18 @@ class CartController extends Controller
 
     public function updateCartSession(Request $request)
     {
+        // dd($request->all());
         if (!Session::has('cart')) {
             return response()->json(['message' => 'Không có giỏ hàng!'], 400);
         }
 
         $cart = Session::get('cart');
 
-        if (isset($cart[$request->product_id . '-' . $request->color . '-' . $request->size])) {
-            $cart[$request->product_id . '-' . $request->color . '-' . $request->size]->quantity = (int) $request->quantity;
+        $normalizedColor = str_replace(' ', '', $request->color);
+        $key = $request->product_id . '-' . $normalizedColor . '-' . $request->size;
+
+        if (isset($cart[$key])) {
+            $cart[$key]->quantity = (int) $request->quantity;
             Session::put('cart', $cart); // Cập nhật session
         }
 

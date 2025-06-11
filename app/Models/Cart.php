@@ -19,7 +19,8 @@ class Cart
 
     public function add($product, $quantity = 1, $productVariant = null)
     {
-        $key = $product->id . '-' . $productVariant->color . '-' . $productVariant->size;
+        $normalizedColor = str_replace(' ', '', $productVariant->color);
+        $key = $product->id . '-' . $normalizedColor . '-' . $productVariant->size;
         if (!empty($this->items[$key])) {
             $this->items[$key]->quantity += $quantity;
         } else {
@@ -71,5 +72,4 @@ class Cart
         }
         return $total;
     }
-
 }

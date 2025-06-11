@@ -4,7 +4,7 @@
 --}}
 
 {{-- @php
-    // dd(Session::get('cart'));
+    dd(Session::get('cart'));
 @endphp --}}
 @if (Session::has('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -71,7 +71,8 @@
                                                         <h5 class="product-price">
                                                             {{ number_format($items->price, 0, ',', '.') . ' đ' }}
                                                         </h5>
-                                                        <h6 class="mt-1 color-variant">Màu sắc: {{ $items->color }}</h6>
+                                                        <h6 class="mt-1 color-variant" data-color="{{ $items->color }}">Màu
+                                                            sắc: {{ $items->color }}</h6>
                                                         <h6 class="size-variant">Size: {{ $items->size }}</h6>
                                                     </div>
                                                 </a>
@@ -79,8 +80,7 @@
                                             <td class="product__cart__item">
                                                 <a href="{{ route('sites.productDetail', $items->slug) }}">
                                                     <div class="product__cart__item__pic">
-                                                        <img src="{{$items->image }}" width="80"
-                                                            alt="">
+                                                        <img src="{{ $items->image }}" width="80" alt="">
                                                     </div>
                                                 </a>
                                             </td>
@@ -225,7 +225,11 @@
                 let input = row.find(".product-quantity");
                 let productId = row.data("id");
                 let productPrice = parseInt(row.find(".product-price").text().replace(/\D/g, ""));
-                let productColor = row.find(".color-variant").text().split(" ")[2];
+
+                // let productColor = row.find(".color-variant").text().split(" ")[2];
+                let productColor = row.find(".color-variant").data('color').replace(' ', '');
+                // console.log(productColor);
+
                 let productSize = row.find(".size-variant").text().split(" ")[1];
 
                 let currentQuantity = parseInt(input.val());
@@ -253,6 +257,13 @@
         });
         // Hàm xử lý Cập nhật session cart
         function updateCartSession(productId, color, size, quantity) {
+            // console.log("Sending update request with:", {
+            //     productId: productId,
+            //     color: color,
+            //     size: size,
+            //     quantity: quantity
+            // });
+
             $.ajax({
                 url: "/cart/update-cart-session",
                 method: "POST",
@@ -265,7 +276,7 @@
                 },
                 success: function(response) {
                     // console.log("Session updated:", response);
-                    // console.log(response.data);
+                    // console.log(response);
                 },
                 error: function(xhr) {
                     console.error("Lỗi khi cập nhật session:", xhr.responseText);
@@ -274,7 +285,7 @@
         }
     </script>
 
-
+    {{-- Qty validate --}}
     <script>
         $(document).ready(function() {
             $('.product-quantity').change(function(e) {
@@ -282,7 +293,8 @@
                 let input = row.find(".product-quantity");
                 let productId = row.data("id");
                 let productPrice = parseInt(row.find(".product-price").text().replace(/\D/g, ""));
-                let productColor = row.find(".color-variant").text().split(" ")[2];
+                // let productColor = row.find(".color-variant").text().split(" ")[2];
+                let productColor = row.find(".color-variant").data('color').replace(' ', '');
                 let productSize = row.find(".size-variant").text().split(" ")[1];
 
                 let currentQuantity = parseInt(input.val());
@@ -308,6 +320,36 @@
         });
     </script>
 
+    <script>
+        $(document).ready(function() {
+            $('.product-quantity').change(function(e) {
+                let row = $(this).closest("tr");
+                let input = row.find(".product-quantity");
+                let productId = row.data("id");
+                let productPrice = parseInt(row.find(".product-price").text().replace(/\D/g, ""));
+                let currentQuantity = parseInt(input.val());
+                let minValue = parseInt(input.attr("min")) || 1;
+                let maxValue = parseInt(input.attr("max")) || 10;
+
+                if (currentQuantity > maxValue) { // maxValue => số lượng còn lại trong kho
+                    input.val(maxValue); // số phông bạt
+                    currentQuantity = maxValue;
+                    alert("Số lượng không thể vượt quá số lượng trong kho!" + maxValue);
+                } else if (currentQuantity < minValue) {
+                    input.val(1);
+                    currentQuantity = 1;
+                    alert("Số lượng không thể là số âm!");
+                }
+                // console.log(currentQuantity);
+                let totalPrice = productPrice * currentQuantity;
+                row.find(".cart__price").text(totalPrice.toLocaleString() + " đ");
+                updateCartSession(productId, currentQuantity);
+                updateCartTotal();
+            });
+        });
+    </script>
+
+    {{-- discount --}}
     <script>
         $(document).ready(function() {
             $('#apply-code-discount').click(function(e) {
@@ -354,34 +396,7 @@
         });
     </script>
 
-    <script>
-        $(document).ready(function() {
-            $('.product-quantity').change(function(e) {
-                let row = $(this).closest("tr");
-                let input = row.find(".product-quantity");
-                let productId = row.data("id");
-                let productPrice = parseInt(row.find(".product-price").text().replace(/\D/g, ""));
-                let currentQuantity = parseInt(input.val());
-                let minValue = parseInt(input.attr("min")) || 1;
-                let maxValue = parseInt(input.attr("max")) || 10;
 
-                if (currentQuantity > maxValue) { // maxValue => số lượng còn lại trong kho
-                    input.val(maxValue); // số phông bạt
-                    currentQuantity = maxValue;
-                    alert("Số lượng không thể vượt quá số lượng trong kho!" + maxValue);
-                } else if (currentQuantity < minValue) {
-                    input.val(1);
-                    currentQuantity = 1;
-                    alert("Số lượng không thể là số âm!");
-                }
-                // console.log(currentQuantity);
-                let totalPrice = productPrice * currentQuantity;
-                row.find(".cart__price").text(totalPrice.toLocaleString() + " đ");
-                updateCartSession(productId, currentQuantity);
-                updateCartTotal();
-            });
-        });
-    </script>
 
     <script>
         $(document).ready(function() {
@@ -525,7 +540,7 @@
                     let productKey = $(this).data("key");
                     checkedItems.push(productKey);
                 });
-                console.log("Danh sách checked:", checkedItems);
+                // console.log("Danh sách checked:", checkedItems);
                 $.ajax({
                     url: "/cart/update-check-status",
                     method: "POST",
@@ -534,7 +549,7 @@
                         _token: $('meta[name="csrf-token"]').attr("content")
                     },
                     success: function(response) {
-                        console.log("Cập nhật session thành công:", response);
+                        // console.log("Cập nhật session thành công:", response);
                     },
                     error: function(xhr) {
                         console.error("Lỗi khi cập nhật session:", xhr.responseText);

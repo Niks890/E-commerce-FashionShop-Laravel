@@ -38,9 +38,10 @@ function addToCart(productId, event) {
                 // console.log("Dữ liệu data từ backend:", data);
                 // console.log("productId:", productId);
 
-                // Tạo itemKey - đảm bảo format nhất quán
-                let itemKey = `${productId}-${data.color || 'default'}-${data.size || 'default'}`;
-                // console.log("itemKey được tạo:", itemKey);
+                // Tạo itemKey - đảm bảo format nhất quán formattedColor
+                var normalizedColor = data.color.replace(' ', '');
+                let itemKey = `${productId}-${normalizedColor || 'default'}-${data.size || 'default'}`;
+                console.log("itemKey được tạo:", itemKey);
 
                 // Tìm item trong response từ backend
                 let item = data.cart.items[itemKey];
