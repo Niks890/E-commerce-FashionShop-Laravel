@@ -44,8 +44,6 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/'], function () {
     Route::get('/', [HomeController::class, 'home'])->name('sites.home');
-    // Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
-    // Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');
     // Xử lý đăng nhập user
     Route::group(['prefix' => 'user'], function () {
         Route::get('/login', [CustomerController::class, 'login'])->name('user.login');
@@ -230,3 +228,6 @@ Route::post('/inventory/{inventory}/approve', [InventoryController::class, 'appr
 Route::post('/inventory/{id}/reject', [InventoryController::class, 'reject'])
     ->name('inventory.reject')
     ->middleware('can:warehouse workers');
+
+Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
+Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');

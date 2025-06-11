@@ -1,5 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap");
 
+/* Reset and base styles */
 * {
     margin: 0;
     padding: 0;
@@ -17,6 +18,7 @@ body {
     height: 100vh;
 }
 
+/* Main container styling */
 .container {
     background-color: #fff;
     border-radius: 30px;
@@ -46,6 +48,7 @@ body {
     margin: 15px 0 10px;
 }
 
+/* Button styling */
 .container button {
     background-color: #8e24aa;
     color: #fff;
@@ -58,6 +61,8 @@ body {
     text-transform: uppercase;
     margin-top: 10px;
     cursor: pointer;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+    /* Add transition */
 }
 
 .container button:hover {
@@ -69,6 +74,7 @@ body {
     border-color: #fff;
 }
 
+/* Form styling */
 .container form {
     background-color: #fff;
     display: flex;
@@ -79,17 +85,20 @@ body {
     height: 100%;
 }
 
+/* Input field styling */
 .container input {
     background-color: #eee;
     border: none;
-    margin: 8px 0;
     padding: 10px 15px;
     font-size: 13px;
     border-radius: 8px;
     width: 100%;
     outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    /* Add transition */
 }
 
+/* Form container positioning */
 .form-container {
     position: absolute;
     top: 0;
@@ -114,12 +123,6 @@ body {
     z-index: 1;
 }
 
-.validate-error {
-    font-size: 12px;
-    align-self: start;
-    margin-left: 6px;
-}
-
 .container.active .sign-up {
     transform: translateX(100%);
     opacity: 1;
@@ -127,6 +130,7 @@ body {
     animation: move 0.6s;
 }
 
+/* Animation for sign-up form */
 @keyframes move {
 
     0%,
@@ -142,6 +146,7 @@ body {
     }
 }
 
+/* Social icons styling */
 .social-icons {
     margin: 20px 0;
 }
@@ -155,8 +160,18 @@ body {
     margin: 0 3px;
     width: 40px;
     height: 40px;
+    color: #333;
+    /* Ensure icon color */
+    transition: border-color 0.3s ease;
+    /* Add transition */
 }
 
+.social-icons a:hover {
+    border-color: #8e24aa;
+    /* Hover effect for social icons */
+}
+
+/* Toggle container styling (for the sliding panel) */
 .toggle-container {
     position: absolute;
     top: 0;
@@ -176,12 +191,9 @@ body {
 
 .toggle {
     background-color: #512da8;
-    height: 100%;
-    /* background: linear-gradient(to right, #5c6bc0, #512da8);
-     */
-    /* background: linear-gradient(to right, #ab47bc, #7b1fa2); */
+    /* Fallback */
     background: linear-gradient(to right, #8e24aa, #d81b60);
-
+    /* Gradient background */
     color: #fff;
     position: relative;
     left: -100%;
@@ -227,7 +239,172 @@ body {
     transform: translateX(200%);
 }
 
+/* Disable transitions for specific actions (e.g., on page load for initial state) */
 .container.no-transition * {
     transition: none !important;
     animation: none !important;
+}
+
+/* ---
+
+## Validation and Password Toggle Specific Styles
+
+These styles are crucial for the feedback you give users and the eye icon functionality.
+
+```css */
+/* CSS for validation styling */
+.error-field {
+    border: 2px solid #dc3545 !important;
+    background-color: #ffeaea !important;
+}
+
+.success-field {
+    border: 2px solid #28a745 !important;
+    background-color: #eaffea !important;
+}
+
+.validate-error {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #dc3545;
+    align-self: flex-start;
+    /* Ensure it aligns with the start of the input */
+    margin-left: 0;
+    /* Remove any inherited margin from .container input */
+}
+
+/* Password toggle eye icon */
+.password-toggle {
+    position: relative;
+    width: 100%;
+    /* Make the wrapper take full width */
+    margin: 8px 0;
+    /* Match vertical spacing of other inputs */
+}
+
+.password-toggle input {
+    padding-right: 40px;
+    /* Space for the icon */
+    /* width: 100% is already applied from .container input */
+    /* box-sizing: border-box is already applied from * */
+}
+
+.password-toggle .toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;
+    transition: color 0.2s ease;
+    /* Smooth hover effect */
+}
+
+.password-toggle .toggle-password:hover {
+    color: #333;
+}
+
+
+
+/* Sửa lại phần CSS cho password toggle trong modal */
+.password-toggle-modal {
+    position: relative;
+    width: 100%;
+    margin: 8px 0;
+}
+
+.password-toggle-modal input {
+    padding-right: 40px;
+    /* Tạo khoảng trống cho icon */
+    width: 100%;
+    /* Đảm bảo input chiếm đủ chiều rộng */
+}
+
+.password-toggle-modal .toggle-password-modal {
+    position: absolute;
+    right: 15px;
+    /* Điều chỉnh vị trí ngang */
+    top: 70%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #777;
+    transition: color 0.2s ease;
+    z-index: 10;
+    /* Đảm bảo icon hiển thị trên input */
+}
+
+.password-toggle-modal .toggle-password-modal:hover {
+    color: #333;
+}
+
+
+/* Modal styling (for Forgot Password) */
+.modal-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.modal-title {
+    color: #333;
+    font-weight: 600;
+}
+
+.modal-content {
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Bootstrap button overrides (if you want custom colors) */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0069d9;
+    border-color: #0062cc;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Focus styles for form controls (from Bootstrap but customized) */
+.form-control:focus {
+    border-color: #80bdff;
+    /* Default Bootstrap blue focus */
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    /* Default Bootstrap blue shadow */
+}
+
+/* OTP instruction message in modal */
+.otp-instruction {
+    background-color: #f8f9fa;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 14px;
+    border: 1px solid #e9ecef;
+    /* A light border for definition */
+}
+
+#resendOtpBtn {
+    white-space: nowrap;
+}
+
+#countdown {
+    display: inline;
+}
+
+#resendText {
+    display: inline;
 }

@@ -38,23 +38,32 @@ class ForgotPasswordController extends Controller
 
         // 2. Tìm người dùng dựa trên email hoặc username
         $user = Customer::where('email', $identifier)
-            ->orWhere('name', $identifier) // Giả sử 'name' là username
+            ->whereNull('platform_id') // Chỉ tài khoản đăng ký thông thường
             ->first();
+
 
         if (!$user) {
             return response()->json(['message' => 'Không tìm thấy người dùng với thông tin bạn cung cấp.'], 404);
         }
 
-        // 3. Tạo mã OTP
-        $otp = random_int(100000, 999999); // OTP 6 chữ số
-        // Hoặc dùng Str::random(6) nếu bạn muốn OTP dạng chữ và số.
-        // $otp = Str::random(6);
+        $redisKey = 'otp:' . $user->id;
+        $existingOtp = Cache::store('redis')->get($redisKey);
 
-        // 4. Lưu OTP vào Redis với key duy nhất và thời gian sống (ví dụ: 5 phút)
-        // Key: 'otp:{user_id}' hoặc 'otp:{email_nguoi_dung}' để dễ quản lý và truy xuất
-        $redisKey = 'otp:' . $user->id; // Hoặc 'otp:' . $user->email;
-        $ttl = now()->addMinutes(5); // OTP có hiệu lực trong 5 phút
+        if ($existingOtp) {
+            return response()->json([
+                'message' => 'Mã OTP vẫn còn hiệu lực. Vui lòng kiểm tra email hoặc đợi 1 phút để gửi lại.'
+            ], 429);
+        }
+
+
+
+        // 4. Tạo mã OTP
+        $otp = random_int(100000, 999999); // OTP 6 chữ số
+
+        // 5. Lưu OTP vào Redis với thời gian sống 1 phút
+        $ttl = now()->addMinutes(1);
         Cache::store('redis')->put($redisKey, $otp, $ttl);
+
 
         // 5. Gửi mã OTP qua email (hoặc SMS)
         // Bạn cần tạo một Mailable class (App\Mail\OtpMail) để gửi email
@@ -83,7 +92,7 @@ class ForgotPasswordController extends Controller
         $validator = Validator::make($request->all(), [
             'identifier_hidden' => 'required|string', // email/username đã gửi OTP
             'otp_code' => 'required|numeric|digits:6',
-            'new_password' => 'required|string|min:8|confirmed', // 'confirmed' sẽ tự động kiểm tra new_password_confirmation
+            'new_password' => 'required|string|min:6|confirmed', // 'confirmed' sẽ tự động kiểm tra new_password_confirmation
         ], [
             'identifier_hidden.required' => 'Thông tin người dùng không hợp lệ.',
             'otp_code.required' => 'Vui lòng nhập mã OTP.',
@@ -103,9 +112,11 @@ class ForgotPasswordController extends Controller
         $newPassword = $request->input('new_password');
 
         // 2. Tìm người dùng
-        $user = User::where('email', $identifier)
-            ->orWhere('name', $identifier)
+        $user = Customer::where('email', $identifier)
+            ->whereNull('platform_id') // Chỉ tài khoản đăng ký thông thường
             ->first();
+
+
 
         if (!$user) {
             return response()->json(['message' => 'Người dùng không tồn tại.'], 404);
