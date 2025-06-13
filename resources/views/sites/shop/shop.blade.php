@@ -41,7 +41,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <div class="active-filters">
-                            @if (request()->hasAny(['q', 'category', 'brand', 'price', 'tag', 'color', 'promotion']))
+                            @if (request()->hasAny(['q', 'category', 'brand', 'price', 'tag', 'color', 'promotion', 'size']))
                                 <span class="filter-title">Bộ lọc hiện tại:</span>
                                 @if (request('q'))
                                     <span class="filter-badge">
@@ -97,6 +97,15 @@
                                         </a>
                                     </span>
                                 @endif
+                                @if (request('size'))
+                                    <span class="filter-badge">
+                                        Size: {{ request('size') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['size' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
                                 @if (request('promotion'))
                                     <span class="filter-badge">
                                         Đang khuyến mãi
@@ -130,6 +139,7 @@
                                             dần</option>
                                         <option value="price_desc" {{ $sortBy == 'price_desc' ? 'selected' : '' }}>Giá giảm
                                             dần</option>
+                                        <option value="best_selling" {{ $sortBy == 'best_selling' ? 'selected' : '' }}>Bán chạy nhất</option>
                                     </select>
                                 </div>
                             </form>
@@ -302,6 +312,27 @@
                                                                       border-radius: 50%;
                                                                       margin-right: 5px;"
                                                                title="{{ $color }}"></a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-heading">
+                                        <a data-toggle="collapse" data-target="#collapseFive">Size</a>
+                                    </div>
+                                    <div id="collapseFive" class="collapse show" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <div class="shop__sidebar__sizes">
+                                                <ul>
+                                                    @foreach($sizes as $size)
+                                                        <li>
+                                                            <a class="text-dark" href="{{ request()->fullUrlWithQuery(['size' => $size, 'page' => 1]) }}"
+                                                               class="{{ request('size') == $size ? 'active' : '' }}">
+                                                                {{ $size }}
+                                                            </a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
