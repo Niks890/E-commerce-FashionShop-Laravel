@@ -152,6 +152,128 @@ class HomeController extends Controller
         return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors'));
     }
 
+
+    // lọc nâng cao theo size, theo bán chạy
+    // public function shop(Request $request)
+    // {
+    //     // Khởi tạo query
+    //     $query = Product::with('category', 'Discount', 'ProductVariants', 'comments')->where('status', 1);
+
+    //     // Tìm kiếm theo tên sản phẩm
+    //     if ($request->has('q')) {
+    //         $search = $request->q;
+    //         $query->where('product_name', 'LIKE', "%$search%");
+    //     }
+
+    //     // Lọc theo danh mục
+    //     if ($request->has('category')) {
+    //         $categoryName = $request->category;
+    //         $query->whereHas('category', function ($q) use ($categoryName) {
+    //             $q->where('category_name', $categoryName);
+    //         });
+    //     }
+
+    //     // Lọc theo thương hiệu
+    //     if ($request->has('brand')) {
+    //         $brandName = $request->brand;
+    //         $query->where('brand', $brandName);
+    //     }
+
+    //     // Lọc theo khoảng giá
+    //     if ($request->has('price')) {
+    //         $price = $request->price;
+    //         if (strpos($price, '-') !== false) {
+    //             [$min, $max] = explode('-', $price);
+    //             $minPrice = str_replace('.', '', $min);
+    //             $maxPrice = str_replace('.', '', $max);
+    //             $query->whereBetween('price', [$minPrice, $maxPrice]);
+    //         } else {
+    //             $minPrice = str_replace('.', '', $price);
+    //             $query->where('price', '>=', $minPrice);
+    //         }
+    //     }
+
+    //     // Lọc theo tag
+    //     if ($request->has('tag')) {
+    //         $tag = str_replace('-', ' ', $request->tag);
+    //         $query->where('tags', 'like', "%$tag%");
+    //     }
+
+    //     // Lọc theo màu sắc (variant)
+    //     if ($request->has('color')) {
+    //         $color = $request->color;
+    //         $query->whereHas('ProductVariants', function ($q) use ($color) {
+    //             $q->where('color', $color);
+    //         });
+    //     }
+
+    //     // Lọc theo size (variant)
+    //     if ($request->has('size')) {
+    //         $size = $request->size;
+    //         $query->whereHas('ProductVariants', function ($q) use ($size) {
+    //             $q->where('size', $size);
+    //         });
+    //     }
+
+    //     // Lọc theo sản phẩm đang có khuyến mãi còn hạn
+    //     if ($request->has('promotion')) {
+    //         $currentDate = now()->format('Y-m-d');
+    //         $query->whereHas('Discount', function ($q) use ($currentDate) {
+    //             $q->where('start_date', '<=', $currentDate)
+    //                 ->where('end_date', '>=', $currentDate);
+    //         });
+    //     }
+
+    //     // Sắp xếp
+    //     $sortBy = $request->input('sort_by', 'newest');
+    //     switch ($sortBy) {
+    //         case 'price_asc':
+    //             $query->orderBy('price', 'asc');
+    //             break;
+    //         case 'price_desc':
+    //             $query->orderBy('price', 'desc');
+    //             break;
+    //         case 'best_selling':
+    //             // Join với bảng order items để lấy sản phẩm bán chạy
+    //             $query->leftJoin('order_details as order_d', 'products.id', '=', 'order_details as order_d.product_id')
+    //                 ->select('products.*', DB::raw('SUM(order_details as order_d.quantity) as total_sold'))
+    //                 ->groupBy('products.id')
+    //                 ->orderBy('total_sold', 'desc');
+    //             break;
+    //         case 'newest':
+    //         default:
+    //             $query->orderBy('created_at', 'desc');
+    //             break;
+    //     }
+
+    //     // Phân trang và giữ lại các tham số lọc
+    //     $products = $query->paginate(12)->appends($request->query());
+
+    //     // Lấy dữ liệu cho các bộ lọc
+    //     $categories = Category::all();
+    //     $brands = Product::where('status', 1)->distinct()->pluck('brand');
+    //     $priceRanges = [
+    //         '0-1000000' => 'Dưới 1 triệu',
+    //         '1000000-5000000' => '1 - 5 triệu',
+    //         '5000000-10000000' => '5 - 10 triệu',
+    //         '10000000' => 'Trên 10 triệu'
+    //     ];
+
+    //     // Lấy danh sách các màu sắc có sẵn
+    //     $colors = ProductVariant::select('color')
+    //         ->distinct()
+    //         ->pluck('color');
+
+    //     // Lấy danh sách các size có sẵn
+    //     $sizes = ProductVariant::select('size')
+    //         ->distinct()
+    //         ->pluck('size')
+    //         ->filter()
+    //         ->values();
+
+    //     return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors', 'sizes'));
+    // }
+
     public function cart()
     {
         return view('sites.cart.index');
