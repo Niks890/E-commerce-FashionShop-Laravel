@@ -92,7 +92,7 @@ class RecommendationController extends Controller
 
         // dd($recommendationProductIds);
 
-        $products = Product::with('Discount', 'ProductVariants')
+        $products = Product::with('Discount', 'ProductVariants', 'comments')
             ->whereIn('id', $recommendationProductIds)
             ->where('status', 1)->paginate(8);
         $productResource = ProductResource::collection($products);

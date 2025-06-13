@@ -60,7 +60,7 @@ class SearchController extends Controller
         }
 
         // Tìm tất cả sản phẩm liên quan đến bất kỳ từ khóa nào trong lịch sử tìm kiếm
-        $suggestedProducts = Product::with('Discount', 'ProductVariants')->where(function ($query) use ($history) {
+        $suggestedProducts = Product::with('Discount', 'ProductVariants')->withAvg('comments as star', 'star')->withCount('comments as comments_count')->where(function ($query) use ($history) {
             foreach ($history as $term) {
                 $query->orWhere('product_name', 'LIKE', "%{$term}%")
                     ->orWhere('tags', 'LIKE', "%{$term}%");

@@ -1,4 +1,5 @@
 @php
+    // dd($productRecentInfo);
     $userId = auth()->guard('customer')->user()->id ?? 0;
     // dd($userId);
 @endphp
@@ -19,44 +20,72 @@
     <!-- Hero Section Begin -->
     <section class="hero">
         <div class="hero__slider owl-carousel">
-            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-2.jpg') }}">
+            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/banner-home-2.jpg') }}">
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
                                 <h6>Bộ sưu tập mùa hè</h6>
-                                <h2>Fall - Winter Collections 2025</h2>
-                                <p>Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng. Được chế tác một
+                                <h2 class="text-white">Fall - Winter Collections 2025</h2>
+                                <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
+                                    Được chế tác một
                                     cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
                                 <a href="{{ route('sites.shop') }}" class="primary-btn">Mua ngay<span
                                         class="arrow_right"></span></a>
                                 <div class="hero__social">
-                                    <a href="https://www.facebook.com/?locale=vi_VN"><i class="fa fa-facebook"></i></a>
-                                    <a href="https://x.com/?lang=vi"><i class="fa fa-twitter"></i></a>
-                                    <a href="https://www.pinterest.com/"><i class="fa fa-pinterest"></i></a>
-                                    <a href="https://www.instagram.com/"><i class="fa fa-instagram"></i></a>
+                                    <a href="https://www.facebook.com/?locale=vi_VN"><i
+                                            class="fa fa-facebook text-white"></i></a>
+                                    <a href="https://x.com/?lang=vi"><i class="fa fa-twitter text-white"></i></a>
+                                    <a href="https://www.pinterest.com/"><i class="fa fa-pinterest text-white"></i></a>
+                                    <a href="https://www.instagram.com/"><i class="fa fa-instagram text-white"></i></a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/hero-1.jpg') }}">
+            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/banner-home-3.jpg') }}">
                 <div class="container">
                     <div class="row">
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
                                 <h6>Bộ sưu tập Thu Đông</h6>
-                                <h2>Fall - Winter Collections 2025</h2>
-                                <p>Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng. Được chế tác một
+                                <h2 class="text-white">Fall - Winter Collections 2025</h2>
+                                <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
+                                    Được chế tác một
                                     cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
                                 <a href="{{ route('sites.shop') }}" class="primary-btn">Mua ngay<span
                                         class="arrow_right"></span></a>
                                 <div class="hero__social">
-                                    <a href="https://www.facebook.com/?locale=vi_VN"><i class="fa fa-facebook"></i></a>
-                                    <a href="https://x.com/?lang=vi"><i class="fa fa-twitter"></i></a>
-                                    <a href="https://www.pinterest.com/"><i class="fa fa-pinterest"></i></a>
-                                    <a href="https://www.instagram.com/"><i class="fa fa-instagram"></i></a>
+                                    <a href="https://www.facebook.com/?locale=vi_VN"><i
+                                            class="fa fa-facebook text-white"></i></a>
+                                    <a href="https://x.com/?lang=vi"><i class="fa fa-twitter text-white"></i></a>
+                                    <a href="https://www.pinterest.com/"><i class="fa fa-pinterest text-white"></i></a>
+                                    <a href="https://www.instagram.com/"><i class="fa fa-instagram text-white"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="hero__items set-bg" data-setbg="{{ asset('client/img/hero/banner-home-4.jpg') }}">
+                <div class="container">
+                    <div class="row">
+                        <div class="col-xl-5 col-lg-7 col-md-8">
+                            <div class="hero__text">
+                                <h6 class="text-white">Bộ sưu tập Xuân Hè</h6>
+                                <h2 class="text-white">Spring - Summer Collections 2025</h2>
+                                <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
+                                    Được chế tác một
+                                    cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
+                                <a href="{{ route('sites.shop') }}" class="primary-btn">Mua ngay<span
+                                        class="arrow_right"></span></a>
+                                <div class="hero__social">
+                                    <a href="https://www.facebook.com/?locale=vi_VN"><i
+                                            class="fa fa-facebook text-white"></i></a>
+                                    <a href="https://x.com/?lang=vi"><i class="fa fa-twitter text-white"></i></a>
+                                    <a href="https://www.pinterest.com/"><i class="fa fa-pinterest text-white"></i></a>
+                                    <a href="https://www.instagram.com/"><i class="fa fa-instagram text-white"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -126,6 +155,7 @@
                     @foreach ($productRecentInfo as $itemRecent)
                         @php
                             // Xử lý khuyến mãi
+                            $originalPrice = $itemRecent->price;
                             $discountName = '';
                             if ($itemRecent->discount_id && $itemRecent->discount_id !== null) {
                                 $itemRecent->price =
@@ -185,17 +215,40 @@
                                                 '">+Add To Cart</a>';
                                         }
                                     @endphp
-                                    {{-- <a href="javascript:void(0);" class="add-cart" data-id="{{ $itemRecent->id }}">
-                                        + Add To Cart
-                                    </a> --}}
+                                    {{-- <h6>{{ $itemRecent->comments->avg('star') ?? '' }}</h6>
                                     <div class="rating mt-2">
                                         <i class="fa fa-star-o"></i>
                                         <i class="fa fa-star-o"></i>
                                         <i class="fa fa-star-o"></i>
                                         <i class="fa fa-star-o"></i>
                                         <i class="fa fa-star-o"></i>
+                                    </div> --}}
+                                    <div class="rating mt-2">
+                                        @php
+                                            $avgRating = $itemRecent->comments->avg('star') ?? 0;
+                                            $fullStars = floor($avgRating);
+                                            $hasHalfStar = $avgRating - $fullStars >= 0.5;
+                                        @endphp
+
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($i <= $fullStars)
+                                                <i class="fa fa-star text-warning"></i> <!-- Full star -->
+                                            @elseif ($i == $fullStars + 1 && $hasHalfStar)
+                                                <i class="fa fa-star-half-o"></i> <!-- Half star -->
+                                            @else
+                                                <i class="fa fa-star-o"></i> <!-- Empty star -->
+                                            @endif
+                                        @endfor
+                                        <span class="text-muted">
+                                            ({{ round($itemRecent->comments->count()) ?? 0 }})
+                                        </span>
                                     </div>
+
                                     <h5>{{ number_format($itemRecent->price) }} đ</h5>
+                                    @if ($itemRecent->discount_id && $itemRecent->discount_id !== null)
+                                        <h6 class="text-muted" style="text-decoration: line-through;">
+                                            {{ number_format($originalPrice) }} đ</h6>
+                                    @endif
                                     <div class="product__color__select">
                                         <label for="pc-1">
                                             <input type="radio" id="pc-1">
@@ -249,7 +302,6 @@
                                 products.forEach((product, index) => {
                                     let finalPrice;
                                     // console.log(product.discount.percent_discount, product.discount.id);
-
                                     if (product.discount && product.discount.id != null) {
                                         finalPrice = product.price - (product.price * product.discount.percent_discount);
                                         nameDiscount = product.discount.name;
@@ -263,6 +315,14 @@
                                         style: 'currency',
                                         currency: 'VND'
                                     }).format(finalPrice);
+
+                                    // console.log(product);
+
+                                    const showOriginalPrice = product.discount_id !== null && product.discount;
+                                    let formattedOriginalPrice = new Intl.NumberFormat('vi-VN', {
+                                        style: 'currency',
+                                        currency: 'VND'
+                                    }).format(product.price);
 
                                     // console.log(product);
                                     let totalStock = [];
@@ -280,8 +340,6 @@
                                             addCartOrNone[variant.product_id] = true;
                                         };
                                     })
-
-
 
                                     let productItem = document.createElement('div');
                                     productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
@@ -309,14 +367,14 @@
                                             `<span class=" badge badge-warning">Hết hàng</span>`)
 
                                         +
-                                        `<div class="rating">
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                    </div>
+                                        `
+                                            <div class="rating" >
+                                                ${generateStarRating(product.star)}
+                                                <span class="text-muted"> (${product.comments_count})</span>
+                                            </div>
+
                                                     <h5>${formattedPrice}</h5>
+                                                    <h6 class="text-muted original-price-begin" style="text-decoration: line-through; display: ${showOriginalPrice ? 'block' : 'none'};">${formattedOriginalPrice}</h6>
                                                     <div class="product__color__select">
                                                                                 <label for="pc-${index * 3 + 1}">
                                                                                     <input type="radio" id="pc-${index * 3 + 1}">
@@ -390,6 +448,11 @@
                                     currency: 'VND'
                                 }).format(finalPrice);
 
+                                let formattedOriginalPrice = new Intl.NumberFormat('vi-VN', {
+                                    style: 'currency',
+                                    currency: 'VND'
+                                }).format(product.price);
+
                                 // console.log(product);
                                 let totalStock = [];
                                 let addCartOrNone = [];
@@ -435,14 +498,15 @@
                                         `<span class=" badge badge-warning">Hết hàng</span>`)
 
                                     +
-                                    `<div class="rating">
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                        <i class="fa fa-star-o"></i>
-                                                    </div>
+                                    `
+                                                <div class="rating" >
+                                                    ${generateStarRating(product.star)}
+                                                    <span class="text-muted"> (${product.comments_count})</span>
+                                                </div>
+
+
                                                     <h5>${formattedPrice}</h5>
+                                                    <h6 class="text-muted original-price" style="text-decoration: line-through; display: none;">${formattedOriginalPrice}</h6>
                                                     <div class="product__color__select">
                                                                                 <label for="pc-${index * 3 + 1}">
                                                                                     <input type="radio" id="pc-${index * 3 + 1}">
@@ -462,7 +526,13 @@
                                     document.querySelectorAll('.name-discount').forEach(element => {
                                         element.classList.add('bg-danger', 'text-white');
                                     });
-
+                                }
+                                if (document.querySelector('.original-price')) {
+                                    document.querySelectorAll('.original-price').forEach(element => {
+                                        if (product.discount && product.discount.id != null) {
+                                            element.style.display = 'block';
+                                        }
+                                    })
                                 }
                             });
                         } catch (error) {
@@ -639,10 +709,10 @@
 
                         let container = document.querySelector('#product-client-container');
                         container.innerHTML = "";
-
                         products.forEach((product, index) => {
                             let finalPrice;
                             let nameDiscount = "";
+                            // console.log(product);
 
                             if (product.discount_id != null) {
                                 finalPrice = product.price - (product.price * product.discount.percent_discount);
@@ -657,6 +727,12 @@
                                 currency: 'VND'
                             }).format(finalPrice);
 
+                            let formattedPriceOld = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(product.price);
+
+                            // Logic xử lý stock (giữ nguyên)
                             let totalStock = [];
                             let addCartOrNone = [];
                             product['product_variants'].map((variant) => {
@@ -677,42 +753,44 @@
                             productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6");
                             productItem.setAttribute("data-category", index % 2 === 0 ? "new-arrivals" : "hot-sales");
 
+                            // Kiểm tra xem có khuyến mãi không để quyết định hiển thị giá gốc
+                            const showOriginalPrice = product.discount_id !== null && product.discount;
+
                             productItem.innerHTML = `
-                    <div class="product__item" id="product-list-home">
-                        <div class="product__item__pic">
-                            <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
-                            <span class="label name-discount-section">${nameDiscount}</span>
-                            <ul class="product__hover">
-                                <li>
-                                    <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
-                                        <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
-                                    </a>
-                                </li>
-                                <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
-                                <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
-                            </ul>
-                        </div>
-                        <div class="product__item__text">
-                            <h6>${product.product_name}</h6>
-                            ` + (addCartOrNone[product.id] ?
+                                <div class="product__item" id="product-list-home">
+                                    <div class="product__item__pic">
+                                        <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
+                                        <span class="label name-discount-section">${nameDiscount}</span>
+                                        <ul class="product__hover">
+                                            <li>
+                                                <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
+                                                    <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
+                                                </a>
+                                            </li>
+                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
+                                            <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
+                                        </ul>
+                                    </div>
+                                    <div class="product__item__text">
+                                        <h6>${product.product_name}</h6>
+                                        ` + (addCartOrNone[product.id] ?
                                 `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
                                 `<span class="badge badge-warning">Hết hàng</span>`) + `
-                            <div class="rating">
-                                <i class="fa fa-star-o"></i>
-                                <i class="fa fa-star-o"></i>
-                                <i class="fa fa-star-o"></i>
-                                <i class="fa fa-star-o"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                            <h5>${formattedPrice}</h5>
-                            <div class="product__color__select">
-                                <label for="pc-${index * 3 + 1}"><input type="radio" id="pc-${index * 3 + 1}"></label>
-                                <label class="active black" for="pc-${index * 3 + 2}"><input type="radio" id="pc-${index * 3 + 2}"></label>
-                                <label class="grey" for="pc-${index * 3 + 3}"><input type="radio" id="pc-${index * 3 + 3}"></label>
-                            </div>
-                        </div>
-                    </div>
-                `;
+                                         <div class="rating" >
+                                                    ${generateStarRating(product.star)}
+                                                    <span class="text-muted"> (${product.comments_count})</span>
+                                                </div>
+
+                                        <h5>${formattedPrice}</h5>
+                                        <h6 class="text-muted original-price-begin" style="text-decoration: line-through; display: ${showOriginalPrice ? 'block' : 'none'};">${formattedPriceOld}</h6>
+                                        <div class="product__color__select">
+                                            <label for="pc-${index * 3 + 1}"><input type="radio" id="pc-${index * 3 + 1}"></label>
+                                            <label class="active black" for="pc-${index * 3 + 2}"><input type="radio" id="pc-${index * 3 + 2}"></label>
+                                            <label class="grey" for="pc-${index * 3 + 3}"><input type="radio" id="pc-${index * 3 + 3}"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                             container.appendChild(productItem);
                         });
 
@@ -722,6 +800,7 @@
                                 el.classList.add('bg-danger', 'text-white');
                             }
                         });
+
 
                         // Cập nhật phân trang
                         updatePagination(data.total, data.per_page, data.current_page);
@@ -838,7 +917,8 @@
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">Tên: {{ Str::words($items->name, 6) }}</div>
                             <div class="cart-item-color">Size-Màu: {{ $items->color }} - {{ $items->size }}</div>
-                            <div class="cart-item-price text-muted">Giá: {{ number_format($items->price, 0, ',', '.') . ' đ' }}
+                            <div class="cart-item-price text-muted">Giá:
+                                {{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
                         </div>
                         <span class="cart-item-quantity badge bg-danger ms-2">
@@ -993,9 +1073,7 @@
     </section>
     <!-- Latest Blog Section End -->
 @endsection
-{{-- @section('js')
-    <script src="https://cdn.jsdelivr.net/npm/mixitup@3/dist/mixitup.min.js"></script>
-@endsection --}}
+
 @section('css')
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
 @endsection

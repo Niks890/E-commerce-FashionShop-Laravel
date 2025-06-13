@@ -396,7 +396,8 @@
                                                                             liên hệ hỗ trợ qua
                                                                             <a href="tel:0123456789"
                                                                                 class="text-danger">0123.456.789</a>
-                                                                            hoặc email <a href="mailto:TFashionShop@gmail.com"
+                                                                            hoặc email <a
+                                                                                href="mailto:TFashionShop@gmail.com"
                                                                                 class="text-danger">TFashionShop@gmail.com</a>
                                                                         </p>
                                                                     </div>
@@ -656,11 +657,12 @@
                         <div class="cart-item-info flex-grow-1">
                             <div class="cart-item-name text-truncate">Tên: {{ Str::words($items->name, 6) }}</div>
                             <div class="cart-item-color">Size-Màu: {{ $items->color }} - {{ $items->size }}</div>
-                            <div class="cart-item-price text-muted">Giá: {{ number_format($items->price, 0, ',', '.') . ' đ' }}
+                            <div class="cart-item-price text-muted">Giá:
+                                {{ number_format($items->price, 0, ',', '.') . ' đ' }}
                             </div>
                         </div>
                         <span class="cart-item-quantity badge bg-danger ms-2">
-                             Qty: {{ $items->quantity }}
+                            Qty: {{ $items->quantity }}
                         </span>
                     </div>
                 @endforeach
@@ -692,6 +694,133 @@
         </div>
     </section>
     <!-- Related Section End -->
+
+
+
+    <!-- Product Recently Section Begin -->
+    @if (!empty($productRecentInfo) && count($productRecentInfo) > 0)
+        <section class="product spad" id="product-recently-section">
+            <div class="container">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <ul class="filter__controls">
+                            <li>Sản Phẩm Bạn Đã Xem Gần Đây</li>
+                        </ul>
+                    </div>
+                </div>
+
+
+                <div class="row product__filter_productRecentInfo" id="product-recently-container">
+                    @foreach ($productRecentInfo as $itemRecent)
+                        @php
+                            // Xử lý khuyến mãi
+                            $originalPrice = $itemRecent->price;
+                            $discountName = '';
+                            if ($itemRecent->discount_id && $itemRecent->discount_id !== null) {
+                                $itemRecent->price =
+                                    $itemRecent->price - $itemRecent->price * $itemRecent->Discount->percent_discount;
+                                $discountName = $itemRecent->Discount->name;
+                            } else {
+                                $discountName = 'New';
+                            }
+                            $totalStock = 0;
+                            if ($itemRecent->ProductVariants) {
+                                // Kiểm tra nếu có productVariants
+                                foreach ($itemRecent->ProductVariants as $variant) {
+                                    if ($variant) {
+                                        $totalStock += $variant->stock;
+                                    }
+                                }
+                            }
+                        @endphp
+                        <div class="col-lg-3 col-md-6 col-sm-6 mix">
+                            <div class="product__item">
+                                <div class="product__item__pic">
+                                    <img src="{{ $itemRecent->image }}" class="set-bg" width="280" height="280"
+                                        alt="{{ $itemRecent->product_name }}">
+                                    <span
+                                        class="label name-discount bg-danger {{ $discountName == 'New' ? 'text-dark bg-white' : '' }}">
+                                        {{ $discountName }}
+                                    </span>
+
+                                    <ul class="product__hover">
+                                        <li>
+                                            <a href="{{ url('add-to-wishlist/' . $itemRecent->id) }}"
+                                                class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
+                                                <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="javascript:void(0);"><img
+                                                    src="{{ asset('client/img/icon/compare.png') }}" alt="">
+                                                <span>Compare</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ url('product/' . $itemRecent->slug) }}">
+                                                <img src="{{ asset('client/img/icon/search.png') }}" alt="">
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="product__item__text">
+                                    <h6>{{ $itemRecent->product_name }}</h6>
+                                    @php
+                                        if ($totalStock == 0) {
+                                            echo '<span class=" badge badge-warning">Hết hàng</span>';
+                                        } else {
+                                            echo '<a href="javascript:void(0);" class="add-cart" data-id="' .
+                                                $itemRecent->id .
+                                                '">+Add To Cart</a>';
+                                        }
+                                    @endphp
+                                    <div class="rating mt-2">
+                                        @php
+                                            $avgRating = $itemRecent->comments->avg('star') ?? 0;
+                                            $fullStars = floor($avgRating);
+                                            $hasHalfStar = $avgRating - $fullStars >= 0.5;
+                                        @endphp
+
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            @if ($i <= $fullStars)
+                                                <i class="fa fa-star text-warning"></i> <!-- Full star -->
+                                            @elseif ($i == $fullStars + 1 && $hasHalfStar)
+                                                <i class="fa fa-star-half-o"></i> <!-- Half star -->
+                                            @else
+                                                <i class="fa fa-star-o"></i> <!-- Empty star -->
+                                            @endif
+                                        @endfor
+                                        <span class="text-muted" style="font-size: 16px;">
+                                            ({{ round($itemRecent->comments->count()) ?? 0 }})
+                                        </span>
+                                    </div>
+                                    <h5>{{ number_format($itemRecent->price) }} đ</h5>
+                                    @if ($itemRecent->discount_id && $itemRecent->discount_id !== null)
+                                        <h6 class="text-muted" style="text-decoration: line-through;">
+                                            {{ number_format($originalPrice) }} đ</h6>
+                                    @endif
+                                    <div class="product__color__select">
+                                        <label for="pc-1">
+                                            <input type="radio" id="pc-1">
+                                        </label>
+                                        <label class="active black" for="pc-2">
+                                            <input type="radio" id="pc-2">
+                                        </label>
+                                        <label class="grey" for="pc-3">
+                                            <input type="radio" id="pc-3">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                {{-- {{ $productRecentInfo->links() }} --}}
+            </div>
+        </section>
+    @endif
+    <!-- Product Section Recently End -->
+
 
 
 @endsection
@@ -966,6 +1095,13 @@
                         // console.log(data);
                         data.forEach(function(item) {
                             let price = item.price;
+                            const showOriginalPrice = item.discount_id !== null && item
+                                .discount;
+
+                            let formattedPrice = new Intl.NumberFormat('vi-VN', {
+                                style: 'currency',
+                                currency: 'VND'
+                            }).format(item.price);
                             let nameDiscount = "";
                             if (item.discount_id != null) {
                                 price = item.price - (item.price * item.discount
@@ -992,28 +1128,28 @@
                             })
 
                             let productHTML = `
-                        <div class="col-lg-3 col-md-6 col-sm-6">
-                            <div class="product__item" id="product-list-shop">
-                                <div class="product__item__pic">
-                                    <img class="set-bg" width="280" height="250"
-                                    src="${item.image}"
-                                    alt="${item.product_name}">
-                                    <span class="label name-discount-suggest" >${nameDiscount}</span></li>
-                                    <ul class="product__hover">
-                                        <li><a href="{{ url('add-to-wishlist') }}/${item.id}"><img src="{{ asset('client/img/icon/heart.png') }}"
-                                            alt=""></a></li>
-                                            <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
-                                                alt=""><span>Compare</span></a></li>
-                                                <li><a href="{{ url('product') }}/${item.slug}">
-                                                    <img src="{{ asset('client/img/icon/search.png') }}"
-                                                    alt=""></a>
+                                <div class="col-lg-3 col-md-6 col-sm-6">
+                                    <div class="product__item" id="product-list-shop">
+                                        <div class="product__item__pic">
+                                            <img class="set-bg" width="280" height="250"
+                                            src="${item.image}"
+                                            alt="${item.product_name}">
+                                            <span class="label name-discount-suggest" >${nameDiscount}</span></li>
+                                            <ul class="product__hover">
+                                                <li><a href="{{ url('add-to-wishlist') }}/${item.id}"><img src="{{ asset('client/img/icon/heart.png') }}"
+                                                    alt=""></a></li>
+                                                    <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}"
+                                                        alt=""><span>Compare</span></a></li>
+                                                        <li><a href="{{ url('product') }}/${item.slug}">
+                                                            <img src="{{ asset('client/img/icon/search.png') }}"
+                                                            alt=""></a>
 
-                                                    </ul>
-                                                    </div>
+                                                            </ul>
+                                                            </div>
 
-                                                    <div class="product__item__text">
-                                                        <h6>${item.product_name}</h6>
-                                                        ` +
+                                                            <div class="product__item__text">
+                                                                <h6>${item.product_name}</h6>
+                                                                ` +
 
                                 (addCartOrNone[item.id] > 0 ?
                                     `<a href="javascript:void(0);" class="add-cart" data-id="${item.id}">+ Add To Cart</a>` :
@@ -1021,29 +1157,28 @@
 
                                 +
                                 `
-                                            <div class="rating">
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                <i class="fa fa-star-o"></i>
-                                                </div>
-                                                <h5>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}</h5>
-                                                <div class="product__color__select">
-                                                    <label for="pc-4">
-                                                        <input type="radio" id="pc-4">
-                                                        </label>
-                                                <label class="active black" for="pc-5">
-                                                    <input type="radio" id="pc-5">
-                                                    </label>
-                                                    <label class="grey" for="pc-6">
-                                                        <input type="radio" id="pc-6">
-                                                        </label>
+                                                        <div class="rating" >
+                                                            ${generateStarRating(item.star)}
+                                                            <span class="text-muted" style="font-size: 16px;"> (${item.comments_count})</span>
                                                         </div>
+
+                                                        <h5>${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)}</h5>
+                                                        <h6 class="text-muted original-price-begin" style="text-decoration: line-through; display: ${showOriginalPrice ? 'block' : 'none'};">${formattedPrice}</h6>
+                                                        <div class="product__color__select">
+                                                            <label for="pc-4">
+                                                                <input type="radio" id="pc-4">
+                                                                </label>
+                                                        <label class="active black" for="pc-5">
+                                                            <input type="radio" id="pc-5">
+                                                            </label>
+                                                            <label class="grey" for="pc-6">
+                                                                <input type="radio" id="pc-6">
+                                                                </label>
+                                                                </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            `;
+                                    `;
                             $(document).ready(function() {
                                 $('.name-discount-suggest').each(function() {
                                     if ($(this).text().trim() !== "New") {

@@ -16,6 +16,7 @@ class ProductResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'discount_id' => $this->discount_id,
             'name' => $this->product_name,
             'brand' => $this->brand,
             'sku' => $this->sku,
@@ -26,6 +27,8 @@ class ProductResource extends JsonResource
             'category' => new CategoryResource($this->Category),
             'product-variant' => ProductVariantResource::collection($this->ProductVariants),
             'discount' => new DiscountResource($this->Discount),
+            'star' => $this->comments()->avg('star') ?? 0,
+            'comments_count' => $this->comments()->count() ?? 0,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at
         ];

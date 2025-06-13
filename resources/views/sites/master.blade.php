@@ -33,16 +33,15 @@
 </head>
 
 <body>
-    @include('sites.components._chatbox_and_search')
+
     @include('sites.components._header')
-
+    @include('sites.components._chatbox_and_search')
     @yield('content')
-
     @include('sites.components._footer')
-
 
     <!-- Js Plugins -->
     <script src="{{ asset('client/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ asset('client/js/generate-star.js') }}"></script>
     <script src="{{ asset('client/js/jquery.nice-select.min.js') }}"></script>
     <script src="{{ asset('client/js/jquery.nicescroll.min.js') }}"></script>
     <script src="{{ asset('client/js/jquery.magnific-popup.min.js') }}"></script>
@@ -51,6 +50,7 @@
     <script src="{{ asset('client/js/mixitup.min.js') }}"></script>
     <script src="{{ asset('client/js/owl.carousel.min.js') }}"></script>
     <script src="{{ asset('client/js/main.js') }}"></script>
+
     @yield('js')
     <script src="{{ asset('client/js/bootstrap.min.js') }}"></script>
 </body>

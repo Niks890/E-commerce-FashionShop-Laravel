@@ -76,7 +76,8 @@
                 <select class="form-select form-select-lg" name="discount_id">
                     <option value="">-- Chọn chương trình khuyến mãi --</option>
                     @foreach ($discounts as $discount)
-                        <option value="{{ $discount->id }}" @selected($discount->id == $product->discount_id)>{{ $discount->name }}</option>
+                        <option value="{{ $discount->id }}" @selected($discount->id == $product->discount_id)>{{ $discount->name }}
+                            -Giảm({{ $discount->percent_discount * 100 . '%' }})</option>
                     @endforeach
                 </select>
                 @error('discount_id')
@@ -90,7 +91,8 @@
                 <label class="form-label fw-semibold">Danh mục:</label>
                 <select class="form-select form-select-lg" name="category_id">
                     @foreach ($cats as $cat)
-                        <option value="{{ $cat->id }}" @selected($cat->id == $product->category_id)>{{ $cat->category_name }}</option>
+                        <option value="{{ $cat->id }}" @selected($cat->id == $product->category_id)>{{ $cat->category_name }}
+                        </option>
                     @endforeach
                 </select>
             </div>

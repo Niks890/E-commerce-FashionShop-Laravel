@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use App\Models\ProductRecent;
+use App\Models\ProductVariant;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
 
@@ -25,7 +26,7 @@ class HomeController extends Controller
         $productRecentInfo = [];
         if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
             foreach (Session::get('product_recent') as $item) {
-                $product = Product::with('ProductVariants', 'Discount')->find($item->id_recent);
+                $product = Product::with('ProductVariants', 'Discount', 'comments')->find($item->id_recent);
                 if ($product) {
                     $productRecentInfo[] = $product;
                 }
@@ -52,11 +53,11 @@ class HomeController extends Controller
         return view('sites.home.index', compact('data', 'productRecentInfo', 'highestDiscountProduct'));
     }
 
-
+    // Lọc theo màu, khuyến mãi
     public function shop(Request $request)
     {
         // Khởi tạo query
-        $query = Product::with('category', 'Discount', 'ProductVariants')->where('status', 1);
+        $query = Product::with('category', 'Discount', 'ProductVariants', 'comments')->where('status', 1);
 
         // Tìm kiếm theo tên sản phẩm
         if ($request->has('q')) {
@@ -98,6 +99,23 @@ class HomeController extends Controller
             $query->where('tags', 'like', "%$tag%");
         }
 
+        // Lọc theo màu sắc (variant)
+        if ($request->has('color')) {
+            $color = $request->color;
+            $query->whereHas('ProductVariants', function ($q) use ($color) {
+                $q->where('color', $color);
+            });
+        }
+
+        // Lọc theo sản phẩm đang có khuyến mãi còn hạn
+        if ($request->has('promotion')) {
+            $currentDate = now()->format('Y-m-d');
+            $query->whereHas('Discount', function ($q) use ($currentDate) {
+                $q->where('start_date', '<=', $currentDate)
+                    ->where('end_date', '>=', $currentDate);
+            });
+        }
+
         // Sắp xếp
         $sortBy = $request->input('sort_by', 'newest');
         switch ($sortBy) {
@@ -126,7 +144,12 @@ class HomeController extends Controller
             '10000000' => 'Trên 10 triệu'
         ];
 
-        return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy'));
+        // Lấy danh sách các màu sắc có sẵn
+        $colors = ProductVariant::select('color')
+            ->distinct()
+            ->pluck('color');
+
+        return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors'));
     }
 
     public function cart()
@@ -195,6 +218,17 @@ class HomeController extends Controller
         $totalSale = $productDetail->orderDetails()->distinct('order_id')->count();
 
 
+        $productRecentInfo = [];
+        if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
+            foreach (Session::get('product_recent') as $item) {
+                $product = Product::with('ProductVariants', 'Discount')->find($item->id_recent);
+                if ($product) {
+                    $productRecentInfo[] = $product;
+                }
+            }
+        }
+
+
         // Lấy danh sách bình luận của khách hàng
         $commentCustomers = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
@@ -245,7 +279,7 @@ class HomeController extends Controller
         // Thêm sản phẩm vào mảng session để hiển thị ra sản phẩm đã xem
         $productRecent->addToProductRecent($productDetail);
 
-        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale'));
+        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale', 'productRecentInfo'));
     }
 
     public function successPayment()

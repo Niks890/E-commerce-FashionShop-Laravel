@@ -204,7 +204,10 @@ class ApiController extends Controller
     public function getProductsClient(Request $request)
     {
         $perPage = $request->input('per_page', 8); // Default to 8 items per page
-        $products = Product::with('Discount', 'ProductVariants')
+        $products = Product::with(['Discount', 'ProductVariants'])
+            ->withCount(['comments as comments_count'])
+            ->withAvg('comments as star', 'star')
+            ->withCount('comments as comments_count')
             ->orderBy('id', 'ASC')
             ->where('status', 1)
             ->paginate($perPage);
@@ -257,7 +260,7 @@ class ApiController extends Controller
     public function getProductDiscount()
     {
         $now = Carbon::now();
-        $products = Product::with('Discount', 'ProductVariants')
+        $products = Product::with('Discount', 'ProductVariants', 'comments')
             ->whereHas('Discount', function ($query) use ($now) {
                 $query->where('status', 'active')
                     ->whereDate('start_date', '<=', $now)
