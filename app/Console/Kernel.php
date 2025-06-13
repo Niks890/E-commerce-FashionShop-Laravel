@@ -14,6 +14,8 @@ class Kernel extends ConsoleKernel
     {
         $schedule->command('discounts:clear-product-expired')->dailyAt('00:00');
         $schedule->command('clean:temp-uploads')->daily();
+        $schedule->command('orders:auto-approve')->everyMinute();
+        $schedule->command('inventory:check-low-stock')->daily();
     }
 
     /**
