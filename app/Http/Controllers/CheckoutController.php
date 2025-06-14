@@ -153,7 +153,7 @@ class CheckoutController extends Controller
                             ->lockForUpdate()
                             ->first();
 
-                        if (!$variant || $variant->stock < $item->quantity) {
+                        if (!$variant || $variant->available_stock < $item->quantity) {
                             // Xóa sản phẩm hết hàng khỏi giỏ
                             unset($cart[$key]);
                             $errors[] = 'Sản phẩm "' . $item->product_name . '" đã hết hàng và đã bị xóa khỏi giỏ hàng.';
@@ -226,6 +226,7 @@ class CheckoutController extends Controller
 
                         if ($variant) {
                             $variant->stock -= $item->quantity;
+                            $variant->available_stock -= $item->quantity;
                             $variant->save();
                         }
                     }
@@ -442,6 +443,7 @@ class CheckoutController extends Controller
                             ->first();
 
                         if ($variant) {
+                            $variant->available_stock -= $detail->quantity;
                             $variant->stock -= $detail->quantity;
                             $variant->save();
                         }
@@ -522,7 +524,7 @@ class CheckoutController extends Controller
     //                         ->lockForUpdate()
     //                         ->first();
 
-    //                     if (!$variant || $variant->stock < $item->quantity) {
+    //                     if (!$variant || $variant->available_stock < $item->quantity) {
     //                         // Xóa sản phẩm hết hàng khỏi giỏ
     //                         unset($cart[$key]);
     //                         $errors[] = 'Sản phẩm bạn chọn đã hết hàng và đã bị xóa khỏi giỏ hàng.';
@@ -560,6 +562,7 @@ class CheckoutController extends Controller
 
     //                     if ($variant) {
     //                         $variant->stock -= $item->quantity;
+    //                         $variant->available_stock -= $item->quantity;
     //                         $variant->save();
     //                     }
     //                 }
@@ -741,6 +744,7 @@ class CheckoutController extends Controller
                         ->first();
 
                     if ($variant) {
+                        $variant->available_stock -= $detail->quantity;
                         $variant->stock -= $detail->quantity;
                         $variant->save();
                     }

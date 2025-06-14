@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('size', 10)->nullable();
             $table->decimal('price', 10,3)->nullable();
             $table->unsignedInteger('stock')->nullable();
+            $table->unsignedInteger('available_stock')->default(0);
+            // available_stock phải <= stock
             $table->boolean('active')->default(true);
             $table->unsignedInteger('product_id');
             $table->foreign('product_id')->references('id')->on('products');

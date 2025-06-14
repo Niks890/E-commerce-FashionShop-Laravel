@@ -192,13 +192,6 @@ class ApiController extends Controller
         return $this->apiStatus($productVariants, 200, 1, 'ok');
     }
 
-    // Hàm gốc
-    // public function getProductsClient()
-    // {
-    //     $products = Product::with('Discount', 'ProductVariants')
-    //         ->orderBy('id', 'ASC')->where('status', 1)->get();
-    //     return $this->apiStatus($products, 200, $products->count(), 'ok');
-    // }
 
 
     public function getProductsClient(Request $request)

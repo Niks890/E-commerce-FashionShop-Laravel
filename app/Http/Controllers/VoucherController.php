@@ -36,99 +36,99 @@ class VoucherController extends Controller
         ]);
     }
 
-public function store(Request $request)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'vouchers_code' => 'required|string|max:10|unique:vouchers',
-        'percent_discount' => 'required|numeric|min:0|max:100',
-        'max_discount' => 'required|numeric|min:0',
-        'min_order_amount' => 'required|numeric|min:0',
-        'available_uses' => 'required|integer|min:1',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after:start_date',
-    ]);
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'vouchers_code' => 'required|string|max:10|unique:vouchers',
+            'percent_discount' => 'required|numeric|min:0|max:100',
+            'max_discount' => 'required|numeric|min:0',
+            'min_order_amount' => 'required|numeric|min:0',
+            'available_uses' => 'required|integer|min:1',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ]);
 
-    $voucher = Voucher::create([
-        'vouchers_code' => $request->vouchers_code,
-        'vouchers_description' => $request->name,
-        'vouchers_percent_discount' => $request->percent_discount,
-        'vouchers_max_discount' => $request->max_discount,
-        'vouchers_min_order_amount' => $request->min_order_amount,
-        'vouchers_start_date' => $request->start_date,
-        'vouchers_end_date' => $request->end_date,
-        'vouchers_usage_limit' => $request->available_uses,
-    ]);
+        $voucher = Voucher::create([
+            'vouchers_code' => $request->vouchers_code,
+            'vouchers_description' => $request->name,
+            'vouchers_percent_discount' => $request->percent_discount,
+            'vouchers_max_discount' => $request->max_discount,
+            'vouchers_min_order_amount' => $request->min_order_amount,
+            'vouchers_start_date' => $request->start_date,
+            'vouchers_end_date' => $request->end_date,
+            'vouchers_usage_limit' => $request->available_uses,
+        ]);
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Thêm voucher thành công!',
-        'voucher' => [
-            'id' => $voucher->id,
-            'code' => $voucher->vouchers_code,
-            'description' => $voucher->vouchers_description,
-            'percent_discount' => $voucher->vouchers_percent_discount / 100,
-            'max_discount' => $voucher->vouchers_max_discount,
-            'min_order_amount' => $voucher->vouchers_min_order_amount,
-            'available_uses' => $voucher->vouchers_usage_limit,
-            'start_date' => $voucher->vouchers_start_date,
-            'end_date' => $voucher->vouchers_end_date,
-        ]
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Thêm voucher thành công!',
+            'voucher' => [
+                'id' => $voucher->id,
+                'code' => $voucher->vouchers_code,
+                'description' => $voucher->vouchers_description,
+                'percent_discount' => $voucher->vouchers_percent_discount / 100,
+                'max_discount' => $voucher->vouchers_max_discount,
+                'min_order_amount' => $voucher->vouchers_min_order_amount,
+                'available_uses' => $voucher->vouchers_usage_limit,
+                'start_date' => $voucher->vouchers_start_date,
+                'end_date' => $voucher->vouchers_end_date,
+            ]
+        ]);
+    }
 
-public function update(Request $request, $id)
-{
-    $request->validate([
-        'name' => 'required|string|max:255',
-        'vouchers_code' => 'required|string|max:10|unique:vouchers,vouchers_code,' . $id,
-        'percent_discount' => 'required|numeric|min:0|max:100',
-        'max_discount' => 'required|numeric|min:0',
-        'min_order_amount' => 'required|numeric|min:0',
-        'available_uses' => 'required|integer|min:1',
-        'start_date' => 'required|date',
-        'end_date' => 'required|date|after:start_date',
-    ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'vouchers_code' => 'required|string|max:10|unique:vouchers,vouchers_code,' . $id,
+            'percent_discount' => 'required|numeric|min:0|max:100',
+            'max_discount' => 'required|numeric|min:0',
+            'min_order_amount' => 'required|numeric|min:0',
+            'available_uses' => 'required|integer|min:1',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+        ]);
 
-    $voucher = Voucher::findOrFail($id);
-    $voucher->update([
-        'vouchers_code' => $request->vouchers_code,
-        'vouchers_description' => $request->name,
-        'vouchers_percent_discount' => $request->percent_discount,
-        'vouchers_max_discount' => $request->max_discount,
-        'vouchers_min_order_amount' => $request->min_order_amount,
-        'vouchers_start_date' => $request->start_date,
-        'vouchers_end_date' => $request->end_date,
-        'vouchers_usage_limit' => $request->available_uses,
-    ]);
+        $voucher = Voucher::findOrFail($id);
+        $voucher->update([
+            'vouchers_code' => $request->vouchers_code,
+            'vouchers_description' => $request->name,
+            'vouchers_percent_discount' => $request->percent_discount,
+            'vouchers_max_discount' => $request->max_discount,
+            'vouchers_min_order_amount' => $request->min_order_amount,
+            'vouchers_start_date' => $request->start_date,
+            'vouchers_end_date' => $request->end_date,
+            'vouchers_usage_limit' => $request->available_uses,
+        ]);
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Cập nhật voucher thành công!',
-        'voucher' => [
-            'id' => $voucher->id,
-            'code' => $voucher->vouchers_code,
-            'description' => $voucher->vouchers_description,
-            'percent_discount' => $voucher->vouchers_percent_discount / 100,
-            'max_discount' => $voucher->vouchers_max_discount,
-            'min_order_amount' => $voucher->vouchers_min_order_amount,
-            'available_uses' => $voucher->vouchers_usage_limit,
-            'start_date' => $voucher->vouchers_start_date,
-            'end_date' => $voucher->vouchers_end_date,
-        ]
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật voucher thành công!',
+            'voucher' => [
+                'id' => $voucher->id,
+                'code' => $voucher->vouchers_code,
+                'description' => $voucher->vouchers_description,
+                'percent_discount' => $voucher->vouchers_percent_discount / 100,
+                'max_discount' => $voucher->vouchers_max_discount,
+                'min_order_amount' => $voucher->vouchers_min_order_amount,
+                'available_uses' => $voucher->vouchers_usage_limit,
+                'start_date' => $voucher->vouchers_start_date,
+                'end_date' => $voucher->vouchers_end_date,
+            ]
+        ]);
+    }
 
-public function destroy($id)
-{
-    $voucher = Voucher::findOrFail($id);
-    $voucher->delete();
+    public function destroy($id)
+    {
+        $voucher = Voucher::findOrFail($id);
+        $voucher->delete();
 
-    return response()->json([
-        'success' => true,
-        'message' => 'Xóa voucher thành công!'
-    ]);
-}
+        return response()->json([
+            'success' => true,
+            'message' => 'Xóa voucher thành công!'
+        ]);
+    }
 
     public function show($id)
     {

@@ -425,7 +425,7 @@
                                 if ($items->ProductVariants) {
                                     foreach ($items->ProductVariants as $variant) {
                                         if ($variant) {
-                                            $totalStock += $variant->stock;
+                                            $totalStock += $variant->available_stock;
                                         }
                                     }
                                 }

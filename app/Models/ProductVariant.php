@@ -14,6 +14,7 @@ class ProductVariant extends Model
         'size',
         'price',
         'stock',
+        'available_stock',
         'product_id'
     ];
 

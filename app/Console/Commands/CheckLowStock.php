@@ -24,9 +24,9 @@ class CheckLowStock extends Command
 
         if ($lowStockProducts->isNotEmpty()) {
             foreach ($lowStockProducts as $product) {
-                $this->info("Sản phẩm {$product->name} sắp hết hàng. Các biến thể:");
+                $this->info("Sản phẩm {$product->product_name} sắp hết hàng. Các biến thể:");
                 foreach ($product->ProductVariants as $variant) {
-                    $this->info("- {$variant->name}: Tồn kho {$variant->stock}");
+                    $this->info("- {$variant->size}-{$variant->color}: Tổng số lượng tồn kho {$variant->stock}");
                 }
             }
         } else {

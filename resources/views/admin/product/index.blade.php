@@ -145,8 +145,8 @@
                             <th>Tên</th>
                             <th>Danh mục</th>
                             <th>Giá Gốc / Khuyến mãi</th>
-                            <th>Giá</th>
-                            <th>Stock</th>
+                            <th>Available Stock</th>
+                            <th>Tổng Stock</th>
                             <th>Trạng thái</th>
                             <th>Khuyến mãi</th>
                             <th>Ngày thêm</th>
@@ -160,7 +160,7 @@
                                 <td>{{ $model->id }}</td>
                                 <td>{{ $model->product_name }}</td>
                                 <td>{{ $model->category->category_name }}</td>
-                                <td>
+                                <td class="text-center">
                                     @if ($model->has_active_discount)
                                         <s class="text-muted">{{ number_format($model->price, 0, ',', '.') }} đ</s><br>
                                         <span
@@ -170,7 +170,20 @@
                                         {{ number_format($model->price, 0, ',', '.') }} đ
                                     @endif
                                 </td>
-                                <td>{{ number_format($model->price, 0, ',', '.') }} đ</td>
+                                <td class="fw-bold">
+                                    {{ $model->productVariants->sum('available_stock') }}
+                                    <!-- Nút điều chỉnh available stock -->
+                                    @can('salers')
+                                        @if ($model->status == 1 || $model->status == 0)
+                                            <button class="btn btn-sm btn-outline-primary adjust-stock-btn"
+                                                data-product-id="{{ $model->id }}"
+                                                data-product-name="{{ $model->product_name }}"
+                                                title="Điều chỉnh stock bán ra">
+                                                <i class="fas fa-sliders-h"></i> Adjust
+                                            </button>
+                                        @endif
+                                    @endcan
+                                </td>
                                 <td>
                                     @php
                                         $totalStock = $model->productVariants->sum('stock');
@@ -242,7 +255,7 @@
         </div>
     </div>
 
-
+    {{-- modal detail --}}
     <div class="modal fade" id="productDetail" tabindex="-1" aria-labelledby="productDetailLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -274,7 +287,8 @@
                                     <td style="width: 70%;"><span id="product-brand"></span></td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-start" style="width: 30%;">Giá sản phẩm:</td>
+                                    <td class="fw-bold text-start" style="width: 30%;">Giá sản phẩm/Giá khuyến mãi(vnd):
+                                    </td>
                                     <td style="width: 70%;"><span id="product-price"></span></td>
                                 </tr>
                                 <tr>
@@ -286,15 +300,20 @@
                                     <td style="width: 70%;"><span id="product-description"></span></td>
                                 </tr>
                                 <tr>
+                                    <td class="fw-bold text-start" style="width: 30%;">Chất liệu</td>
+                                    <td style="width: 70%;"><span id="material"></span></td>
+                                </tr>
+                                <tr>
                                     <td class="fw-bold text-start" style="width: 30%;">Danh mục:</td>
                                     <td style="width: 70%;"><span id="category-name"></span></td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-start" style="width: 30%;">Màu sắc:</td>
+                                    <td class="fw-bold text-start" style="width: 30%;">Màu sắc hiện có:</td>
                                     <td style="width: 70%;"><span id="colors"></span></td>
                                 </tr>
                                 <tr>
-                                    <td class="fw-bold text-start" style="width: 30%;">Size:</td>
+                                    <td class="fw-bold text-start" style="width: 30%;">Size và tổng số lượng hiện tại:
+                                    </td>
                                     <td style="width: 70%;"><span id="sizes"></span></td>
                                 </tr>
                                 <tr>
@@ -317,16 +336,96 @@
         </div>
     </div>
 
+
+    <!-- Modal điều chỉnh available stock -->
+    <div class="modal fade" id="adjustStockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">Điều chỉnh Stock bán ra: <span id="modal-product-name"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Stock bán ra không được vượt quá tổng Stock
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Màu sắc</th>
+                                    <th>Size</th>
+                                    <th>Tổng Stock</th>
+                                    <th>Stock bán ra</th>
+                                    <th>Điều chỉnh</th>
+                                </tr>
+                            </thead>
+                            <tbody id="variant-stock-body">
+                                <!-- Dữ liệu sẽ được load bằng AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-primary" id="save-stock-changes">Lưu thay đổi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <style>
+        .adjust-stock-btn {
+            padding: 0.15rem 0.4rem;
+            font-size: 0.75rem;
+        }
+
+        .available-stock-input {
+            width: 80px;
+            display: inline-block;
+        }
+
+        .set-max-btn {
+            white-space: nowrap;
+        }
+
+        /* Thêm vào file CSS */
+        .available-stock-input.is-invalid {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+        }
+
+        .invalid-feedback.stock-error {
+            display: block;
+            font-size: 0.8rem;
+            color: #dc3545;
+        }
+    </style>
 @endsection
 
 @section('js')
     @if (Session::has('success') || Session::has('error'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+    <script>
+        toastr.options = {
+            "closeButton": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "timeOut": 3000
+        };
+    </script>
+
 
     <script>
         $(document).ready(function() {
@@ -384,7 +483,7 @@
                             }
                             $("#product-price").html(priceHtml);
                             $("#product-image").attr("src", `${p.image}`);
-                            $("#product-description").text(p.description);
+                            $("#product-description").text(p.description ?? 'N/A');
                             $("#category-name").text(p.category.name);
 
                             let colors = [...new Set(p["product-variant"].map(v => v.color))];
@@ -393,6 +492,7 @@
 
                             $("#colors").text(colors.join(', '));
                             $("#sizes").text(sizes.join(', '));
+                            $("#material").text(p.material ?? 'N/A');
                             $("#product-created").text(new Date(p.created_at).toLocaleString(
                                 'vi-VN'));
                             $("#product-updated").text(new Date(p.updated_at).toLocaleString(
@@ -405,6 +505,132 @@
                     },
                     error: function() {
                         alert("Đã có lỗi xảy ra, vui lòng thử lại!");
+                    }
+                });
+            });
+
+
+
+            // Xử lý nút điều chỉnh stock
+            $(document).on('click', '.adjust-stock-btn', function() {
+                const productId = $(this).data('product-id');
+                const productName = $(this).data('product-name');
+
+                $('#modal-product-name').text(productName);
+                $('#adjustStockModal').modal('show');
+
+                // Load dữ liệu variant bằng AJAX
+                $.ajax({
+                    url: `/admin/products/${productId}/variants`,
+                    type: 'GET',
+                    success: function(response) {
+                        let html = '';
+                        response.variants.forEach(variant => {
+                            html += `
+                            <tr data-variant-id="${variant.id}">
+                                <td>${variant.color}</td>
+                                <td>${variant.size}</td>
+                                <td>${variant.stock}</td>
+                              <td>
+                                    <input type="number"
+                                        class="form-control available-stock-input"
+                                        value="${variant.available_stock}"
+                                        max="${variant.stock}"
+                                        min="0"
+                                        required>
+                                    <div class="invalid-feedback stock-error" style="display:none;">
+                                        Vui lòng nhập số từ 0 đến ${variant.stock}
+                                    </div>
+                                </td>
+                            <td>
+                                    <button class="btn btn-sm btn-outline-secondary set-max-btn"
+                                            data-max="${variant.stock}">
+                                        Đặt bằng tổng stock
+                                    </button>
+                                </td>
+                            </tr>`;
+                        });
+
+                        $('#variant-stock-body').html(html);
+                    },
+                    error: function() {
+                        alert('Lỗi khi tải dữ liệu biến thể sản phẩm');
+                    }
+                });
+            });
+
+            // Nút đặt bằng tổng stock
+            $(document).on('click', '.set-max-btn', function() {
+                const maxStock = $(this).data('max');
+                $(this).closest('tr').find('.available-stock-input').val(maxStock);
+            });
+
+            // Trong phần $('#save-stock-changes').click()
+            $('#save-stock-changes').click(function() {
+                let isValid = true;
+                const changes = [];
+
+                // Validate từng dòng trước khi gửi
+                $('#variant-stock-body tr').each(function() {
+                    const variantId = $(this).data('variant-id');
+                    const input = $(this).find('.available-stock-input');
+                    const newAvailableStock = parseInt(input.val());
+                    const maxStock = parseInt(input.attr('max'));
+
+                    if (isNaN(newAvailableStock)) {
+                        input.addClass('is-invalid');
+                        isValid = false;
+                    } else if (newAvailableStock < 0) {
+                        input.addClass('is-invalid');
+                        isValid = false;
+                    } else if (newAvailableStock > maxStock) {
+                        input.addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        input.removeClass('is-invalid');
+                        changes.push({
+                            variant_id: variantId,
+                            available_stock: newAvailableStock
+                        });
+                    }
+                });
+
+                if (!isValid) {
+                    alert('Vui lòng nhập số lượng hợp lệ (0 ≤ stock ≤ tổng stock)');
+                    return;
+                }
+
+                // Hiển thị loading
+                $(this).html('<i class="fas fa-spinner fa-spin"></i> Đang lưu...');
+                $(this).prop(
+                    'disabled', true);
+
+                $.ajax({
+                    url: '/admin/products/update-stock',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        changes: changes
+                    },
+                    success: function(response) {
+                        console.log('Server response:', response); // Add this line
+                        $('#adjustStockModal').modal('hide');
+                        if (response.success) {
+                            toastr.success('Cập nhật stock thành công!');
+                            // Chỉ reload nếu cần thiết
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            toastr.error(response.message || 'Có lỗi xảy ra');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error details:', xhr.responseJSON); // Add this line
+                        const errorMsg = xhr.responseJSON?.message || 'Lỗi kết nối';
+                        toastr.error(errorMsg);
+                    },
+                    complete: function() {
+                        $('#save-stock-changes').html('Lưu thay đổi').prop('disabled',
+                            false);
                     }
                 });
             });

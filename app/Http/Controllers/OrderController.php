@@ -445,7 +445,7 @@ class OrderController extends Controller
                     ->lockForUpdate()
                     ->first();
 
-                if (!$variant || $variant->stock < $item->quantity) {
+                if (!$variant || $variant->available_stock < $item->quantity) {
                     // Xóa sản phẩm hết hàng khỏi giỏ
                     unset($cart[$key]);
                     $errors[] = 'Sản phẩm "' . $item->product_name . '" đã hết hàng và đã bị xóa khỏi giỏ hàng.';
@@ -510,7 +510,9 @@ class OrderController extends Controller
                     ->first();
 
                 if ($variant) {
+                    // trừ stock cả 2 sau khi đặt hàng thành công
                     $variant->stock -= $item->quantity;
+                    $variant->available_stock -= $item->quantity;
                     $variant->save();
                 }
             }

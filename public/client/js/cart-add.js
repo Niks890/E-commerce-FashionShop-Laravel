@@ -41,7 +41,7 @@ function addToCart(productId, event) {
                 // Tạo itemKey - đảm bảo format nhất quán formattedColor
                 var normalizedColor = data.color.replace(' ', '');
                 let itemKey = `${productId}-${normalizedColor || 'default'}-${data.size || 'default'}`;
-                console.log("itemKey được tạo:", itemKey);
+                // console.log("itemKey được tạo:", itemKey);
 
                 // Tìm item trong response từ backend
                 let item = data.cart.items[itemKey];

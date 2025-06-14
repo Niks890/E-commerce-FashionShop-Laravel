@@ -269,7 +269,7 @@
                                     <div class="quantity">
                                         <div class="pro-qty">
                                             <input class="quantity-input" type="text" name="quantity" value="1"
-                                                min="1" max="{{ $productDetail->stock }}">
+                                                min="1" max="{{ $productDetail->available_stock }}">
                                         </div>
                                         @error('quantity')
                                             <script>
@@ -572,9 +572,11 @@
                             `http://127.0.0.1:8000/api/product-variant-selected/${selectedSize}/${selectedColor}/${productId}`
                         );
                         let data = await response.json();
+                        // console.log(data);
 
                         if (data.status_code === 200 && data.data) {
-                            let stock = data.data.stock;
+                            // ko lấy stock tổng nữa lấy stock điều chỉnh
+                            let stock = data.data.available_stock;
                             updateStockUI(stock);
                         }
                     } catch (error) {

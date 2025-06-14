@@ -53,8 +53,8 @@ class CartController extends Controller
             $newQty = $currentQtyInCart + request()->quantity;
 
             // Kiểm tra tồn kho
-            if ($newQty > $productVariant->stock) {
-                return back()->with('error', "Tổng số lượng bạn chọn vượt quá tồn kho. Trong kho chỉ còn {$productVariant->stock}, sản phẩm hiện tại trong giỏ hàng đã có {$currentQtyInCart}.");
+            if ($newQty > $productVariant->available_stock) {
+                return back()->with('error', "Tổng số lượng bạn chọn vượt quá tồn kho. Trong kho chỉ còn {$productVariant->available_stock}, sản phẩm hiện tại trong giỏ hàng đã có {$currentQtyInCart}.");
             }
 
             // Validate số lượng (bỏ max vì đã kiểm tra ở trên)
@@ -83,7 +83,7 @@ class CartController extends Controller
             // dd(request()->all());
             // $productVariant = ProductVariant::where('product_id', $product->id)->first();
             $productVariant = ProductVariant::where('product_id', $product->id)
-                ->where('stock', '>', 0)
+                ->where('available_stock', '>', 0)
                 ->first();
             if (!$productVariant) {
                 return back()->with('error', 'Sản phẩm này hiện không có sẵn biến thể!');
@@ -98,11 +98,11 @@ class CartController extends Controller
             $currentQty = isset($currentItem['quantity']) ? $currentItem['quantity'] : 0;
 
             $newQty = $currentQty + $quantity;
-            if ($newQty > $productVariant->stock) {
+            if ($newQty > $productVariant->available_stock) {
                 return response()->json([
                     'success' => false,
-                    'message' => "Vượt quá số lượng có trong kho. Tồn kho hiện tại: {$productVariant->stock}",
-                    'stock' => $productVariant->stock,
+                    'message' => "Vượt quá số lượng có trong kho. Tồn kho hiện tại: {$productVariant->available_stock}",
+                    'stock' => $productVariant->available_stock,
                 ]);
             }
 

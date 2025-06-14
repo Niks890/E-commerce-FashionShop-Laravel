@@ -235,6 +235,7 @@ class CustomerController extends Controller
                     ->first();
 
                 if ($variant) {
+                    $variant->available_stock += $detail->quantity;
                     $variant->stock += $detail->quantity;
                     $variant->save();
                 }

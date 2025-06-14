@@ -36,6 +36,7 @@ class Cart
                 'color' => $productVariant->color,
                 'size' => $productVariant->size,
                 'stock' => $productVariant->stock,
+                'available_stock' => $productVariant->available_stock,
                 'checked' => false
             ];
             $this->items[$key] = (object)$items;

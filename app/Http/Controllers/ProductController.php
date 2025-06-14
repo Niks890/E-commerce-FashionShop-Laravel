@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
+
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\ImageVariant;
@@ -10,7 +12,7 @@ use App\Models\ProductVariant;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
+
 
 class ProductController extends Controller
 {
@@ -251,5 +253,63 @@ class ProductController extends Controller
             return redirect()->back()->with('success', 'Xoá sản phẩm bán hàng thành công!');
         }
         return redirect()->back()->with('error', 'Xoá sản phẩm thất bại!');
+    }
+
+
+
+    public function getVariants(Product $product)
+    {
+        return response()->json([
+            'variants' => $product->productVariants()
+                ->where('active', 1) // Chỉ lấy variant active
+                ->get()
+                ->map(function ($variant) {
+                    return [
+                        'id' => $variant->id,
+                        'color' => $variant->color,
+                        'size' => $variant->size,
+                        'stock' => $variant->stock,
+                        'available_stock' => $variant->available_stock
+                    ];
+                })
+        ]);
+    }
+
+    public function updateStock(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+            $changes = $request->input('changes');
+
+            foreach ($changes as $change) {
+                $variant = ProductVariant::find($change['variant_id']);
+
+                if (!$variant) {
+                    continue;
+                }
+
+                // Validate stock doesn't exceed available
+                if ($change['available_stock'] > $variant->stock) {
+                    throw new \Exception("Available stock cannot exceed total stock");
+                }
+
+                $variant->available_stock = $change['available_stock'];
+                $variant->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock updated successfully'
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }
