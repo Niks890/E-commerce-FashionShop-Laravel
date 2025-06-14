@@ -392,13 +392,80 @@
         };
 
         // Event listener for form submission (Add/Edit)
-        document.getElementById('discountForm').onsubmit = (e) => {
+        // document.getElementById('discountForm').onsubmit = (e) => {
+        //     e.preventDefault();
+
+        //     const id = document.getElementById('voucherId').value;
+        //     const vouchers_code = document.getElementById('vouchers_code').value.trim();
+        //     const name = document.getElementById('name').value.trim();
+        //     const percent_discount = parseFloat(document.getElementById('percent_discount').value) / 100;
+        //     const max_discount = parseFloat(document.getElementById('max_discount').value);
+        //     const min_order_amount = parseFloat(document.getElementById('min_order_amount').value);
+        //     const available_uses = parseInt(document.getElementById('available_uses').value);
+        //     const start_date = document.getElementById('start_date').value;
+        //     const end_date = document.getElementById('end_date').value;
+
+        //     // Validation
+        //     if (!vouchers_code || !name || isNaN(percent_discount) || isNaN(max_discount) ||
+        //         isNaN(min_order_amount) || isNaN(available_uses) || !start_date || !end_date) {
+        //         showMessage('error', 'Vui lòng điền đầy đủ và hợp lệ các trường!');
+        //         return;
+        //     }
+
+        //     if (new Date(start_date) >= new Date(end_date)) {
+        //         showMessage('error', 'Ngày kết thúc phải sau ngày bắt đầu!');
+        //         return;
+        //     }
+
+        //     if (id) {
+        //         // Edit existing voucher
+        //         const index = vouchers.findIndex(v => v.id === parseInt(id));
+        //         if (index !== -1) {
+        //             vouchers[index] = {
+        //                 ...vouchers[index],
+        //                 code: vouchers_code,
+        //                 description: name,
+        //                 percent_discount,
+        //                 max_discount,
+        //                 min_order_amount,
+        //                 available_uses,
+        //                 start_date,
+        //                 end_date
+        //             };
+        //             showMessage('success', 'Cập nhật voucher thành công!');
+        //         } else {
+        //             showMessage('error', 'Không tìm thấy voucher để cập nhật!');
+        //         }
+        //     } else {
+        //         // Add new voucher
+        //         const newId = vouchers.length > 0 ? Math.max(...vouchers.map(v => v.id)) + 1 : 1;
+        //         vouchers.push({
+        //             id: newId,
+        //             code: vouchers_code,
+        //             description: name,
+        //             percent_discount,
+        //             max_discount,
+        //             min_order_amount,
+        //             available_uses,
+        //             start_date,
+        //             end_date
+        //         });
+        //         showMessage('success', 'Thêm voucher mới thành công!');
+        //     }
+
+        //     filterAndSearchVouchers();
+        //     const discountModal = bootstrap.Modal.getInstance(document.getElementById('discountModal'));
+        //     discountModal.hide();
+        // };
+
+        // Event listener for form submission (Add/Edit) - FIX CHÍNH
+        document.getElementById('discountForm').onsubmit = async (e) => {
             e.preventDefault();
 
             const id = document.getElementById('voucherId').value;
             const vouchers_code = document.getElementById('vouchers_code').value.trim();
             const name = document.getElementById('name').value.trim();
-            const percent_discount = parseFloat(document.getElementById('percent_discount').value) / 100;
+            const percent_discount = parseFloat(document.getElementById('percent_discount').value);
             const max_discount = parseFloat(document.getElementById('max_discount').value);
             const min_order_amount = parseFloat(document.getElementById('min_order_amount').value);
             const available_uses = parseInt(document.getElementById('available_uses').value);
@@ -417,46 +484,129 @@
                 return;
             }
 
-            if (id) {
-                // Edit existing voucher
-                const index = vouchers.findIndex(v => v.id === parseInt(id));
-                if (index !== -1) {
-                    vouchers[index] = {
-                        ...vouchers[index],
-                        code: vouchers_code,
-                        description: name,
-                        percent_discount,
-                        max_discount,
-                        min_order_amount,
-                        available_uses,
-                        start_date,
-                        end_date
-                    };
-                    showMessage('success', 'Cập nhật voucher thành công!');
-                } else {
-                    showMessage('error', 'Không tìm thấy voucher để cập nhật!');
-                }
-            } else {
-                // Add new voucher
-                const newId = vouchers.length > 0 ? Math.max(...vouchers.map(v => v.id)) + 1 : 1;
-                vouchers.push({
-                    id: newId,
-                    code: vouchers_code,
-                    description: name,
-                    percent_discount,
-                    max_discount,
-                    min_order_amount,
-                    available_uses,
-                    start_date,
-                    end_date
-                });
-                showMessage('success', 'Thêm voucher mới thành công!');
-            }
+            // Prepare data for server
+            const formData = {
+                vouchers_code: vouchers_code,
+                name: name,
+                percent_discount: percent_discount,
+                max_discount: max_discount,
+                min_order_amount: min_order_amount,
+                available_uses: available_uses,
+                start_date: start_date,
+                end_date: end_date
+            };
 
-            filterAndSearchVouchers();
-            const discountModal = bootstrap.Modal.getInstance(document.getElementById('discountModal'));
-            discountModal.hide();
+            try {
+                let response;
+                let url;
+                let method;
+
+                if (id) {
+                    // Update existing voucher
+                    url = `/admin/voucher/${id}`;
+                    method = 'PUT';
+                    formData._method = 'PUT';
+                } else {
+                    // Create new voucher
+                    url = '/admin/voucher';
+                    method = 'POST';
+                }
+
+                // Add CSRF token
+                formData._token = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+                response = await fetch(url, {
+                    method: 'POST', // Always POST for Laravel
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': formData._token,
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    if (id) {
+                        // Update local data
+                        const index = vouchers.findIndex(v => v.id === parseInt(id));
+                        if (index !== -1) {
+                            vouchers[index] = {
+                                ...vouchers[index],
+                                code: vouchers_code,
+                                description: name,
+                                percent_discount: percent_discount / 100,
+                                max_discount,
+                                min_order_amount,
+                                available_uses,
+                                start_date,
+                                end_date
+                            };
+                        }
+                        showMessage('success', 'Cập nhật voucher thành công!');
+                    } else {
+                        // Add new voucher to local data
+                        vouchers.push({
+                            id: result.voucher.id,
+                            code: result.voucher.code,
+                            description: result.voucher.description,
+                            percent_discount: result.voucher.percent_discount,
+                            max_discount: result.voucher.max_discount,
+                            min_order_amount: result.voucher.min_order_amount,
+                            available_uses: result.voucher.available_uses,
+                            start_date: result.voucher.start_date,
+                            end_date: result.voucher.end_date
+                        });
+                        showMessage('success', 'Thêm voucher mới thành công!');
+                    }
+
+                    filterAndSearchVouchers();
+                    const discountModal = bootstrap.Modal.getInstance(document.getElementById('discountModal'));
+                    discountModal.hide();
+                } else {
+                    showMessage('error', result.message || 'Có lỗi xảy ra khi lưu voucher!');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('error', 'Có lỗi xảy ra khi kết nối đến server!');
+            }
         };
+
+        // Fixed Delete function
+        document.addEventListener('click', async (e) => {
+            if (e.target.closest('.btn-delete')) {
+                const button = e.target.closest('.btn-delete');
+                const id = parseInt(button.dataset.id);
+
+                if (confirm('Bạn có chắc chắn muốn xóa voucher này?')) {
+                    try {
+                        const response = await fetch(`/admin/voucher/${id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content'),
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            vouchers = vouchers.filter(v => v.id !== id);
+                            renderVoucherTable(vouchers);
+                            showMessage('success', 'Đã xóa voucher thành công!');
+                        } else {
+                            showMessage('error', result.message || 'Có lỗi xảy ra khi xóa voucher!');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showMessage('error', 'Có lỗi xảy ra khi kết nối đến server!');
+                    }
+                }
+            }
+        });
 
         // Event listeners for search and filter
         document.querySelector('select[name="status"]').onchange = filterAndSearchVouchers;

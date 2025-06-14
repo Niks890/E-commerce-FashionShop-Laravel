@@ -13,7 +13,7 @@ class VoucherController extends Controller
         $vouchers = Voucher::orderBy('created_at', 'desc')->paginate(10);
 
         // Transform data to match frontend format
-        $transformedVouchers = $vouchers->map(function($voucher) {
+        $transformedVouchers = $vouchers->map(function ($voucher) {
             return [
                 'id' => $voucher->id,
                 'name' => $voucher->vouchers_code . ' - ' . $voucher->vouchers_description,
@@ -30,72 +30,105 @@ class VoucherController extends Controller
             ];
         });
 
-        return view('admin.voucher.voucher', compact('vouchers', 'transformedVouchers'));
+        return view('admin.voucher.voucher', [
+            'vouchers' => $vouchers,
+            'transformedVouchers' => $transformedVouchers
+        ]);
     }
 
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'vouchers_code' => 'required|string|max:10|unique:vouchers',
-            'percent_discount' => 'required|numeric|min:0|max:100',
-            'max_discount' => 'required|numeric|min:0',
-            'min_order_amount' => 'required|numeric|min:0',
-            'available_uses' => 'required|integer|min:1',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-        ]);
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'vouchers_code' => 'required|string|max:10|unique:vouchers',
+        'percent_discount' => 'required|numeric|min:0|max:100',
+        'max_discount' => 'required|numeric|min:0',
+        'min_order_amount' => 'required|numeric|min:0',
+        'available_uses' => 'required|integer|min:1',
+        'start_date' => 'required|date',
+        'end_date' => 'required|date|after:start_date',
+    ]);
 
-        Voucher::create([
-            'vouchers_code' => $request->vouchers_code,
-            'vouchers_description' => $request->name,
-            'vouchers_percent_discount' => $request->percent_discount,
-            'vouchers_max_discount' => $request->max_discount,
-            'vouchers_min_order_amount' => $request->min_order_amount,
-            'vouchers_start_date' => $request->start_date,
-            'vouchers_end_date' => $request->end_date,
-            'vouchers_usage_limit' => $request->available_uses,
-        ]);
+    $voucher = Voucher::create([
+        'vouchers_code' => $request->vouchers_code,
+        'vouchers_description' => $request->name,
+        'vouchers_percent_discount' => $request->percent_discount,
+        'vouchers_max_discount' => $request->max_discount,
+        'vouchers_min_order_amount' => $request->min_order_amount,
+        'vouchers_start_date' => $request->start_date,
+        'vouchers_end_date' => $request->end_date,
+        'vouchers_usage_limit' => $request->available_uses,
+    ]);
 
-        return response()->json(['success' => true, 'message' => 'Voucher đã được tạo thành công!']);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => 'Thêm voucher thành công!',
+        'voucher' => [
+            'id' => $voucher->id,
+            'code' => $voucher->vouchers_code,
+            'description' => $voucher->vouchers_description,
+            'percent_discount' => $voucher->vouchers_percent_discount / 100,
+            'max_discount' => $voucher->vouchers_max_discount,
+            'min_order_amount' => $voucher->vouchers_min_order_amount,
+            'available_uses' => $voucher->vouchers_usage_limit,
+            'start_date' => $voucher->vouchers_start_date,
+            'end_date' => $voucher->vouchers_end_date,
+        ]
+    ]);
+}
 
-    public function update(Request $request, $id)
-    {
-        $voucher = Voucher::findOrFail($id);
+public function update(Request $request, $id)
+{
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'vouchers_code' => 'required|string|max:10|unique:vouchers,vouchers_code,' . $id,
+        'percent_discount' => 'required|numeric|min:0|max:100',
+        'max_discount' => 'required|numeric|min:0',
+        'min_order_amount' => 'required|numeric|min:0',
+        'available_uses' => 'required|integer|min:1',
+        'start_date' => 'required|date',
+        'end_date' => 'required|date|after:start_date',
+    ]);
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'vouchers_code' => 'required|string|max:10|unique:vouchers,vouchers_code,' . $id,
-            'percent_discount' => 'required|numeric|min:0|max:100',
-            'max_discount' => 'required|numeric|min:0',
-            'min_order_amount' => 'required|numeric|min:0',
-            'available_uses' => 'required|integer|min:1',
-            'start_date' => 'required|date',
-            'end_date' => 'required|date|after:start_date',
-        ]);
+    $voucher = Voucher::findOrFail($id);
+    $voucher->update([
+        'vouchers_code' => $request->vouchers_code,
+        'vouchers_description' => $request->name,
+        'vouchers_percent_discount' => $request->percent_discount,
+        'vouchers_max_discount' => $request->max_discount,
+        'vouchers_min_order_amount' => $request->min_order_amount,
+        'vouchers_start_date' => $request->start_date,
+        'vouchers_end_date' => $request->end_date,
+        'vouchers_usage_limit' => $request->available_uses,
+    ]);
 
-        $voucher->update([
-            'vouchers_code' => $request->vouchers_code,
-            'vouchers_description' => $request->name,
-            'vouchers_percent_discount' => $request->percent_discount,
-            'vouchers_max_discount' => $request->max_discount,
-            'vouchers_min_order_amount' => $request->min_order_amount,
-            'vouchers_start_date' => $request->start_date,
-            'vouchers_end_date' => $request->end_date,
-            'vouchers_usage_limit' => $request->available_uses,
-        ]);
+    return response()->json([
+        'success' => true,
+        'message' => 'Cập nhật voucher thành công!',
+        'voucher' => [
+            'id' => $voucher->id,
+            'code' => $voucher->vouchers_code,
+            'description' => $voucher->vouchers_description,
+            'percent_discount' => $voucher->vouchers_percent_discount / 100,
+            'max_discount' => $voucher->vouchers_max_discount,
+            'min_order_amount' => $voucher->vouchers_min_order_amount,
+            'available_uses' => $voucher->vouchers_usage_limit,
+            'start_date' => $voucher->vouchers_start_date,
+            'end_date' => $voucher->vouchers_end_date,
+        ]
+    ]);
+}
 
-        return response()->json(['success' => true, 'message' => 'Voucher đã được cập nhật thành công!']);
-    }
+public function destroy($id)
+{
+    $voucher = Voucher::findOrFail($id);
+    $voucher->delete();
 
-    public function destroy($id)
-    {
-        $voucher = Voucher::findOrFail($id);
-        $voucher->delete();
-
-        return response()->json(['success' => true, 'message' => 'Voucher đã được xóa thành công!']);
-    }
+    return response()->json([
+        'success' => true,
+        'message' => 'Xóa voucher thành công!'
+    ]);
+}
 
     public function show($id)
     {
@@ -123,9 +156,9 @@ class VoucherController extends Controller
 
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('vouchers_code', 'like', "%{$search}%")
-                  ->orWhere('vouchers_description', 'like', "%{$search}%");
+                    ->orWhere('vouchers_description', 'like', "%{$search}%");
             });
         }
 
@@ -134,7 +167,7 @@ class VoucherController extends Controller
             switch ($request->status) {
                 case 'active':
                     $query->where('vouchers_start_date', '<=', $now)
-                          ->where('vouchers_end_date', '>=', $now);
+                        ->where('vouchers_end_date', '>=', $now);
                     break;
                 case 'inactive':
                     $query->where('vouchers_end_date', '<', $now);
@@ -147,7 +180,7 @@ class VoucherController extends Controller
 
         $vouchers = $query->orderBy('created_at', 'desc')->get();
 
-        $transformedVouchers = $vouchers->map(function($voucher) {
+        $transformedVouchers = $vouchers->map(function ($voucher) {
             return [
                 'id' => $voucher->id,
                 'name' => $voucher->vouchers_code . ' - ' . $voucher->vouchers_description,

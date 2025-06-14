@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('clean:temp-uploads')->daily();
         $schedule->command('orders:auto-approve')->everyMinute();
         $schedule->command('inventory:check-low-stock')->daily();
+        $schedule->command('voucher:send-to-top-customers')->monthly();
     }
 
     /**
