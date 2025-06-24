@@ -47,9 +47,9 @@ class CustomerController extends Controller
         if (Auth::guard('customer')->attempt($credentials)) {
             $customerId = Auth::guard('customer')->id();
             // Gọi hàm lưu giỏ hàng từ session vào DB
-            // $cart = new Cart();
-            // $cart->saveToDatabase($customerId);
-            // $cartItems = $cart->getCartItemsOfCustomer($customerId);
+            $cart = new Cart();
+            $cart->saveToDatabase($customerId);
+            $cartItems = $cart->getCartItemsOfCustomer($customerId);
             // dd($cartItems);
             if (Session::has('auth')) {
                 Session::forget('auth');

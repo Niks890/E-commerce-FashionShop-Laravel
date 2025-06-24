@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cart_detail_databases', function (Blueprint $table) {
+            $table->id(); // Add auto-increment primary key
             $table->unsignedBigInteger('cart_id');
             $table->foreign('cart_id')->references('cart_id')->on('cart_databases');
             $table->unsignedInteger('product_variant_id');
@@ -19,7 +20,10 @@ return new class extends Migration
             $table->unsignedInteger('quantity')->default(1);
             $table->decimal('price', 10,2);
             $table->dateTime('reserved_at')->nullable();
-            $table->primary(['cart_id', 'product_variant_id']);
+
+            // Keep the composite unique constraint to prevent duplicates
+            $table->unique(['cart_id', 'product_variant_id']);
+
             $table->timestamps();
         });
     }
@@ -29,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('car_detailt_databases');
+        Schema::dropIfExists('cart_detail_databases');
     }
 };

@@ -20,11 +20,11 @@ class CartDetailDatabase extends Model
 
     public function cart()
     {
-        return $this->belongsTo(CartDatabase::class);
+        return $this->belongsTo(CartDatabase::class, 'cart_id', 'cart_id');
     }
 
     public function product_variant()
     {
-        return $this->belongsTo(ProductVariant::class);
+        return $this->belongsTo(ProductVariant::class, 'product_variant_id', 'id');
     }
 }

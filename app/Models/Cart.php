@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Support\Facades\Auth;
-
+use Illuminate\Support\Facades\Log;
 
 class Cart
 {
@@ -79,48 +79,78 @@ class Cart
 
 
 
-    // lưu cart vào db
+    // lưu cart vào db và megre cart với session
     public function saveToDatabase($customerId)
     {
-        // dd($customerId);
-        if (empty($this->items)) return;
-        // dd($this->items);
+        // Lấy giỏ hàng hiện có của user (nếu có)
+        $existingCart = CartDatabase::where('customer_id', $customerId)->first();
 
-        $cart = CartDatabase::firstOrCreate([
-            'customer_id' => $customerId,
-            'cart_session_id' => session()->getId(),
-        ]);
-        // dd($cart);
+        // Nếu không có giỏ hàng trong session, không cần làm gì
+        if (empty($this->items)) {
+            return $existingCart;
+        }
 
+        // Nếu user chưa có giỏ hàng, tạo mới
+        if (!$existingCart) {
+            try {
+                $cart = CartDatabase::create([
+                    'customer_id' => $customerId,
+                    'cart_session_id' => session()->getId()
+                ]);
+
+                // Fixed: Use cart_id instead of id
+                if (!$cart || !$cart->cart_id) {
+                    throw new \Exception('Failed to create cart');
+                }
+            } catch (\Exception $e) {
+                Log::error('Cart creation failed: ' . $e->getMessage());
+                throw new \Exception('Unable to create cart for customer');
+            }
+        } else {
+            $cart = $existingCart;
+            // dd($cart);
+        }
+
+        // Fixed: Check cart_id instead of id
+        if (!$cart || !$cart->cart_id) {
+            throw new \Exception('Cart ID is missing after creation/retrieval');
+        }
+
+        // Merge các sản phẩm từ session vào giỏ hàng
         foreach ($this->items as $item) {
-            $existing = CartDetailDatabase::where('cart_id', $cart->id)
+            // Fixed: Use cart_id instead of id
+            $existingItem = CartDetailDatabase::where('cart_id', $cart->cart_id)
                 ->where('product_variant_id', $item->product_variant_id)
                 ->first();
 
+                // dd($existingItem);
 
-            if ($existing) {
-                $existing->quantity += $item->quantity;
-                $existing->save();
+            if ($existingItem) {
+                $existingItem->quantity += $item->quantity;
+                $existingItem->save();
             } else {
-                CartDetailDatabase::create([
-                    'cart_id' => $cart->id,
-                    'product_variant_id' => $item->product_variant_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->price,
-                    'reserved_at' => now(),
-                ]);
+                try {
+                    CartDetailDatabase::create([
+                        'cart_id' => $cart->cart_id,
+                        'product_variant_id' => $item->product_variant_id,
+                        'quantity' => $item->quantity,
+                        'price' => $item->price,
+                        'reserved_at' => now(),
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Cart detail creation failed: ' . $e->getMessage());
+                    throw new \Exception('Unable to add item to cart');
+                }
             }
         }
 
-        // Xoá cart session sau khi sync DB
         session()->forget('cart');
+        return $cart;
     }
-
 
     public function getCartItemsOfCustomer($customerId)
     {
         // $customerId = Auth::guard('customer')->id();
         return CartDatabase::with('cartDetails', 'customer', 'cartDetails.product_variant')->where('customer_id', $customerId)->get();
     }
-
 }
