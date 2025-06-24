@@ -487,8 +487,9 @@ class InventoryController extends Controller
 
     public function add_extra()
     {
+        $categories = Category::all();
         $providers = Provider::all();
-        return view('admin.inventory.add-extra', compact('providers'));
+        return view('admin.inventory.add-extra', compact('providers', 'categories'));
     }
 
     // Hàm riêng xử lý ảnh (có thể đưa vào queue)
@@ -699,6 +700,134 @@ class InventoryController extends Controller
         }
     }
 
+
+    //Hàm gốc
+    // public function post_add_extra(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         // Validate basic fields first
+    //         $request->validate([
+    //             'id' => 'required',
+    //             'provider_id' => 'required|exists:providers,id',
+    //         ], [
+    //             'provider_id.required' => 'Vui lòng chọn nhà cung cấp.',
+    //             'provider_id.exists' => 'Nhà cung cấp không hợp lệ.',
+    //         ]);
+
+    //         // Decode products_to_add
+    //         $productsToAdd = json_decode($request->input('products_to_add'), true);
+    //         $note = $request->input('note');
+    //         if (json_last_error() !== JSON_ERROR_NONE) {
+    //             throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
+    //         }
+
+    //         // Validate products structure
+    //         $validatedProducts = [];
+    //         foreach ($productsToAdd as $product) {
+    //             $validator = Validator::make($product, [
+    //                 'product_id' => 'required|exists:products,id',
+    //                 'new_price' => 'required|numeric|min:1',
+    //                 'new_colors' => 'required|array|min:1',
+    //                 'new_colors.*' => 'string|min:2',
+    //                 'new_sizes_quantities' => 'required|array|min:1',
+    //             ], [
+    //                 'product_id.required' => 'ID sản phẩm không hợp lệ.',
+    //                 'new_price.required' => 'Vui lòng nhập giá nhập cho sản phẩm.',
+    //                 'new_price.min' => 'Giá nhập phải lớn hơn 0.',
+    //                 'new_colors.required' => 'Vui lòng chọn ít nhất một màu cho sản phẩm.',
+    //                 'new_sizes_quantities.required' => 'Vui lòng chọn kích cỡ và số lượng cho sản phẩm.',
+    //             ]);
+
+    //             if ($validator->fails()) {
+    //                 throw new Exception($validator->errors()->first());
+    //             }
+
+    //             $validatedProducts[] = $product;
+    //         }
+
+    //         if (empty($validatedProducts)) {
+    //             throw new Exception('Vui lòng chọn ít nhất một sản phẩm để nhập thêm.');
+    //         }
+
+    //         // Create inventory
+    //         $inventory = new Inventory();
+    //         $inventory->provider_id = $request->provider_id;
+    //         $inventory->staff_id = $request->id;
+    //         $inventory->status = 'pending';
+    //         $inventory->note = $note;
+    //         $inventory->total = 0;
+    //         $inventory->save();
+
+    //         $totalInventoryValue = 0;
+    //         $vatRate = 0.1;
+
+    //         foreach ($validatedProducts as $productData) {
+    //             $colors = $productData['new_colors'];
+    //             $sizesQuantities = $productData['new_sizes_quantities'];
+
+    //             foreach ($colors as $color) {
+    //                 $normalizedColor = strtolower(trim($color));
+
+    //                 foreach ($sizesQuantities as $size => $quantity) {
+    //                     if ($quantity <= 0) {
+    //                         throw new Exception("Số lượng cho kích cỡ {$size} của sản phẩm có ID {$productData['product_id']} phải lớn hơn 0.");
+    //                     }
+
+    //                     $variantTotal = $quantity * $productData['new_price'];
+    //                     $totalInventoryValue += $variantTotal;
+
+    //                     // Find or create variant
+    //                     $variant = ProductVariant::firstOrCreate([
+    //                         'product_id' => $productData['product_id'],
+    //                         'color' => $normalizedColor,
+    //                         'size' => $size,
+    //                     ], [
+    //                         'stock' => 0,
+    //                         'price' => $productData['new_price']
+    //                     ]);
+
+    //                     // Update price if different
+    //                     if (!$variant->wasRecentlyCreated && $variant->price != $productData['new_price']) {
+    //                         $variant->price = $productData['new_price'];
+    //                         $variant->save();
+    //                     }
+
+    //                     // Create InventoryDetail
+    //                     $inventoryDetail = new InventoryDetail();
+    //                     $inventoryDetail->product_id = $productData['product_id'];
+    //                     $inventoryDetail->inventory_id = $inventory->id;
+    //                     $inventoryDetail->product_variant_id = $variant->id;
+    //                     $inventoryDetail->price = $productData['new_price'];
+    //                     $inventoryDetail->quantity = $quantity;
+    //                     $inventoryDetail->size = $size . '-' . $quantity . '-' . $color;
+    //                     $inventoryDetail->save();
+    //                 }
+    //             }
+    //         }
+
+    //         $inventory->total = $totalInventoryValue;
+    //         $inventory->vat = $totalInventoryValue * $vatRate;
+    //         $inventory->save();
+
+    //         DB::commit();
+
+    //         return redirect()->route('inventory.index')
+    //             ->with('success', 'Yêu cầu nhập kho đã được tạo thành công và đang chờ duyệt!');
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error in post_add_extra', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //             'request' => $request->all()
+    //         ]);
+    //         return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    //     }
+    // }
+
+
+    // Hàm bổ sung kiểm tra size
     public function post_add_extra(Request $request)
     {
         DB::beginTransaction();
@@ -716,6 +845,7 @@ class InventoryController extends Controller
             // Decode products_to_add
             $productsToAdd = json_decode($request->input('products_to_add'), true);
             $note = $request->input('note');
+
             if (json_last_error() !== JSON_ERROR_NONE) {
                 throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
             }
@@ -741,6 +871,22 @@ class InventoryController extends Controller
                     throw new Exception($validator->errors()->first());
                 }
 
+                // Kiểm tra trùng size trong new_sizes_quantities
+                $sizes = array_keys($product['new_sizes_quantities']);
+                if (count($sizes) !== count(array_unique($sizes))) {
+                    throw new Exception("Sản phẩm ID {$product['product_id']} có size bị trùng lặp");
+                }
+
+                // Kiểm tra số lượng hợp lệ
+                foreach ($product['new_sizes_quantities'] as $size => $quantity) {
+                    if (!is_numeric($quantity)) {
+                        throw new Exception("Số lượng cho size {$size} phải là số");
+                    }
+                    if ($quantity <= 0) {
+                        throw new Exception("Số lượng cho size {$size} phải lớn hơn 0");
+                    }
+                }
+
                 $validatedProducts[] = $product;
             }
 
@@ -764,12 +910,20 @@ class InventoryController extends Controller
                 $colors = $productData['new_colors'];
                 $sizesQuantities = $productData['new_sizes_quantities'];
 
+                // Log product data để debug nếu cần
+                Log::debug('Processing product', [
+                    'product_id' => $productData['product_id'],
+                    'colors' => $colors,
+                    'sizesQuantities' => $sizesQuantities
+                ]);
+
                 foreach ($colors as $color) {
                     $normalizedColor = strtolower(trim($color));
 
                     foreach ($sizesQuantities as $size => $quantity) {
-                        if ($quantity <= 0) {
-                            throw new Exception("Số lượng cho kích cỡ {$size} của sản phẩm có ID {$productData['product_id']} phải lớn hơn 0.");
+                        // Kiểm tra lại lần nữa trước khi lưu vào DB
+                        if (!is_numeric($quantity) || $quantity <= 0) {
+                            throw new Exception("Số lượng không hợp lệ cho size {$size}");
                         }
 
                         $variantTotal = $quantity * $productData['new_price'];
@@ -822,6 +976,208 @@ class InventoryController extends Controller
             return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
         }
     }
+
+
+    // hàm test
+    // public function post_add_extra(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+    //         // Validate basic fields first
+    //         $request->validate([
+    //             'id' => 'required',
+    //             'provider_id' => 'required|exists:providers,id',
+    //         ], [
+    //             'provider_id.required' => 'Vui lòng chọn nhà cung cấp.',
+    //             'provider_id.exists' => 'Nhà cung cấp không hợp lệ.',
+    //         ]);
+
+    //         // Kiểm tra có ít nhất một loại sản phẩm nào được chọn
+    //         if (!$request->has('products_to_add') && !$request->has('new_products')) {
+    //             throw new Exception('Vui lòng chọn ít nhất một sản phẩm (có sẵn hoặc mới) để nhập kho');
+    //         }
+
+    //         // Tạo phiếu nhập
+    //         $inventory = new Inventory();
+    //         $inventory->provider_id = $request->provider_id;
+    //         $inventory->staff_id = $request->id;
+    //         $inventory->status = 'pending';
+    //         $inventory->note = $request->input('note');
+    //         $inventory->total = 0;
+    //         $inventory->save();
+
+    //         $totalInventoryValue = 0;
+    //         $vatRate = 0.1;
+
+    //         // Xử lý sản phẩm có sẵn
+    //         if ($request->has('products_to_add')) {
+    //             $productsToAdd = json_decode($request->input('products_to_add'), true);
+
+    //             if (json_last_error() !== JSON_ERROR_NONE) {
+    //                 throw new Exception('Định dạng JSON của products_to_add không hợp lệ');
+    //             }
+
+    //             foreach ($productsToAdd as $product) {
+    //                 $validator = Validator::make($product, [
+    //                     'product_id' => 'required|exists:products,id',
+    //                     'new_price' => 'required|numeric|min:1',
+    //                     'new_colors' => 'required|array|min:1',
+    //                     'new_colors.*' => 'string|min:2',
+    //                     'new_sizes_quantities' => 'required|array|min:1',
+    //                 ], [
+    //                     'product_id.required' => 'ID sản phẩm không hợp lệ.',
+    //                     'new_price.required' => 'Vui lòng nhập giá nhập cho sản phẩm.',
+    //                     'new_price.min' => 'Giá nhập phải lớn hơn 0.',
+    //                     'new_colors.required' => 'Vui lòng chọn ít nhất một màu cho sản phẩm.',
+    //                     'new_sizes_quantities.required' => 'Vui lòng chọn kích cỡ và số lượng cho sản phẩm.',
+    //                 ]);
+
+    //                 if ($validator->fails()) {
+    //                     throw new Exception($validator->errors()->first());
+    //                 }
+
+    //                 // Kiểm tra trùng size
+    //                 $sizes = array_keys($product['new_sizes_quantities']);
+    //                 if (count($sizes) !== count(array_unique($sizes))) {
+    //                     throw new Exception("Sản phẩm ID {$product['product_id']} có size bị trùng lặp");
+    //                 }
+
+    //                 // Xử lý từng biến thể
+    //                 foreach ($product['new_colors'] as $color) {
+    //                     $normalizedColor = strtolower(trim($color));
+
+    //                     foreach ($product['new_sizes_quantities'] as $size => $quantity) {
+    //                         if (!is_numeric($quantity) || $quantity <= 0) {
+    //                             throw new Exception("Số lượng không hợp lệ cho size {$size}");
+    //                         }
+
+    //                         $variantTotal = $quantity * $product['new_price'];
+    //                         $totalInventoryValue += $variantTotal;
+
+    //                         // Tìm hoặc tạo biến thể
+    //                         $variant = ProductVariant::firstOrCreate([
+    //                             'product_id' => $product['product_id'],
+    //                             'color' => $normalizedColor,
+    //                             'size' => $size,
+    //                         ], [
+    //                             'stock' => 0,
+    //                             'price' => $product['new_price']
+    //                         ]);
+
+    //                         // Cập nhật giá nếu khác
+    //                         if (!$variant->wasRecentlyCreated && $variant->price != $product['new_price']) {
+    //                             $variant->price = $product['new_price'];
+    //                             $variant->save();
+    //                         }
+
+    //                         // Tạo chi tiết phiếu nhập
+    //                         $this->createInventoryDetail(
+    //                             $inventory->id,
+    //                             $product['product_id'],
+    //                             $variant->id,
+    //                             $product['new_price'],
+    //                             $quantity,
+    //                             $size,
+    //                             $color
+    //                         );
+    //                     }
+    //                 }
+    //             }
+    //         }
+
+    //         // Xử lý sản phẩm mới
+    //         if ($request->has('new_products')) {
+    //             $newProducts = json_decode($request->input('new_products'), true);
+
+    //             if (json_last_error() !== JSON_ERROR_NONE) {
+    //                 throw new Exception('Định dạng JSON của new_products không hợp lệ');
+    //             }
+
+    //             foreach ($newProducts as $newProduct) {
+    //                 // Validate dữ liệu sản phẩm mới
+    //                 if (empty($newProduct['name']) || empty($newProduct['variants']) || !is_numeric($newProduct['price']) || $newProduct['price'] <= 0) {
+    //                     throw new Exception('Thông tin sản phẩm mới không hợp lệ');
+    //                 }
+
+    //                 // Tạo sản phẩm mới
+    //                 $product = new Product();
+    //                 $product->name = $newProduct['name'];
+    //                 $product->category_id = $newProduct['category_id'];
+    //                 $product->brand = $newProduct['brand'] ?? null;
+    //                    // Process image if uploaded
+    //                 // if (isset($newProductData['image'])) {
+    //                 //     $this->processProductImage($product, $newProductData['image'], $cloudinaryService);
+    //                 // }
+    //                 $product->image = 'default-product-image.jpg'; // Xử lý upload ảnh sau
+    //                 $product->save();
+
+    //                 // Xử lý từng biến thể
+    //                 foreach ($newProduct['variants'] as $variant) {
+    //                     if (empty($variant['color']) || empty($variant['size']) || !is_numeric($variant['quantity']) || $variant['quantity'] <= 0) {
+    //                         throw new Exception('Thông tin biến thể sản phẩm mới không hợp lệ');
+    //                     }
+
+    //                     $variantTotal = $variant['quantity'] * $newProduct['price'];
+    //                     $totalInventoryValue += $variantTotal;
+
+    //                     // Tạo biến thể mới
+    //                     $productVariant = new ProductVariant();
+    //                     $productVariant->product_id = $product->id;
+    //                     $productVariant->color = strtolower(trim($variant['color']));
+    //                     $productVariant->size = $variant['size'];
+    //                     $productVariant->stock = 0; // Sẽ được cập nhật sau khi nhập kho
+    //                     $productVariant->price = $newProduct['price'];
+    //                     $productVariant->save();
+
+    //                     // Tạo chi tiết phiếu nhập
+    //                     $this->createInventoryDetail(
+    //                         $inventory->id,
+    //                         $product->id,
+    //                         $productVariant->id,
+    //                         $newProduct['price'],
+    //                         $variant['quantity'],
+    //                         $variant['size'],
+    //                         $variant['color']
+    //                     );
+    //                 }
+    //             }
+    //         }
+
+    //         // Cập nhật tổng giá trị phiếu nhập
+    //         $inventory->total = $totalInventoryValue;
+    //         $inventory->vat = $totalInventoryValue * $vatRate;
+    //         $inventory->save();
+
+    //         DB::commit();
+
+    //         return redirect()->route('inventory.index')
+    //             ->with('success', 'Yêu cầu nhập kho đã được tạo thành công và đang chờ duyệt!');
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error in post_add_extra', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString(),
+    //             'request' => $request->all()
+    //         ]);
+    //         return back()->withInput()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    //     }
+    // }
+
+    // // Hàm helper tạo chi tiết phiếu nhập
+    // private function createInventoryDetail($inventoryId, $productId, $variantId, $price, $quantity, $size, $color)
+    // {
+    //     $inventoryDetail = new InventoryDetail();
+    //     $inventoryDetail->product_id = $productId;
+    //     $inventoryDetail->inventory_id = $inventoryId;
+    //     $inventoryDetail->product_variant_id = $variantId;
+    //     $inventoryDetail->price = $price;
+    //     $inventoryDetail->quantity = $quantity;
+    //     $inventoryDetail->size = $size . '-' . $quantity . '-' . $color;
+    //     $inventoryDetail->save();
+
+    //     return $inventoryDetail;
+    // }
 
 
     // Hàm xử lý nâng cao nhập mới trong phiếu nhập th

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->foreign('product_variant_id')->references('id')->on('product_variants');
             $table->unsignedInteger('quantity')->default(1);
             $table->decimal('price', 10,2);
+            $table->dateTime('reserved_at')->nullable();
             $table->primary(['cart_id', 'product_variant_id']);
             $table->timestamps();
         });

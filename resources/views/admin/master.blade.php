@@ -64,7 +64,7 @@
                 </div>
             </div>
 
-            @include('admin.components._footer');
+            @include('admin.components._footer')
         </div>
     </div>
 

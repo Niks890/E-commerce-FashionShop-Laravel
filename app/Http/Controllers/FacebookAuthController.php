@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use Illuminate\Http\Request;
 
 use Laravel\Socialite\Facades\Socialite;
@@ -21,7 +22,7 @@ class FacebookAuthController extends Controller
      {
          try {
              $facebookUser = Socialite::driver('facebook')->user();
- 
+
              // Tìm hoặc tạo user mới
              $user = Customer::updateOrCreate([
                  'email' => $facebookUser->getEmail(),
@@ -30,10 +31,15 @@ class FacebookAuthController extends Controller
                  'platform_id' => $facebookUser->getId(),
                  'avatar' => $facebookUser->getAvatar(),
              ]);
- 
+
              // Đăng nhập user
-             Auth::guard('customer')->login($user);
- 
+            Auth::guard('customer')->login($user);
+            // $customerId = Auth::guard('customer')->id();
+            // // dd($customerId);
+            // // Gọi hàm lưu giỏ hàng từ session vào DB
+            // $cart = new Cart();
+            // $cart->saveToDatabase($customerId);
+
              return redirect()->intended('/');
          } catch (\Exception $e) {
              return redirect()->route('user.login')->with('error', 'Đăng nhập thất bại, vui lòng thử lại.');

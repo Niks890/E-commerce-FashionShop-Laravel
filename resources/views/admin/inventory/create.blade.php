@@ -242,37 +242,47 @@
 
 
 
+
     <!-- Color Selection Modal -->
-    <div class="modal fade" id="colorSelectionModal" tabindex="-1" aria-labelledby="colorSelectionModalLabel"
-        aria-hidden="true">
+    <!-- Color Selection Modal -->
+    <div class="modal fade color-modal" id="colorSelectionModal" tabindex="-1"
+        aria-labelledby="colorSelectionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="colorSelectionModalLabel">Chọn màu sắc</h5>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="colorSelectionModalLabel">
+                        <i class="fas fa-palette me-2"></i>Chọn màu sắc
+                    </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-4">
-                        <div class="input-group">
-                            <input type="text" id="newColorInput" class="form-control"
-                                placeholder="Nhập tên màu mới">
-                            <button class="btn btn-primary" id="addColorBtn">Thêm</button>
+                        <label class="form-label fw-bold mb-2">Thêm màu mới</label>
+                        <div class="color-input-group">
+                            <input type="text" id="newColorInput" class="form-control form-control-lg"
+                                placeholder="Nhập tên màu mới...">
+                            <button class="btn btn-primary btn-sm btn-add-color" id="addColorBtn">
+                                <i class="fas fa-plus me-1"></i>Thêm
+                            </button>
                         </div>
-                        <small class="text-muted">Ví dụ: Đỏ, Xanh lá, Xanh dương...</small>
+                        <small class="text-muted">Ví dụ: Đỏ cam, Xanh ngọc, Tím lavender...</small>
+                        <div class="invalid-color" id="duplicateColorError">
+                            <i class="fas fa-exclamation-circle me-1"></i>Màu này đã tồn tại
+                        </div>
                     </div>
 
-                    <div class="mb-3">
-                        <h6 class="fw-bold mb-3">Màu sắc phổ biến:</h6>
-                        <div class="color-options d-flex flex-wrap gap-2">
-                            <!-- Default color options will be added by JavaScript -->
+                    <div class="mb-4">
+                        <h6 class="fw-bold mb-3">Bảng màu phổ biến</h6>
+                        <div class="color-palette" id="colorPalette">
+                            <!-- Color options will be added by JavaScript -->
                         </div>
                     </div>
 
-                    <div>
-                        <h6 class="fw-bold mb-3">Màu đã chọn:</h6>
-                        <div id="selectedColorContainer" class="d-flex">
-                            <span class="badge bg-primary p-2 d-none" id="selectedColorBadge">
+                    <div class="selected-color-preview">
+                        <h6 class="fw-bold mb-0 me-3">Màu đã chọn:</h6>
+                        <div id="selectedColorContainer">
+                            <span class="selected-color-badge d-none" id="selectedColorBadge">
                                 <span id="selectedColorText"></span>
                                 <button class="btn-close btn-close-white ms-2" id="removeSelectedColor"></button>
                             </span>
@@ -280,8 +290,12 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <button type="button" class="btn btn-primary" id="confirmColorSelection">Xác nhận</button>
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Hủy
+                    </button>
+                    <button type="button" class="btn btn-primary rounded-pill px-4" id="confirmColorSelection">
+                        <i class="fas fa-check me-1"></i>Xác nhận
+                    </button>
                 </div>
             </div>
         </div>
@@ -291,6 +305,170 @@
 
 @section('css')
     <style>
+        /* Color Selection Styles */
+        /* .color-options .color-option {
+                    width: 100px;
+                    height: 40px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 12px;
+                    color: white;
+                    text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
+                    transition: all 0.2s ease;
+                    border: 2px solid transparent;
+                    position: relative;
+                    margin: 5px;
+                }
+
+                .color-options .color-option:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+                }
+
+                .color-options .color-option.selected {
+                    border: 2px solid #000;
+                    transform: scale(1.05);
+                }
+
+                #selectedColorBadge {
+                    font-size: 14px;
+                    display: inline-flex;
+                    align-items: center;
+                    border-radius: 20px;
+                    padding: 5px 10px;
+                }
+
+                .remove-color-btn {
+                    opacity: 0.7;
+                }
+
+                .remove-color-btn:hover {
+                    opacity: 1;
+                } */
+
+        /* Thêm vào phần CSS */
+        .color-modal .modal-content {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .color-modal .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-bottom: none;
+            padding: 1.2rem 1.5rem;
+        }
+
+        .color-modal .modal-title {
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .color-modal .modal-body {
+            padding: 1.5rem;
+        }
+
+        .color-modal .modal-footer {
+            border-top: none;
+            padding: 1rem 1.5rem;
+            background-color: #f8f9fa;
+        }
+
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .color-option {
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .color-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .color-option.selected {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.8), 0 0 0 6px var(--selected-color);
+        }
+
+        .color-option .remove-color {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-option:hover .remove-color {
+            opacity: 1;
+        }
+
+        .selected-color-preview {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+        }
+
+        .selected-color-badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            color: white;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .color-input-group {
+            position: relative;
+        }
+
+        .color-input-group .btn-add-color {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            border-radius: 20px;
+            padding: 5px 12px;
+            font-size: 12px;
+        }
+
+        .invalid-color {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
         .bg-gradient-primary {
             background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
         }
@@ -339,132 +517,98 @@
         .position-fixed.alert {
             animation: slideInRight 0.3s ease-out;
         }
-
-
-        /* Color Selection Styles */
-        .color-options .color-option {
-            width: 60px;
-            height: 30px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: white;
-            text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
-            transition: all 0.2s ease;
-            border: 2px solid transparent;
-        }
-
-        .color-options .color-option:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .color-options .color-option.selected {
-            border: 2px solid #000;
-            transform: scale(1.05);
-        }
-
-        #selectedColorBadge {
-            font-size: 14px;
-            display: inline-flex;
-            align-items: center;
-            border-radius: 20px;
-        }
     </style>
 @endsection
 
 @section('js')
     <script>
         // Validate form trước khi submit
-        $('#formCreateInventory').on('submit', function(e) {
-            let isValid = true;
-            let errorMessages = [];
+        // $('#formCreateInventory').on('submit', function(e) {
+        //     let isValid = true;
+        //     let errorMessages = [];
 
-            // Duyệt qua từng sản phẩm
-            $('.product-item').each(function(productIndex) {
-                const productItem = $(this);
-                const variants = productItem.find('.variant-item');
-                const variantCombinations = new Set();
+        //     // Duyệt qua từng sản phẩm
+        //     $('.product-item').each(function(productIndex) {
+        //         const productItem = $(this);
+        //         const variants = productItem.find('.variant-item');
+        //         const variantCombinations = new Set();
 
-                // Duyệt qua từng biến thể của sản phẩm
-                variants.each(function() {
-                    const variantItem = $(this);
+        //         // Duyệt qua từng biến thể của sản phẩm
+        //         variants.each(function() {
+        //             const variantItem = $(this);
 
-                    // Validate màu sắc chỉ được nhập 1 màu
-                    const colorInput = variantItem.find('.color-input');
-                    const colorValue = colorInput.val().trim();
+        //             // Validate màu sắc chỉ được nhập 1 màu
+        //             const colorInput = variantItem.find('.color-input');
+        //             const colorValue = colorInput.val().trim();
 
-                    if (colorValue.includes(',')) {
-                        isValid = false;
-                        colorInput.addClass('is-invalid');
-                        errorMessages.push(
-                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Chỉ được nhập 1 màu duy nhất`
-                        );
-                    } else {
-                        colorInput.removeClass('is-invalid');
-                    }
+        //             if (colorValue.includes(',')) {
+        //                 isValid = false;
+        //                 colorInput.addClass('is-invalid');
+        //                 errorMessages.push(
+        //                     `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Chỉ được nhập 1 màu duy nhất`
+        //                 );
+        //             } else {
+        //                 colorInput.removeClass('is-invalid');
+        //             }
 
-                    // Validate không nhập số lượng âm
-                    const quantityInput = variantItem.find('.quantity-input');
-                    const quantityValue = parseInt(quantityInput.val());
+        //             // Validate không nhập số lượng âm
+        //             const quantityInput = variantItem.find('.quantity-input');
+        //             const quantityValue = parseInt(quantityInput.val());
 
-                    if (quantityValue < 1) {
-                        isValid = false;
-                        quantityInput.addClass('is-invalid');
-                        errorMessages.push(
-                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Số lượng phải lớn hơn 0`
-                        );
-                    } else {
-                        quantityInput.removeClass('is-invalid');
-                    }
+        //             if (quantityValue < 1) {
+        //                 isValid = false;
+        //                 quantityInput.addClass('is-invalid');
+        //                 errorMessages.push(
+        //                     `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Số lượng phải lớn hơn 0`
+        //                 );
+        //             } else {
+        //                 quantityInput.removeClass('is-invalid');
+        //             }
 
-                    // Validate không nhập giá âm
-                    const priceInput = productItem.find('.price-input');
-                    const priceValue = parseInt(priceInput.val());
+        //             // Validate không nhập giá âm
+        //             const priceInput = productItem.find('.price-input');
+        //             const priceValue = parseInt(priceInput.val());
 
-                    if (priceValue < 0) {
-                        isValid = false;
-                        priceInput.addClass('is-invalid');
-                        errorMessages.push(`Sản phẩm #${productIndex + 1}: Giá nhập không được âm`);
-                    } else {
-                        priceInput.removeClass('is-invalid');
-                    }
+        //             if (priceValue < 0) {
+        //                 isValid = false;
+        //                 priceInput.addClass('is-invalid');
+        //                 errorMessages.push(`Sản phẩm #${productIndex + 1}: Giá nhập không được âm`);
+        //             } else {
+        //                 priceInput.removeClass('is-invalid');
+        //             }
 
-                    // Validate combination màu + size không trùng lặp
-                    const sizeValue = variantItem.find('select[name$="[size]"]').val();
-                    const combination = `${sizeValue}-${colorValue.toUpperCase()}`;
+        //             // Validate combination màu + size không trùng lặp
+        //             const sizeValue = variantItem.find('select[name$="[size]"]').val();
+        //             const combination = `${sizeValue}-${colorValue.toUpperCase()}`;
 
-                    if (variantCombinations.has(combination)) {
-                        isValid = false;
-                        colorInput.addClass('is-invalid');
-                        variantItem.find('select[name$="[size]"]').addClass('is-invalid');
-                        errorMessages.push(
-                            `Sản phẩm #${productIndex + 1}: Biến thể ${combination} đã bị trùng lặp`
-                        );
-                    } else {
-                        variantCombinations.add(combination);
-                        colorInput.removeClass('is-invalid');
-                        variantItem.find('select[name$="[size]"]').removeClass('is-invalid');
-                    }
-                });
-            });
+        //             if (variantCombinations.has(combination)) {
+        //                 isValid = false;
+        //                 colorInput.addClass('is-invalid');
+        //                 variantItem.find('select[name$="[size]"]').addClass('is-invalid');
+        //                 errorMessages.push(
+        //                     `Sản phẩm #${productIndex + 1}: Biến thể ${combination} đã bị trùng lặp`
+        //                 );
+        //             } else {
+        //                 variantCombinations.add(combination);
+        //                 colorInput.removeClass('is-invalid');
+        //                 variantItem.find('select[name$="[size]"]').removeClass('is-invalid');
+        //             }
+        //         });
+        //     });
 
-            // Nếu có lỗi thì hiển thị và ngăn form submit
-            if (!isValid) {
-                e.preventDefault();
+        //     // Nếu có lỗi thì hiển thị và ngăn form submit
+        //     if (!isValid) {
+        //         e.preventDefault();
 
-                // Tạo thông báo lỗi
-                let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
-                errorMessages.forEach((msg, index) => {
-                    errorMessage += `\n${index + 1}. ${msg}`;
-                });
+        //         // Tạo thông báo lỗi
+        //         let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
+        //         errorMessages.forEach((msg, index) => {
+        //             errorMessage += `\n${index + 1}. ${msg}`;
+        //         });
 
-                alert(errorMessage);
-            }
-        });
+        //         alert(errorMessage);
+        //     }
+        // });
 
         // Thêm validate real-time cho các trường
         $(document).on('input', '.quantity-input', function() {
@@ -494,6 +638,7 @@
             }
         });
     </script>
+
     <script>
         $(document).ready(function() {
             let productCount = 1;
@@ -836,5 +981,294 @@
         });
     </script>
 
+    <script>
+        // Color Selection Modal Logic
+        $(document).ready(function() {
+            const commonColors = [{
+                    name: 'Đỏ',
+                    hex: '#e63946'
+                },
+                {
+                    name: 'Xanh dương',
+                    hex: '#1d3557'
+                },
+                {
+                    name: 'Xanh lá',
+                    hex: '#2a9d8f'
+                },
+                {
+                    name: 'Vàng',
+                    hex: '#ffd166'
+                },
+                {
+                    name: 'Đen',
+                    hex: '#212529'
+                },
+                {
+                    name: 'Trắng',
+                    hex: '#f8f9fa',
+                    textColor: '#212529'
+                },
+                {
+                    name: 'Hồng',
+                    hex: '#ffafcc'
+                },
+                {
+                    name: 'Tím',
+                    hex: '#7b2cbf'
+                },
+                {
+                    name: 'Cam',
+                    hex: '#fb8500'
+                },
+                {
+                    name: 'Xám',
+                    hex: '#6c757d'
+                },
+                {
+                    name: 'Nâu',
+                    hex: '#6d4c41'
+                },
+                {
+                    name: 'Be',
+                    hex: '#f5ebe0',
+                    textColor: '#6d4c41'
+                }
+            ];
 
+            // Initialize color modal
+            let currentColorInput = null;
+            let selectedColor = null;
+            let allColors = [...commonColors];
+
+            // Populate color palette
+            const colorPalette = $('#colorPalette');
+            commonColors.forEach(color => {
+                colorPalette.append(createColorOption(color));
+            });
+
+            // Open color modal when clicking on color input
+            $(document).on('click', '.color-input', function() {
+                currentColorInput = $(this);
+                selectedColor = currentColorInput.val().trim();
+                updateSelectedColorDisplay();
+                $('#colorSelectionModal').modal('show');
+
+                // Reset modal state
+                $('#newColorInput').val('');
+                $('#duplicateColorError').hide();
+                $('.color-option').removeClass('selected');
+
+                // Highlight selected color if exists
+                if (selectedColor) {
+                    $(`.color-option[data-color="${selectedColor}"]`).addClass('selected');
+                }
+            });
+
+            // Select color from options
+            $(document).on('click', '.color-option', function() {
+                $('.color-option').removeClass('selected');
+                $(this).addClass('selected');
+                selectedColor = $(this).data('color');
+                updateSelectedColorDisplay();
+            });
+
+            // Add new color
+            $('#addColorBtn').click(function() {
+                const newColorName = $('#newColorInput').val().trim();
+
+                if (!newColorName) return;
+
+                // Check for duplicate color
+                const isDuplicate = allColors.some(color =>
+                    color.name.toLowerCase() === newColorName.toLowerCase()
+                );
+
+                if (isDuplicate) {
+                    $('#duplicateColorError').show();
+                    return;
+                }
+
+                $('#duplicateColorError').hide();
+
+                const newColor = {
+                    name: newColorName,
+                    hex: getRandomColor(),
+                    isCustom: true
+                };
+
+                allColors.push(newColor);
+                colorPalette.append(createColorOption(newColor));
+                $('#newColorInput').val('');
+
+                // Auto-select the newly added color
+                $('.color-option').removeClass('selected');
+                $(`.color-option[data-color="${newColor.name}"]`).addClass('selected');
+                selectedColor = newColor.name;
+                updateSelectedColorDisplay();
+            });
+
+            // Remove color
+            $(document).on('click', '.remove-color', function(e) {
+                e.stopPropagation();
+                const colorOption = $(this).closest('.color-option');
+                const colorName = colorOption.data('color');
+
+                // Remove from allColors array
+                allColors = allColors.filter(color => color.name !== colorName);
+
+                // If this color was selected, clear selection
+                if (selectedColor === colorName) {
+                    selectedColor = null;
+                    updateSelectedColorDisplay();
+                }
+
+                colorOption.remove();
+            });
+
+            // Remove selected color
+            $('#removeSelectedColor').click(function() {
+                selectedColor = null;
+                updateSelectedColorDisplay();
+                $('.color-option').removeClass('selected');
+            });
+
+            // Confirm color selection
+            $('#confirmColorSelection').click(function() {
+                if (currentColorInput && selectedColor) {
+                    currentColorInput.val(selectedColor);
+                    $('#colorSelectionModal').modal('hide');
+                }
+            });
+
+            // Helper function to create color option HTML
+            function createColorOption(color) {
+                const textColor = color.textColor || (isLightColor(color.hex) ? '#333' : '#fff');
+                return `
+                    <div class="color-option" data-color="${color.name}"
+                         style="background-color: ${color.hex}; color: ${textColor}">
+                        ${color.name}
+                        ${color.isCustom ? '<span class="remove-color"><i class="fas fa-times"></i></span>' : ''}
+                    </div>
+                `;
+            }
+
+            // Helper function to update selected color display
+            function updateSelectedColorDisplay() {
+                const selectedColorBadge = $('#selectedColorBadge');
+                const selectedColorText = $('#selectedColorText');
+
+                if (selectedColor) {
+                    const colorObj = allColors.find(c => c.name === selectedColor);
+                    if (colorObj) {
+                        const textColor = colorObj.textColor || (isLightColor(colorObj.hex) ? '#333' : '#fff');
+                        selectedColorBadge.removeClass('d-none')
+                            .css('background-color', colorObj.hex)
+                            .css('color', textColor);
+                        selectedColorText.text(selectedColor);
+                        return;
+                    }
+                }
+
+                selectedColorBadge.addClass('d-none');
+            }
+
+            // Helper function to check if color is light
+            function isLightColor(hex) {
+                const r = parseInt(hex.substr(1, 2), 16);
+                const g = parseInt(hex.substr(3, 2), 16);
+                const b = parseInt(hex.substr(5, 2), 16);
+                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+                return brightness > 155;
+            }
+
+            // Helper function to generate random color
+            function getRandomColor() {
+                return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+            }
+        });
+
+        // Enhanced validation for duplicate color-size combinations
+        $('#formCreateInventory').on('submit', function(e) {
+            let isValid = true;
+            let errorMessages = [];
+
+            // Check each product
+            $('.product-item').each(function(productIndex) {
+                const productItem = $(this);
+                const variants = productItem.find('.variant-item');
+                const variantCombinations = new Set();
+
+                // Check each variant
+                variants.each(function() {
+                    const variantItem = $(this);
+                    const colorInput = variantItem.find('.color-input');
+                    const colorValue = colorInput.val().trim();
+                    const sizeValue = variantItem.find('select[name$="[size]"]').val();
+
+                    // Validate color is selected
+                    if (!colorValue) {
+                        isValid = false;
+                        colorInput.addClass('is-invalid');
+                        errorMessages.push(
+                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Vui lòng chọn màu sắc`
+                        );
+                    } else {
+                        colorInput.removeClass('is-invalid');
+                    }
+
+                    // Validate size is selected
+                    if (!sizeValue) {
+                        isValid = false;
+                        variantItem.find('select[name$="[size]"]').addClass('is-invalid');
+                        errorMessages.push(
+                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Vui lòng chọn kích cỡ`
+                        );
+                    } else {
+                        variantItem.find('select[name$="[size]"]').removeClass('is-invalid');
+                    }
+
+                    // Validate quantity
+                    const quantityValue = parseInt(variantItem.find('.quantity-input').val());
+                    if (quantityValue < 1) {
+                        isValid = false;
+                        variantItem.find('.quantity-input').addClass('is-invalid');
+                        errorMessages.push(
+                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Số lượng phải lớn hơn 0`
+                        );
+                    } else {
+                        variantItem.find('.quantity-input').removeClass('is-invalid');
+                    }
+
+                    // Check for duplicate color-size combinations
+                    if (colorValue && sizeValue) {
+                        const combination = `${colorValue.toLowerCase()}-${sizeValue}`;
+
+                        if (variantCombinations.has(combination)) {
+                            isValid = false;
+                            colorInput.addClass('is-invalid');
+                            variantItem.find('select[name$="[size]"]').addClass('is-invalid');
+                            errorMessages.push(
+                                `Sản phẩm #${productIndex + 1}: Biến thể màu "${colorValue}" size ${sizeValue} đã bị trùng`
+                            );
+                        } else {
+                            variantCombinations.add(combination);
+                        }
+                    }
+                });
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+
+                // Show error messages
+                let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
+                errorMessages.forEach((msg, index) => {
+                    errorMessage += `\n${index + 1}. ${msg}`;
+                });
+
+                alert(errorMessage);
+            }
+        });
+    </script>
 @endsection

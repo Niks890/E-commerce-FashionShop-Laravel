@@ -146,6 +146,19 @@
         rel="stylesheet" />
 
     <style>
+        .select2-results__option[aria-selected=true] {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            position: relative;
+        }
+
+        .select2-results__option[aria-selected=true]:after {
+            content: "✓";
+            position: absolute;
+            right: 10px;
+            color: #28a745;
+        }
+
         /* General styles */
         body {
             background-color: #f8f9fa;
@@ -568,14 +581,14 @@
                                             const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
                                             const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
                                             return `
-                                                                <tr>
-                                                                    <td>${variant.color}</td>
-                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                                    <td>${variant.stock || 0}</td>
-                                                                    <td>${quantityInSlip}</td>
-                                                                    <td>${priceInSlip}</td>
-                                                                </tr>
-                                                            `;
+                                                                                <tr>
+                                                                                    <td>${variant.color}</td>
+                                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                                                    <td>${variant.stock || 0}</td>
+                                                                                    <td>${quantityInSlip}</td>
+                                                                                    <td>${priceInSlip}</td>
+                                                                                </tr>
+                                                                            `;
                                         }).join('')}
                                     </tbody>
                                 </table>
@@ -710,6 +723,17 @@
                             const selectedSize = e.params.data.id;
                             const productIndex = $(this).data('index');
 
+                            // Kiểm tra nếu size đã được chọn
+                            if (productsData[productIndex].new_sizes_quantities[selectedSize]) {
+                                alert(
+                                    `Size ${selectedSize} đã được chọn. Vui lòng chọn size khác hoặc cập nhật số lượng cho size này.`
+                                    );
+                                $(this).val(Object.keys(productsData[productIndex]
+                                    .new_sizes_quantities)).trigger('change');
+                                return;
+                            }
+
+                            // Phần còn lại giữ nguyên
                             $('#modal-quantity-label').text(`Nhập số lượng cho size ${selectedSize}`);
                             $("#quantity_variant").val(
                                 productsData[productIndex].new_sizes_quantities[selectedSize] || 1
@@ -862,6 +886,28 @@
                                 }
                             });
 
+
+                            let hasDuplicateSizes = false;
+
+                            selectedProductsToSend.forEach(product => {
+                                const sizes = Object.keys(product.new_sizes_quantities);
+                                const uniqueSizes = new Set(sizes);
+
+                                if (sizes.length !== uniqueSizes.size) {
+                                    hasDuplicateSizes = true;
+                                    const productName = productsData.find(p => p.product_id ===
+                                        product.product_id)?.product_name || '';
+                                    alert(
+                                        `Lỗi: Sản phẩm "${productName}" có size bị trùng lặp. Vui lòng kiểm tra lại.`
+                                    );
+                                }
+                            });
+
+                            if (hasDuplicateSizes) {
+                                alert("Lỗi: Có size bị trùng lặp. Vui lòng kiểm tra lại.");
+                                return;
+                            }
+
                             if (validationError) {
                                 return;
                             }
@@ -990,7 +1036,24 @@
                 const formattedSizesInput = $(`#product-row-${index} .formatted-new-sizes`);
                 const selectElement = $(`#product-row-${index} .select-sizes`);
 
-                // Cập nhật giá trị ẩn
+                // Kiểm tra trùng lặp size
+                const sizeCounts = {};
+                Object.keys(productsData[index].new_sizes_quantities).forEach(size => {
+                    sizeCounts[size] = (sizeCounts[size] || 0) + 1;
+                });
+
+                const duplicateSizes = Object.keys(sizeCounts).filter(size => sizeCounts[size] > 1);
+                if (duplicateSizes.length > 0) {
+                    alert(`Lỗi: Size ${duplicateSizes.join(', ')} đã được chọn nhiều lần. Vui lòng kiểm tra lại.`);
+                    // Xóa các size trùng
+                    duplicateSizes.forEach(size => {
+                        delete productsData[index].new_sizes_quantities[size];
+                    });
+                    // Cập nhật lại select2
+                    selectElement.val(Object.keys(productsData[index].new_sizes_quantities)).trigger('change');
+                }
+
+                // Phần còn lại giữ nguyên
                 formattedSizesInput.val(
                     Object.entries(productsData[index].new_sizes_quantities)
                     .map(([size, qty]) => `${size}-${qty}`)

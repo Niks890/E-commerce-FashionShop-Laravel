@@ -490,7 +490,7 @@
                 // Chart doanh thu theo tháng (giả sử có biến JS 'revenueData')
                 const revenueData = @json(array_values($revenueByMonth));
                 const revenueLabels = @json(array_keys($revenueByMonth));
-                console.log(revenueLabels, revenueData);
+                // console.log(revenueLabels, revenueData);
                 var ctx = document.getElementById('revenueChart').getContext('2d');
                 var revenueChart = new Chart(ctx, {
                     type: 'bar',

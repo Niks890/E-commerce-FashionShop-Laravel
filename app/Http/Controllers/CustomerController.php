@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\OrderCancellationMail;
 use App\Mail\VoucherMail;
+use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
@@ -44,6 +45,12 @@ class CustomerController extends Controller
         ];
 
         if (Auth::guard('customer')->attempt($credentials)) {
+            $customerId = Auth::guard('customer')->id();
+            // Gọi hàm lưu giỏ hàng từ session vào DB
+            // $cart = new Cart();
+            // $cart->saveToDatabase($customerId);
+            // $cartItems = $cart->getCartItemsOfCustomer($customerId);
+            // dd($cartItems);
             if (Session::has('auth')) {
                 Session::forget('auth');
                 return redirect()->route('sites.cart');

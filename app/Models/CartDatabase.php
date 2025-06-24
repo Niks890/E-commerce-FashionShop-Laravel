@@ -9,21 +9,19 @@ class CartDatabase extends Model
 {
     use HasFactory;
 
-    protected $table = 'cart_databases';
-
     protected $fillable = [
         'cart_session_id',
         'customer_id',
-        'total',
     ];
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class, 'customer_id', 'id');
     }
 
-    public function cartdetails()
+
+    public function cartDetails()
     {
-        return $this->hasMany(CarDetailDatabase::class);
+        return $this->hasMany(CartDetailDatabase::class, 'cart_id', 'cart_id');
     }
 }

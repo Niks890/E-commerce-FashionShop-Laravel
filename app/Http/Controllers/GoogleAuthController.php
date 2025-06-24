@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Cart;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,6 +36,11 @@ class GoogleAuthController extends Controller
 
             // Đăng nhập user
             Auth::guard('customer')->login($user);
+            // $customerId = Auth::guard('customer')->id();
+            // // dd($customerId);
+            // // Gọi hàm lưu giỏ hàng từ session vào DB
+            // $cart = new Cart();
+            // $cart->saveToDatabase($customerId);
             // dd($user);
 
             // Chuyển hướng về trang trước đó hoặc trang chủ

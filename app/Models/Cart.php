@@ -2,6 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Facades\Auth;
+
+
 class Cart
 {
     public $items = [];
@@ -73,4 +76,51 @@ class Cart
         }
         return $total;
     }
+
+
+
+    // lưu cart vào db
+    public function saveToDatabase($customerId)
+    {
+        // dd($customerId);
+        if (empty($this->items)) return;
+        // dd($this->items);
+
+        $cart = CartDatabase::firstOrCreate([
+            'customer_id' => $customerId,
+            'cart_session_id' => session()->getId(),
+        ]);
+        // dd($cart);
+
+        foreach ($this->items as $item) {
+            $existing = CartDetailDatabase::where('cart_id', $cart->id)
+                ->where('product_variant_id', $item->product_variant_id)
+                ->first();
+
+
+            if ($existing) {
+                $existing->quantity += $item->quantity;
+                $existing->save();
+            } else {
+                CartDetailDatabase::create([
+                    'cart_id' => $cart->id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'quantity' => $item->quantity,
+                    'price' => $item->price,
+                    'reserved_at' => now(),
+                ]);
+            }
+        }
+
+        // Xoá cart session sau khi sync DB
+        session()->forget('cart');
+    }
+
+
+    public function getCartItemsOfCustomer($customerId)
+    {
+        // $customerId = Auth::guard('customer')->id();
+        return CartDatabase::with('cartDetails', 'customer', 'cartDetails.product_variant')->where('customer_id', $customerId)->get();
+    }
+
 }
