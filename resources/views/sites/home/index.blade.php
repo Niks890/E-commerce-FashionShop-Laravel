@@ -270,6 +270,7 @@
         </section>
     @endif
     <!-- Product Section Recently End -->
+    <hr class="w-50">
 
 
 
@@ -411,6 +412,7 @@
         </section>
     @endif
     <!-- RecommendationProduct For UserBase Content Filtering Section End -->
+    <hr class="w-50">
 
     <!-- Product Discount Section Begin -->
     <section class="product spad">
@@ -549,6 +551,7 @@
         </div>
     </section>
     <!-- Product Section End -->
+    <hr class="w-50">
 
     {{-- product gốc --}}
     {{-- <!-- Product Section Begin -->

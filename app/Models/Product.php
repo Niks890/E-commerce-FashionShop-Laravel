@@ -18,6 +18,8 @@ class Product extends Model
         'tags',
         'price',
         'image',
+        'length',
+        'width',
         'status',
         'category_id',
         'short_description',

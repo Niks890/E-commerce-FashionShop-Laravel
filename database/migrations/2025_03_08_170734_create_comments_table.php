@@ -18,6 +18,7 @@ return new class extends Migration
             $table->unsignedInteger('order_id');
             $table->text('content');
             $table->integer('star');
+            $table->string('image')->nullable();
             $table->integer('status')->default(1);
             $table->foreign('product_id')->references('id')->on('products');
             $table->foreign('customer_id')->references('id')->on('customers');

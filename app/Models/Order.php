@@ -19,6 +19,7 @@ class Order extends Model
         'phone',
         'status',
         'VAT',
+        'image',
         'payment',
         'customer_id',
         'transaction_id',

@@ -402,7 +402,24 @@ class HomeController extends Controller
         // Thêm sản phẩm vào mảng session để hiển thị ra sản phẩm đã xem
         $productRecent->addToProductRecent($productDetail);
 
-        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale', 'productRecentInfo'));
+        $ratingCounts = [
+            5 => 0,
+            4 => 0,
+            3 => 0,
+            2 => 0,
+            1 => 0,
+        ];
+
+        if ($commentCustomers && count($commentCustomers) > 0) {
+            $ratingCounts = [
+                5 => $productDetail->comments()->where('star', 5)->count(),
+                4 => $productDetail->comments()->where('star', 4)->count(),
+                3 => $productDetail->comments()->where('star', 3)->count(),
+                2 => $productDetail->comments()->where('star', 2)->count(),
+                1 => $productDetail->comments()->where('star', 1)->count(),
+            ];
+        }
+        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale', 'productRecentInfo', 'ratingCounts'));
     }
 
     public function successPayment()

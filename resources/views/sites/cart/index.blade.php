@@ -92,7 +92,7 @@
                                                             type="button">-</button>
                                                         <input type="text" class="text-center product-quantity"
                                                             value="{{ $items->quantity }}" min="1"
-                                                            max="{{ $items->available_stock }}" style="width: 30%">
+                                                            max="{{ $items->available_stock }}" style="width: 30%"  onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                                                         <button class="btn btn-outline-secondary button-increase"
                                                             type="button">+</button>
                                                     </div>

@@ -23,6 +23,8 @@ return new class extends Migration
             $table->text('short_description')->nullable();
             $table->string('slug')->nullable();
             $table->string('image')->nullable();
+            $table->text('length')->nullable();
+            $table->text('width')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('category_id');//
             $table->unsignedInteger('discount_id')->nullable();

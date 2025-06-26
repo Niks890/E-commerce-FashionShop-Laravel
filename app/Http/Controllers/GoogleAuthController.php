@@ -36,12 +36,12 @@ class GoogleAuthController extends Controller
 
             // Đăng nhập user
             Auth::guard('customer')->login($user);
-            $customerId = Auth::guard('customer')->id();
+            // $customerId = Auth::guard('customer')->id();
             // // dd($customerId);
             // // Gọi hàm lưu giỏ hàng từ session vào DB
-            $cart = new Cart();
-            $cart->saveToDatabase($customerId);
-            $cartItems = $cart->getCartItemsOfCustomer($customerId);
+            // $cart = new Cart();
+            // $cart->saveToDatabase($customerId);
+            // $cartItems = $cart->getCartItemsOfCustomer($customerId);
             // dd($cartItems);
 
             // Chuyển hướng về trang trước đó hoặc trang chủ

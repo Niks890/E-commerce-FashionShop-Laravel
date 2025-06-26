@@ -14,6 +14,7 @@ class Comment extends Model
         'star',
         'product_id',
         'customer_id',
+        'image',
         'order_id',
         'status'
     ];

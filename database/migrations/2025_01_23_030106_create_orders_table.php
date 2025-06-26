@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('phone', 15)->nullable();
             $table->string('status', 50)->nullable();
             $table->float('VAT', 10,2)->default(0.1);
+            $table->string('image')->nullable();
             $table->string('payment', 200)->nullable(); //Phuong thuc thanh toan
             $table->string('reason', 200)->nullable();
             $table->string('transaction_id', 50)->nullable();
