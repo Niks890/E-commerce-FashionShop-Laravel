@@ -352,7 +352,7 @@
                         <li class="nav-item">
                             <button class="nav-link" data-bs-toggle="tab" data-bs-target="#reviews" role="tab">
                                 <i class="fas fa-comments"></i>
-                                Đánh giá ({{ count($commentCustomers ?? []) }})
+                                Đánh giá sản phẩm ({{ count($commentCustomers ?? []) }})
                             </button>
                         </li>
                     </ul>
@@ -360,15 +360,17 @@
                     <div class="tab-content">
                         <!-- Description Tab -->
                         <div class="tab-pane fade show active" id="description" role="tabpanel">
-                            <div class="description-content">
+                            <div class="description-content mt-2">
                                 <div class="description-section">
                                     <h5>Mô tả ngắn</h5>
                                     <p>{{ $productDetail->short_description }}</p>
                                 </div>
+                                <hr class="w-100">
                                 <div class="description-section">
                                     <h5>Mô tả chi tiết</h5>
                                     <p>{{ $productDetail->description }}</p>
                                 </div>
+                                <hr class="w-100">
                                 <div class="description-section">
                                     <h5>Chất liệu</h5>
                                     <p>{{ $productDetail->material }}</p>
@@ -378,7 +380,7 @@
 
                         <!-- Reviews Tab -->
                         <div class="tab-pane fade" id="reviews" role="tabpanel">
-                            <div class="reviews-content">
+                            <div class="reviews-content mt-2">
                                 <div class="reviews-header">
                                     <h5>Đánh giá sản phẩm ({{ count($commentCustomers ?? []) }})</h5>
 
@@ -569,7 +571,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
-                    <h3 class="related-title">Sản phẩm liên quan mà có thể bạn sẽ thích</h3>
+                    <h3 class="related-title">Sản phẩm có thể bạn sẽ thích</h3>
                 </div>
             </div>
 
@@ -588,9 +590,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
-                        <ul class="filter__controls">
-                            <li class="text-dark">Sản Phẩm Bạn Đã Xem Gần Đây</li>
-                        </ul>
+                       <h3 class="related-title font-weight-bold">Sản phẩm bạn đã xem gần đây</h3>
                     </div>
                 </div>
 
@@ -938,12 +938,13 @@
                     stockText.className = "stock-extist out-of-stock";
                     addToCartBtn.disabled = true;
                     addToCartBtn.style.backgroundColor = "gray";
-                    addToCartBtn.style.opacity = "0.5";
+                    // addToCartBtn.style.opacity = "0.5";
                 } else {
                     stockText.innerText = `Còn lại: ${stock} sản phẩm`;
                     stockText.className = "stock-extist in-stock";
                     addToCartBtn.disabled = false;
-                    addToCartBtn.style.opacity = "1";
+                    addToCartBtn.style.backgroundColor = "#2c3e50";
+                    // addToCartBtn.style.opacity = "1";
                 }
             }
         }
@@ -963,12 +964,12 @@
                     stockText.innerText = "Hết hàng";
                     stockText.className = "stock-extist out-of-stock";
                     addToCartBtn.disabled = true;
-                    addToCartBtn.style.opacity = "0.5";
+                    // addToCartBtn.style.opacity = "0.5";
                 } else {
                     stockText.innerText = `Còn lại: ${stock} sản phẩm`;
                     stockText.className = "stock-extist in-stock";
                     addToCartBtn.disabled = false;
-                    addToCartBtn.style.opacity = "1";
+                    // addToCartBtn.style.opacity = "1";
                 }
             }
         }

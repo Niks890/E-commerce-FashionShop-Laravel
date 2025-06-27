@@ -32,7 +32,7 @@ class HomeController extends Controller
                 }
             }
         }
-        $data = Blog::with('staff')->paginate(5);
+        $data = Blog::with('staff')->paginate(3);
 
 
         $highestDiscountProduct = Product::whereHas('discount', function ($query) {

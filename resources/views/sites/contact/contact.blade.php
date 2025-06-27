@@ -72,11 +72,11 @@
                         <ul>
                             <li>
                                 <h4>Chi Nhánh Cần Thơ</h4>
-                                <p>3/2, Xuân Khánh, Cần Thơ<br />+43 982-314-0958</p>
+                                <p>3/2, Xuân Khánh, Cần Thơ<br />+84 901-281-765</p>
                             </li>
                             <li>
                                 <h4>Chi Nhánh Hồ Chí Minh</h4>
-                                <p>Quận Cam, Hồ Chí Minh<br />+12 345-423-9893</p>
+                                <p>Quận Cam, Hồ Chí Minh<br />+84 345-679-901</p>
                             </li>
                         </ul>
                     </div>
@@ -94,7 +94,7 @@
                                 </div>
                                 <div class="col-lg-12">
                                     <textarea placeholder="Nội dung tin nhắn" name="message" required></textarea>
-                                    <input type="submit" name="send-message" class="site-btn" value="Gửi Tin Nhắn">
+                                    <input type="submit" name="send-message" class="site-btn text-white" value="Gửi Tin Nhắn">
                                 </div>
                             </div>
                         </form>

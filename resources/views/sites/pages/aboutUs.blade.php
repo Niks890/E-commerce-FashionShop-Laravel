@@ -25,7 +25,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="about__pic">
-                        <img src="{{ ('client/img/about/about-us.jpg') }}" alt="">
+                        <img src="{{ ('client/img/about/aboutUs-1.jpg') }}" alt="">
                     </div>
                 </div>
             </div>
@@ -74,7 +74,7 @@
                     </div>
                 </div>
                 <div class="col-lg-6 p-0">
-                    <div class="testimonial__pic set-bg" data-setbg="{{ ('client/img/about/testimonial-pic.jpg') }}"></div>
+                    <div class="testimonial__pic set-bg" data-setbg="{{ ('client/img/about/about-us.jpg') }}"></div>
                 </div>
             </div>
         </div>

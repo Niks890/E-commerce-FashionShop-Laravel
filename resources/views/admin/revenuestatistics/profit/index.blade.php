@@ -76,7 +76,7 @@
                             <div class="form-group">
                                 <label>&nbsp;</label>
                                 <button type="submit" class="btn btn-primary form-control">
-                                    <i class="fa fa-filter"></i> Lọc
+                                    <i class="fa fa-filter text-nowrap"></i> Lọc
                                 </button>
                             </div>
                         </div>

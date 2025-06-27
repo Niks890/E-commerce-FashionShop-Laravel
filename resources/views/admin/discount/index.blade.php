@@ -44,68 +44,75 @@
                     </div>
                 </form>
             </div>
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>ID</th>
-                        <th>Tên chương trình</th>
-                        <th>% KM</th>
-                        <th>Code</th>
-                        <th>Bắt đầu</th>
-                        <th>Kết thúc</th>
-                        <th>Trạng thái</th>
-                        <th class="text-center">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($data as $model)
+          <div class="table-responsive mt-3">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
                         <tr>
-                            <td>{{ $model->id }}</td>
-                            <td class="fw-semibold">{{ $model->name }}</td>
-                            <td><span class="badge bg-success">{{ round($model->percent_discount, 2) * 100 }}%</span></td>
-                            <td class="fw-semibold">{{ $model->code }}</td>
-                            <td>{{ $model->start_date->format('d/m/Y H:i') }}</td>
-                            <td>{{ $model->end_date->format('d/m/Y H:i') }}</td>
-                            <td>
-                                {{-- Display dynamic status using the accessor --}}
-                                @php
-                                    $statusClass = '';
-                                    $statusText = '';
-                                    switch ($model->calculated_status) {
-                                        case 'active':
-                                            $statusClass = 'bg-success';
-                                            $statusText = 'Đang hiệu lực';
-                                            break;
-                                        case 'inactive':
-                                            $statusClass = 'bg-danger';
-                                            $statusText = 'Đã hết hạn';
-                                            break;
-                                        default:
-                                            $statusClass = 'bg-dark'; // Fallback
-                                            $statusText = 'Không xác định';
-                                            break;
-                                    }
-                                @endphp
-                                <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
-                            </td>
-                            <td class="text-center">
-                                <div class="d-flex justify-content-center gap-2">
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-info btn-detail"><i
-                                            class="fas fa-eye"></i></a>
-                                    <a href="javascript:void(0);" class="btn btn-sm btn-primary btn-edit"><i
-                                            class="fas fa-edit"></i></a>
-                                    <form method="POST" action="{{ route('discount.destroy', $model->id) }}"
-                                        onsubmit="return confirm('Xóa?')">
-                                        @csrf @method('DELETE')
-                                        <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                </div>
-                            </td>
+                            <th>ID</th>
+                            <th>Tên chương trình</th>
+                            <th>% KM</th>
+                            <th>Code</th>
+                            <th>Bắt đầu</th>
+                            <th>Kết thúc</th>
+                            <th>Trạng thái</th>
+                            <th class="text-center">Hành động</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
-
+                    </thead>
+                    <tbody>
+                        @foreach ($data as $model)
+                            <tr>
+                                <td>{{ $model->id }}</td>
+                                <td class="fw-semibold">{{ $model->name }}</td>
+                                <td><span class="badge bg-success">{{ round($model->percent_discount, 2) * 100 }}%</span></td>
+                                <td class="fw-semibold">{{ $model->code }}</td>
+                                <td>{{ $model->start_date->format('d/m/Y H:i') }}</td>
+                                <td>{{ $model->end_date->format('d/m/Y H:i') }}</td>
+                                <td>
+                                    @php
+                                        $statusClass = '';
+                                        $statusText = '';
+                                        switch ($model->calculated_status) {
+                                            case 'active':
+                                                $statusClass = 'bg-success';
+                                                $statusText = 'Đang hiệu lực';
+                                                break;
+                                            case 'inactive':
+                                                $statusClass = 'bg-danger';
+                                                $statusText = 'Đã hết hạn';
+                                                break;
+                                            default:
+                                                $statusClass = 'bg-dark';
+                                                $statusText = 'Không xác định';
+                                                break;
+                                        }
+                                    @endphp
+                                    <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-info btn-detail">
+                                            <i class="fas fa-eye"></i>
+                                            <span class="d-none d-md-inline"> Xem</span>
+                                        </a>
+                                        <a href="javascript:void(0);" class="btn btn-sm btn-primary btn-edit">
+                                            <i class="fas fa-edit"></i>
+                                            <span class="d-none d-md-inline"> Sửa</span>
+                                        </a>
+                                        <form method="POST" action="{{ route('discount.destroy', $model->id) }}"
+                                            onsubmit="return confirm('Xóa?')">
+                                            @csrf @method('DELETE')
+                                            <button class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                                <span class="d-none d-md-inline"> Xóa</span>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
     <div class="d-flex justify-content-center mt-3">
@@ -234,6 +241,63 @@
             max-height: 70vh;
             overflow-y: auto;
         }
+
+
+         <style>
+        /* Responsive table styles */
+        @media (max-width: 767.98px) {
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .table {
+                white-space: nowrap;
+                font-size: 0.85rem;
+            }
+
+            .table td, .table th {
+                padding: 0.5rem;
+            }
+
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            /* Make form elements stack on mobile */
+            .card-sub .form-inline .col-12 {
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        /* Badge styles */
+        .badge {
+            font-size: 0.85em;
+            padding: 0.35em 0.65em;
+        }
+
+        /* Products table in modal */
+        #products-table {
+            font-size: 0.9rem;
+        }
+
+        #products-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+
+        #products-table img {
+            object-fit: cover;
+        }
+
+        .modal-body {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
     </style>
 
 @endsection

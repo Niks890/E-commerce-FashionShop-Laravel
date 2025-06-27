@@ -1,8 +1,3 @@
-{{--
-1. còn vấn đề lỗi khi thêm số lượng từ product_detail qua cart nó cứ cộng số lượng vô tư
-2. Chỗ cart icon bị vấn đề là nếu chỉ còn 1 sản phẩm còn hàng vd 5 thì dù click 6 lần vẫn đc :))))
---}}
-
 {{-- @php
     dd(Session::get('cart'));
 @endphp --}}

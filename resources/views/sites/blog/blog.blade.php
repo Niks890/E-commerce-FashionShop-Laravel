@@ -3,11 +3,11 @@
 @section('content')
 
 <!-- Breadcrumb Section Begin -->
- <section class="breadcrumb-blog set-bg" data-setbg="{{ ('client/img/breadcrumb-bg.jpg') }}">
+ <section class="breadcrumb-blog set-bg" style="opacity: 0.85;" data-setbg="{{ ('client/img/blog-breadbrum.jpg') }}">
     <div class="container">
         <div class="row">
             <div class="col-lg-12">
-                <h2>Blog</h2>
+                <h2 class="text-white">Blog</h2>
             </div>
         </div>
     </div>

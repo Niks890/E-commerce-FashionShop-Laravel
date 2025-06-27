@@ -29,7 +29,6 @@
     <div class="offcanvas__option">
         <div class="offcanvas__links">
             <a href="{{ route('user.login') }}">Đăng nhập</a>
-            <a href="javascript:void(0);">Hỏi Đáp</a>
         </div>
         <div class="offcanvas__top__hover">
             <span>Ngôn ngữ<i class="arrow_carrot-down"></i></span>
@@ -98,8 +97,8 @@
                             @if (Auth::guard('customer')->check())
                                 <img src="{{ $avatarUrl }}" alt="User Avatar" width="30" alt=""
                                     class="rounded-circle">
-                                <span>Xin chào, {{ Auth::guard('customer')->user()->name }}<i
-                                        class="arrow_carrot-down"></i></span>
+                                <span class="text-dark">Xin chào, {{ Auth::guard('customer')->user()->name }}<i
+                                        class="arrow_carrot-down text-dark"></i></span>
                                 <ul>
                                     <li><a class="text-dark" href="{{ route('user.profile') }}">Hồ sơ cá nhân</a></li>
                                     <li><a class="text-dark" href="{{ route('sites.getHistoryOrder') }}">Lịch sử giao
@@ -108,11 +107,11 @@
                                     <li><a class="text-dark" href="{{ route('user.logout') }}">Đăng Xuất</a></li>
                                 </ul>
                             @else
-                                <span class="text-white"><a href="{{ route('user.login') }}">Đăng nhập</a></span>
+                                <span class=""><a class="text-dark" href="{{ route('user.login') }}">Đăng nhập</a></span>
                             @endif
                         </div>
                         <div class="ms-3 header__top__hover">
-                            <span>Ngôn ngữ<i class="arrow_carrot-down"></i></span>
+                            <span class="text-dark">Ngôn ngữ<i class="arrow_carrot-down"></i></span>
                             <ul>
                                 <li>VI</li>
                                 <li>EN</li>
@@ -130,7 +129,7 @@
                     <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
                         <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                             alt="Logo" width="35">
-                        VMT Fashion Shop
+                       TFashionShop
                     </a>
                 </div>
             </div>

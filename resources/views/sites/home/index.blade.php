@@ -96,47 +96,80 @@
     </section>
     <!-- Hero Section End -->
 
-    <!-- Banner Section Begin -->
-    <section class="banner spad">
+
+
+    <!-- Categories Section Begin -->
+    <section class="categories spad">
         <div class="container">
             <div class="row">
-                <div class="col-lg-7 offset-lg-4">
-                    <div class="banner__item">
-                        <div class="banner__item__pic">
-                            <img src="{{ asset('client/img/banner/banner-3.jpg') }}" alt="">
-                        </div>
-                        <div class="banner__item__text">
-                            <h2>Bộ sưu tập mùa hè 2025</h2>
-                            <a href="javascript:void(0);">Mua Ngay</a>
-                        </div>
+                <div class="col-lg-3">
+                    <div class="categories__text">
+                        <h2>{{ $highestDiscountProduct->category->category_name ?? 'Danh mục' }}<br />
+                            <span>{{ $highestDiscountProduct->product_name ?? 'Sản Phẩm' }}</span> <br /> Liên Kết
+                        </h2>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="banner__item banner__item--middle">
-                        <div class="banner__item__pic">
-                            <img src="{{ asset('client/img/banner/banner-2.jpg') }}" alt="">
-                        </div>
-                        <div class="banner__item__text">
-                            <h2>Liên Kết</h2>
-                            <a href="javascript:void(0);">Mua Ngay</a>
-                        </div>
+                <div class="col-lg-4">
+                    <div class="categories__hot__deal">
+                        @if ($highestDiscountProduct)
+                            <img src="{{ asset($highestDiscountProduct->image) }}"
+                                alt="{{ $highestDiscountProduct->product_name }}">
+                            <div class="hot__deal__sticker">
+                                <span>Giảm {{ $highestDiscountProduct->discount->percent_discount * 100 }}%</span>
+                                <h5>{{ number_format($highestDiscountProduct->price * (1 - $highestDiscountProduct->discount->percent_discount), 0, ',', '.') }}đ
+                                </h5>
+                            </div>
+                        @else
+                            <img src="{{ asset('client/img/product-sale.png') }}" alt="">
+                            <div class="hot__deal__sticker">
+                                <span>Sale Of</span>
+                                <h5>$29.99</h5>
+                            </div>
+                        @endif
                     </div>
                 </div>
-                <div class="col-lg-7">
-                    <div class="banner__item banner__item--last">
-                        <div class="banner__item__pic">
-                            <img src="{{ asset('client/img/banner/banner-1.jpg') }}" alt="">
+                <div class="col-lg-4 offset-lg-1">
+                    <div class="categories__deal__countdown">
+                        <span>Sản phẩm có deal tốt!</span>
+                        @if ($highestDiscountProduct)
+                            <h2>{{ $highestDiscountProduct->name }}</h2>
+                        @else
+                            <h2>Multi-pocket Chest Bag Black</h2>
+                        @endif
+                        <div class="categories__deal__countdown__timer" id="countdown"
+                            @if ($highestDiscountProduct && $highestDiscountProduct->discount) data-enddate="{{ $highestDiscountProduct->discount->formatted_end_date }}" @endif>
+                            <div class="cd-item">
+                                <span>3</span>
+                                <p>Ngày</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>1</span>
+                                <p>Giờ</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>50</span>
+                                <p>Phút</p>
+                            </div>
+                            <div class="cd-item">
+                                <span>18</span>
+                                <p>Giây</p>
+                            </div>
                         </div>
-                        <div class="banner__item__text">
-                            <h2>Bộ sưu tập Thu Đông</h2>
-                            <a href="javascript:void(0);">Mua Ngay</a>
-                        </div>
+                        @if ($highestDiscountProduct)
+                            <a href="{{ route('sites.productDetail', $highestDiscountProduct->slug) }}"
+                                class="primary-btn">Mua ngay</a>
+                        @else
+                            <a href="javascript:void(0);" class="primary-btn">Shop now</a>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- Banner Section End -->
+    <!-- Categories Section End -->
+
+    <hr class="w-50">
+
 
     <!-- Product Recently Section Begin -->
     @if (!empty($productRecentInfo) && count($productRecentInfo) > 0)
@@ -145,7 +178,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <ul class="filter__controls">
-                            <li>Sản Phẩm Bạn Đã Xem Gần Đây</li>
+                            <li class="text-dark">Sản Phẩm Bạn Đã Xem Gần Đây</li>
                         </ul>
                     </div>
                 </div>
@@ -281,7 +314,7 @@
                 <div class="row">
                     <div class="col-lg-12">
                         <ul class="filter__controls">
-                            <li>Sản phẩm có thể bạn sẽ thích</li>
+                            <li class="text-dark">Sản phẩm có thể bạn sẽ thích</li>
                         </ul>
                     </div>
                 </div>
@@ -420,7 +453,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <ul class="filter__controls">
-                        <li>Hot Sales</li>
+                        <li class="text-dark">Sản phẩm đang khuyến mãi</li>
                     </ul>
                 </div>
             </div>
@@ -973,108 +1006,87 @@
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
 
-
-
-    <!-- Categories Section Begin -->
-    <section class="categories spad">
+    <hr class="w-50">
+    <!-- Banner Section Begin -->
+    <section class="banner spad">
         <div class="container">
             <div class="row">
-                <div class="col-lg-3">
-                    <div class="categories__text">
-                        <h2>Quần Áo Chính Hàng<br /> <span>Bộ sưu tập của chúng tôi</span> <br /> Liên Kết</h2>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="categories__hot__deal">
-                        @if ($highestDiscountProduct)
-                            <img src="{{ asset($highestDiscountProduct->image) }}"
-                                alt="{{ $highestDiscountProduct->name }}">
-                            <div class="hot__deal__sticker">
-                                <span>Giảm {{ $highestDiscountProduct->discount->percent_discount * 100 }}%</span>
-                                <h5>{{ number_format($highestDiscountProduct->price * (1 - $highestDiscountProduct->discount->percent_discount), 0, ',', '.') }}đ
-                                </h5>
-                            </div>
-                        @else
-                            <img src="{{ asset('client/img/product-sale.png') }}" alt="">
-                            <div class="hot__deal__sticker">
-                                <span>Sale Of</span>
-                                <h5>$29.99</h5>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-lg-4 offset-lg-1">
-                    <div class="categories__deal__countdown">
-                        <span>Deal Of The Week</span>
-                        @if ($highestDiscountProduct)
-                            <h2>{{ $highestDiscountProduct->name }}</h2>
-                        @else
-                            <h2>Multi-pocket Chest Bag Black</h2>
-                        @endif
-                        <div class="categories__deal__countdown__timer" id="countdown"
-                            @if ($highestDiscountProduct && $highestDiscountProduct->discount) data-enddate="{{ $highestDiscountProduct->discount->formatted_end_date }}" @endif>
-                            <div class="cd-item">
-                                <span>3</span>
-                                <p>Days</p>
-                            </div>
-                            <div class="cd-item">
-                                <span>1</span>
-                                <p>Hours</p>
-                            </div>
-                            <div class="cd-item">
-                                <span>50</span>
-                                <p>Minutes</p>
-                            </div>
-                            <div class="cd-item">
-                                <span>18</span>
-                                <p>Seconds</p>
-                            </div>
+                <div class="col-lg-7 offset-lg-4">
+                    <div class="banner__item">
+                        <div class="banner__item__pic">
+                            <img src="{{ asset('client/img/banner/banner-3-new.png') }}" alt="">
                         </div>
-                        @if ($highestDiscountProduct)
-                            <a href="{{ route('sites.productDetail', $highestDiscountProduct->slug) }}"
-                                class="primary-btn">Mua ngay</a>
-                        @else
-                            <a href="javascript:void(0);" class="primary-btn">Shop now</a>
-                        @endif
+                        <div class="banner__item__text">
+                            <h2 class="text-secondary">Bộ sưu tập mùa hè 2025</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="banner__item banner__item--middle">
+                        <div class="banner__item__pic">
+                            <img src="{{ asset('client/img/banner/banner-1-new.jpg') }}" alt="">
+                        </div>
+                        <div class="banner__item__text">
+                            <h2>Liên Kết</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-7">
+                    <div class="banner__item banner__item--last">
+                        <div class="banner__item__pic">
+                            <img src="{{ asset('client/img/banner/banner-4-new.jpg') }}" alt="">
+                        </div>
+                        <div class="banner__item__text">
+                            <h2 class="text-secondary">Bộ sưu tập Thu Đông</h2>
+                            <a href="javascript:void(0);">Mua Ngay</a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-    <!-- Categories Section End -->
+    <!-- Banner Section End -->
+
+    <hr class="w-50">
+
 
     <!-- Instagram Section Begin -->
     <section class="instagram spad">
         <div class="container">
             <div class="row">
-                <div class="col-lg-8">
-                    <div class="instagram__pic">
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-1.jpg') }}"></div>
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-2.jpg') }}"></div>
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-3.jpg') }}"></div>
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-4.jpg') }}"></div>
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-5.jpg') }}"></div>
-                        <div class="instagram__pic__item set-bg"
-                            data-setbg="{{ asset('client/img/instagram/instagram-6.jpg') }}"></div>
-                    </div>
-                </div>
                 <div class="col-lg-4">
                     <div class="instagram__text">
                         <h2>Instagram</h2>
                         <p>Tìm hiểu thêm về chúng tôi qua instagram, cập nhật những thông tin và xu hướng thời trang mới
-                            nhất !</p>
+                            nhất để nhanh chóng !</p>
                         <h3>#TFashionShop</h3>
+                    </div>
+                </div>
+                <div class="col-lg-8">
+                    <div class="instagram__pic">
+
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig.jpg') }}"></div>
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig-3.jpg') }}"></div>
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig-2.jpg') }}"></div>
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig-6.jpg') }}"></div>
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig-4.jpg') }}"></div>
+                        <div class="instagram__pic__item set-bg"
+                            data-setbg="{{ asset('client/img/instagram/banner-home-ig-5.jpg') }}"></div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
     <!-- Instagram Section End -->
+
+    <hr class="w-50">
 
     <!-- Latest Blog Section Begin -->
     <section class="latest spad">
@@ -1103,6 +1115,7 @@
                     </div>
                 @endforeach
             </div>
+            <div class="d-flex justify-content-center">{{ $data->links() }}</div>
         </div>
     </section>
     <!-- Latest Blog Section End -->

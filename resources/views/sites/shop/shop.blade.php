@@ -153,8 +153,8 @@
                     <div class="shop__sidebar">
                         <div class="shop__sidebar__search">
                             <form action="/shop" method="GET">
-                                <input type="text" name="q" placeholder="Search..." value="{{ request('q') }}">
-                                <button type="submit"><span class="icon_search"></span></button>
+                                <input style="border: 1px solid #000000;" class="form-control" type="text" name="q" placeholder="Tìm kiếm..." value="{{ request('q') }}">
+                                <button type="submit"><span class="icon_search text-dark"></span></button>
                             </form>
                         </div>
                         <div class="shop__sidebar__accordion">
@@ -188,7 +188,7 @@
                                                                     let newUrl = '/shop?' + currentParams.toString();
 
                                                                     listItem.innerHTML =
-                                                                        `<a class="category__item" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
+                                                                        `<a class="category__item text-dark" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
                                                                     categoryList.appendChild(listItem);
                                                                 });
                                                             } catch (error) {
@@ -228,7 +228,7 @@
                                                                     let newUrl = '/shop?' + currentParams.toString();
 
                                                                     listItem.innerHTML =
-                                                                        `<a class="brand__item" href="${newUrl}" data-brand="${brand.brand}">${brand.brand}</a>`;
+                                                                        `<a class="brand__item text-dark" href="${newUrl}" data-brand="${brand.brand}">${brand.brand}</a>`;
                                                                     brandList.appendChild(listItem);
                                                                 });
                                                             } catch (error) {
@@ -250,20 +250,20 @@
                                         <div class="card-body">
                                             <div class="shop__sidebar__price">
                                                 <ul>
-                                                    <li><a class="price__item"
+                                                    <li><a class="price__item text-dark"
                                                             href="javascript:void(0)">{{ number_format(0, 0, ',', '.') }}
                                                             -
                                                             {{ number_format(100000, 0, ',', '.') }}</a></li>
-                                                    <li><a class="price__item"
+                                                    <li><a class="price__item text-dark"
                                                             href="javascript:void(0)">{{ number_format(100000, 0, ',', '.') }}
                                                             - {{ number_format(300000, 0, ',', '.') }}</a></li>
-                                                    <li><a class="price__item"
+                                                    <li><a class="price__item text-dark"
                                                             href="javascript:void(0)">{{ number_format(300000, 0, ',', '.') }}
                                                             - {{ number_format(500000, 0, ',', '.') }}</a></li>
-                                                    <li><a class="price__item"
+                                                    <li><a class="price__item text-dark"
                                                             href="javascript:void(0)">{{ number_format(500000, 0, ',', '.') }}
                                                             - {{ number_format(1000000, 0, ',', '.') }}</a></li>
-                                                    <li><a class="price__item" href="javascript:void(0)">Trên
+                                                    <li><a class="price__item text-dark" href="javascript:void(0)">Trên
                                                             {{ number_format(1000000, 0, ',', '.') }}</a></li>
                                                 </ul>
                                             </div>

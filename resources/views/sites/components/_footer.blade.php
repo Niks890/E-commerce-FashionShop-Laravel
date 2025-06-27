@@ -5,13 +5,14 @@
             <div class="col-lg-3 col-md-6 col-sm-6">
                 <div class="footer__about">
                     <div class="footer__logo">
-                        <a href="{{ route('sites.home') }}" class="text-white font-weight-bold text-uppercase">
+                        <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
                             <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                                 alt="Logo" width="35">
-                            VMT Fashion Shop
+                            TFashionShop
                         </a>
                     </div>
                     <p>Khách hàng là trọng tâm trong mô hình kinh doanh độc đáo của chúng tôi, bao gồm cả thiết kế.</p>
+                    <h6 class="text-dark font-weight-bold">Phương Thức Thanh Toán</h6>
                     <a href="{{ route('sites.home') }}"><img src="{{ asset('client/img/payment.png') }}"
                             alt=""></a>
                 </div>
@@ -44,13 +45,15 @@
                     <div class="footer__newslatter">
                         <p>Trở thành người đầu tiên nhận thông báo khuyến mãi, thông tin sản phẩm mới nhất!</p>
                         <form action="{{ route('sites.contact') }}#contact-page">
-                            <input type="text" placeholder="Your email" class="text-white">
-                            <button type="submit"><span class="icon_mail_alt"></span></button>
+                            <h6>Liên Hệ Với Chúng Tôi</h6>
+                            <input type="text" placeholder="Your email" class="text-dark">
+                            <button type="submit"><span class="icon_mail_alt text-dark"></span></button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
+        <hr>
         <div class="row">
             <div class="col-lg-12 text-center">
                 <div class="footer__copyright__text">
