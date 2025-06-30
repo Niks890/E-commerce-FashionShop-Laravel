@@ -4,7 +4,7 @@
 @section('content')
     @if (Session::has('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-lg p-2 move-from-top js-div-dissappear"
-             role="alert" style="width: 26rem; display:flex; text-align:center">
+            role="alert" style="width: 26rem; display:flex; text-align:center">
             <i class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>
             {{ Session::get('success') }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -19,8 +19,8 @@
             <div class="card-header bg-light">
                 <h5 class="mb-0">
                     <button class="btn btn-link w-100 text-start d-flex align-items-center text-dark text-decoration-none"
-                            type="button" data-bs-toggle="collapse"
-                            data-bs-target="#filterCollapse" aria-expanded="true" aria-controls="filterCollapse">
+                        type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse" aria-expanded="true"
+                        aria-controls="filterCollapse">
                         <i class="fas fa-filter me-2"></i>
                         <span class="fw-semibold">Bộ lọc tìm kiếm</span>
                     </button>
@@ -35,8 +35,8 @@
                                 <div class="form-group">
                                     <label for="query" class="form-label mb-1">Tìm kiếm theo ID/SĐT:</label>
                                     <input name="query" id="query" type="text" class="form-control"
-                                           placeholder="Nhập ID đơn hàng hoặc số điện thoại..."
-                                           value="{{ request()->query('query') }}">
+                                        placeholder="Nhập ID đơn hàng hoặc số điện thoại..."
+                                        value="{{ request()->query('query') }}">
                                 </div>
                             </div>
 
@@ -46,7 +46,7 @@
                                     <div>Lọc theo trạng thái:</div>
                                     <select name="status" id="status" class="form-select">
                                         <option value="">-- Tất cả trạng thái --</option>
-                                        @foreach($statusList as $status)
+                                        @foreach ($statusList as $status)
                                             <option value="{{ $status }}"
                                                 {{ request()->query('status') == $status ? 'selected' : '' }}>
                                                 {{ $status }}
@@ -61,7 +61,7 @@
                                 <div class="form-group">
                                     <label for="date_from" class="form-label mb-1">Từ ngày:</label>
                                     <input name="date_from" id="date_from" type="date" class="form-control"
-                                           value="{{ request()->query('date_from') }}">
+                                        value="{{ request()->query('date_from') }}">
                                 </div>
                             </div>
 
@@ -70,7 +70,7 @@
                                 <div class="form-group">
                                     <label for="date_to" class="form-label mb-1">Đến ngày:</label>
                                     <input name="date_to" id="date_to" type="date" class="form-control"
-                                           value="{{ request()->query('date_to') }}">
+                                        value="{{ request()->query('date_to') }}">
                                 </div>
                             </div>
 
@@ -92,20 +92,20 @@
         </div>
 
         <!-- Hiển thị kết quả lọc -->
-        @if(request()->hasAny(['query', 'status', 'date_from', 'date_to']))
+        @if (request()->hasAny(['query', 'status', 'date_from', 'date_to']))
             <div class="alert alert-info">
                 <i class="fa fa-info-circle"></i>
                 Đang hiển thị kết quả lọc
-                @if(request()->query('query'))
+                @if (request()->query('query'))
                     - Tìm kiếm: "<strong>{{ request()->query('query') }}</strong>"
                 @endif
-                @if(request()->query('status'))
+                @if (request()->query('status'))
                     - Trạng thái: "<strong>{{ request()->query('status') }}</strong>"
                 @endif
-                @if(request()->query('date_from'))
+                @if (request()->query('date_from'))
                     - Từ ngày: "<strong>{{ request()->query('date_from') }}</strong>"
                 @endif
-                @if(request()->query('date_to'))
+                @if (request()->query('date_to'))
                     - Đến ngày: "<strong>{{ request()->query('date_to') }}</strong>"
                 @endif
                 ({{ $historyOrder->total() }} kết quả)
@@ -133,18 +133,18 @@
                             <td>{{ $item->id }}</td>
                             <td>{{ $item->customer_name }}</td>
                             <td class="text-truncate" style="max-width: 200px;" title="{{ $item->address }}">
-                                {{ $item->address }}
+                                {{ Str::words($item->address, 5, '...') }}
                             </td>
                             <td>{{ $item->phone }}</td>
                             <td>{{ number_format($item->total, 0, ',', '.') }} đ</td>
                             <td>
-                                <span id="status{{ $item->id }}" class="badge
-                                    @if($item->status == 'Chờ xử lý') bg-warning
+                                <span id="status{{ $item->id }}"
+                                    class="badge
+                                    @if ($item->status == 'Chờ xử lý') bg-warning
                                     @elseif($item->status == 'Đã thanh toán' || $item->status == 'Giao hàng thành công') bg-success
                                     @elseif($item->status == 'Đã huỷ đơn hàng') bg-danger
                                     @elseif($item->status == 'Đang giao hàng' || $item->status == 'Đã xử lý') bg-info
-                                    @else bg-secondary
-                                    @endif">
+                                    @else bg-secondary @endif">
                                     {{ $item->status }}
                                 </span>
                             </td>
@@ -153,21 +153,22 @@
                             <td class="text-center" id="action{{ $item->id }}">
                                 <div class="d-flex justify-content-center action-buttons">
                                     <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
-                                       class="btn btn-sm btn-secondary">
+                                        class="btn btn-sm btn-secondary">
                                         <i class="fa fa-eye"></i> Xem
                                     </a>
 
-                                    <a href="{{route('order.orderTracking', $item->id)}}" class="btn btn-sm btn-info ms-2">
+                                    <a href="{{ route('order.orderTracking', $item->id) }}"
+                                        class="btn btn-sm btn-info ms-2">
                                         <i class="fa fa-truck"></i>
                                     </a>
                                     @if ($item->status === 'Chờ xử lý')
                                         <button type="button" class="btn btn-sm btn-danger ms-2"
-                                                onclick="openCancelModal({{ $item->id }})">
+                                            onclick="openCancelModal({{ $item->id }})">
                                             <i class="fa fa-times"></i> Hủy
                                         </button>
                                     @elseif ($item->status === 'Đã thanh toán' || $item->status === 'Giao hàng thành công')
                                         <button type="button" class="btn btn-sm btn-success ms-2"
-                                                onclick="openSidebar({{ $item->id }})">
+                                            onclick="openSidebar({{ $item->id }})">
                                             <i class="fa fa-comments"></i>
                                         </button>
                                     @endif
@@ -205,14 +206,14 @@
     </div>
 
     <!-- Modal Xác nhận Hủy -->
-    <div class="modal fade cancel-order-modal" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel"
-         aria-hidden="true">
+    <div class="modal fade cancel-order-modal" id="cancelOrderModal" tabindex="-1"
+        aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận hủy đơn hàng</h5>
                     <button type="button" class="btn-close-modal bg-danger border-0 text-white fw-bold"
-                            data-bs-dismiss="modal" aria-label="Close">X</button>
+                        data-bs-dismiss="modal" aria-label="Close">X</button>
                 </div>
                 <div class="modal-body">
                     <p>Bạn có chắc chắn muốn hủy đơn hàng này không?</p>
@@ -222,7 +223,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-close-modal" data-bs-dismiss="modal">Đóng</button>
+                    <button type="button" class="btn btn-secondary btn-close-modal"
+                        data-bs-dismiss="modal">Đóng</button>
                     <button type="button" class="btn btn-danger" onclick="confirmCancel()">Xác nhận hủy</button>
                 </div>
             </div>
@@ -239,22 +241,28 @@
             text-decoration: none;
             color: #495057;
         }
+
         .badge {
             font-size: 0.75em;
         }
+
         .alert-info {
             border-left: 4px solid #17a2b8;
         }
+
         .form-group {
             margin-bottom: 1rem;
         }
+
         .form-label {
             font-weight: 500;
             color: #495057;
         }
+
         .card-header {
             padding: 0.75rem 1.25rem;
         }
+
         .btn-outline-secondary {
             border-color: #dee2e6;
         }
@@ -274,10 +282,12 @@
                 overflow-x: auto;
                 -webkit-overflow-scrolling: touch;
             }
+
             .action-buttons {
                 flex-wrap: wrap;
                 gap: 0.5rem;
             }
+
             .action-buttons .btn {
                 margin-left: 0 !important;
             }
@@ -290,7 +300,7 @@
             white-space: normal;
             word-break: break-word;
             background: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: none;
         }
     </style>
@@ -334,7 +344,8 @@
                 },
                 success: function(response) {
                     showToast('success', response.message);
-                    $("#status" + currentOrderId).text("Đã hủy").removeClass('bg-warning').addClass('bg-danger');
+                    $("#status" + currentOrderId).text("Đã hủy").removeClass('bg-warning').addClass(
+                    'bg-danger');
                     $("#action" + currentOrderId).html(`
                         <div class="action-buttons">
                             <a href="{{ route('sites.showOrderDetailOfCustomer', '') }}/${currentOrderId}"

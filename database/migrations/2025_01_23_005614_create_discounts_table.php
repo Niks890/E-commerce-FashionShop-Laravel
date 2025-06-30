@@ -15,6 +15,8 @@ return new class extends Migration
             $table->increments('id');
             $table->string('name');
             $table->decimal('percent_discount', 10,3);
+            $table->text('description')->nullable();
+            $table->enum('type', ['fixed', 'percent']);
             $table->string('code', 10)->unique();
             $table->datetime('start_date');
             $table->datetime('end_date');

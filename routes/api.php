@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiController;
+use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\CloudinaryUploadController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\RecommendationController;
@@ -84,3 +85,5 @@ Route::get('/recommend-ibcf/user/{userId}', [RecommendationController::class, 'i
 
 Route::get('/recommendations/user-cosine/{userId}', [RecommendationController::class, 'userBasedCosine']);
 Route::get('/recommendations/item-cosine/{userId}', [RecommendationController::class, 'itemBasedCosine']);
+
+

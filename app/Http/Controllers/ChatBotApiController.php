@@ -51,7 +51,7 @@ class ChatBotApiController extends Controller
         Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam. Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
         ### THÔNG TIN CỬA HÀNG:
         - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
-        - Chính sách đổi trả: 30 ngày
+        - Chính sách đổi trả: 7 ngày
         - Phương thức thanh toán: COD, VNPay, Momo, ZaloPay
         - Size áo/quần: XS, S, M, L, XL, XXL
 
@@ -666,7 +666,8 @@ class ChatBotApiController extends Controller
             $query->where('status', 'active')
                 ->where('start_date', '<=', $now)
                 ->where('end_date', '>=', $now);
-        }])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id');
+        }])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id')
+        ->where('status', 1);
 
         // FILTER THEO CATEGORY/KEYWORDS
         if ($category) {
@@ -773,6 +774,7 @@ class ChatBotApiController extends Controller
                     ->where('start_date', '<=', $now)
                     ->where('end_date', '>=', $now);
             })
+            ->where('status', 1)
             ->orderBy('created_at', 'desc')
             ->limit($limit)
             ->get();

@@ -21,7 +21,6 @@
                     @csrf
                     <input type="hidden" name="id" value="{{ auth()->user()->id - 1 }}">
 
-                    <!-- Thông tin nhà cung cấp -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h5 class="text-primary mb-3"><i class="fas fa-truck me-2"></i>Thông tin chung nhà cung cấp và
@@ -52,7 +51,6 @@
                         </div>
                     </div>
 
-                    <!-- Danh sách sản phẩm -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -67,7 +65,6 @@
                             </div>
 
                             <div id="products-container">
-                                <!-- Product item template -->
                                 <div class="product-item mb-4">
                                     <div class="card border-2 border-primary rounded-3 shadow-sm">
                                         <div class="card-header bg-light d-flex justify-content-between align-items-center">
@@ -82,7 +79,6 @@
                                             </button>
                                         </div>
                                         <div class="card-body">
-                                            <!-- Thông tin cơ bản sản phẩm -->
                                             <div class="row mb-3">
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Tên sản phẩm <span
@@ -99,13 +95,12 @@
                                                         required>
                                                     <div class="preview-container mt-3 text-center">
                                                         <img class="img-thumbnail rounded-3 shadow d-none preview-img"
-                                                            src="" alt=""
+                                                            src="" alt="Xem trước ảnh"
                                                             style="max-width: 200px; max-height: 200px; object-fit: cover;">
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            <!-- Phân loại sản phẩm -->
                                             <div class="row mb-3">
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Danh mục <span
@@ -128,7 +123,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Giá sản phẩm -->
                                             <div class="row mb-3">
                                                 <div class="col-md-6 mb-3">
                                                     <label class="form-label fw-bold">Giá nhập <span
@@ -145,7 +139,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- Biến thể sản phẩm -->
                                             <div class="row">
                                                 <div class="col-12">
                                                     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -155,64 +148,50 @@
                                                         </h6>
                                                         <button type="button"
                                                             class="btn btn-outline-primary btn-sm rounded-pill add-variant-btn">
-                                                            <i class="fas fa-plus me-1"></i>Thêm biến thể
+                                                            <i class="fas fa-plus me-1"></i>Thêm màu
                                                         </button>
                                                     </div>
 
                                                     <div class="variants-container">
-                                                        <!-- Variant template -->
                                                         <div class="variant-item mb-3">
-                                                            <div
-                                                                class="card border-2 border-secondary rounded-3 shadow-sm">
-                                                                <div
-                                                                    class="card-header bg-light d-flex justify-content-between align-items-center">
-                                                                    <h6 class="mb-0 text-secondary">
-                                                                        <i class="fas fa-circle me-2"
-                                                                            style="color: #6c757d;"></i>
-                                                                        Biến thể #<span class="variant-number">1</span>
-                                                                    </h6>
-                                                                    <button type="button"
-                                                                        class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn">
-                                                                        <i class="fas fa-trash me-1"></i>Xóa
+                                                            <div class="card border-2 border-secondary rounded-3 shadow-sm">
+                                                                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                                                    <div class="w-50">
+                                                                         <label class="form-label fw-bold mb-0">Màu sắc #<span class="variant-number">1</span><span class="text-danger">*</span></label>
+                                                                         <input type="text" name="products[0][variants][0][color]" class="form-control color-input border-2" placeholder="VD: Chọn hoặc nhập màu..." required>
+                                                                    </div>
+                                                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn">
+                                                                        <i class="fas fa-trash me-1"></i>Xóa màu
                                                                     </button>
                                                                 </div>
                                                                 <div class="card-body">
-                                                                    <div class="row">
-                                                                        <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-bold">Màu sắc <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <input type="text"
-                                                                                name="products[0][variants][0][color]"
-                                                                                class="form-control color-input border-2"
-                                                                                placeholder="VD: Đỏ, Xanh dương..."
-                                                                                required>
-                                                                        </div>
-                                                                        <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-bold">Kích cỡ <span
-                                                                                    class="text-danger">*</span></label>
-                                                                            <select
-                                                                                class="form-select form-select-lg border-2"
-                                                                                name="products[0][variants][0][size]"
-                                                                                required>
-                                                                                <option value="">-- Chọn size --
-                                                                                </option>
-                                                                                <option value="XS">XS</option>
-                                                                                <option value="S">S</option>
-                                                                                <option value="M">M</option>
-                                                                                <option value="L">L</option>
-                                                                                <option value="XL">XL</option>
-                                                                                <option value="XXL">XXL</option>
-                                                                            </select>
-                                                                        </div>
-                                                                        <div class="col-md-4 mb-3">
-                                                                            <label class="form-label fw-bold">Số lượng
-                                                                                <span class="text-danger">*</span></label>
-                                                                            <input type="number"
-                                                                                name="products[0][variants][0][quantity]"
-                                                                                class="form-control quantity-input border-2"
-                                                                                placeholder="0" min="1" required>
+                                                                    <h6 class="text-secondary fw-bold mb-3"><i class="fas fa-ruler-combined me-2"></i>Size & Số lượng cho màu này</h6>
+                                                                    <div class="size-quantity-container">
+                                                                        <div class="size-quantity-item row align-items-center mb-2">
+                                                                            <div class="col-md-5">
+                                                                                <select class="form-select form-select-lg border-2 size-select" name="products[0][variants][0][details][0][size]" required>
+                                                                                    <option value="">-- Chọn size --</option>
+                                                                                    <option value="XS">XS</option>
+                                                                                    <option value="S">S</option>
+                                                                                    <option value="M">M</option>
+                                                                                    <option value="L">L</option>
+                                                                                    <option value="XL">XL</option>
+                                                                                    <option value="XXL">XXL</option>
+                                                                                </select>
+                                                                            </div>
+                                                                            <div class="col-md-5">
+                                                                                <input type="number" name="products[0][variants][0][details][0][quantity]" class="form-control quantity-input border-2" placeholder="Số lượng" min="1" required>
+                                                                            </div>
+                                                                            <div class="col-md-2 text-end">
+                                                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-size-btn" style="display: none;">
+                                                                                    <i class="fas fa-times"></i>
+                                                                                </button>
+                                                                            </div>
                                                                         </div>
                                                                     </div>
+                                                                    <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill mt-2 add-size-btn">
+                                                                        <i class="fas fa-plus me-1"></i>Thêm size
+                                                                    </button>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -226,7 +205,6 @@
                         </div>
                     </div>
 
-                    <!-- Nút submit -->
                     <div class="row">
                         <div class="col-12 text-center">
                             <hr class="my-4">
@@ -242,9 +220,7 @@
 
 
 
-
-    <!-- Color Selection Modal -->
-    <!-- Color Selection Modal -->
+    {{-- modal chọn màu --}}
     <div class="modal fade color-modal" id="colorSelectionModal" tabindex="-1"
         aria-labelledby="colorSelectionModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -253,7 +229,7 @@
                     <h5 class="modal-title" id="colorSelectionModalLabel">
                         <i class="fas fa-palette me-2"></i>Chọn màu sắc
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -275,8 +251,7 @@
                     <div class="mb-4">
                         <h6 class="fw-bold mb-3">Bảng màu phổ biến</h6>
                         <div class="color-palette" id="colorPalette">
-                            <!-- Color options will be added by JavaScript -->
-                        </div>
+                            </div>
                     </div>
 
                     <div class="selected-color-preview">
@@ -305,51 +280,6 @@
 
 @section('css')
     <style>
-        /* Color Selection Styles */
-        /* .color-options .color-option {
-                    width: 100px;
-                    height: 40px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-size: 12px;
-                    color: white;
-                    text-shadow: 0 0 2px rgba(0, 0, 0, 0.7);
-                    transition: all 0.2s ease;
-                    border: 2px solid transparent;
-                    position: relative;
-                    margin: 5px;
-                }
-
-                .color-options .color-option:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-                }
-
-                .color-options .color-option.selected {
-                    border: 2px solid #000;
-                    transform: scale(1.05);
-                }
-
-                #selectedColorBadge {
-                    font-size: 14px;
-                    display: inline-flex;
-                    align-items: center;
-                    border-radius: 20px;
-                    padding: 5px 10px;
-                }
-
-                .remove-color-btn {
-                    opacity: 0.7;
-                }
-
-                .remove-color-btn:hover {
-                    opacity: 1;
-                } */
-
-        /* Thêm vào phần CSS */
         .color-modal .modal-content {
             border-radius: 12px;
             overflow: hidden;
@@ -357,6 +287,7 @@
 
         .color-modal .modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             border-bottom: none;
             padding: 1.2rem 1.5rem;
         }
@@ -495,273 +426,102 @@
         .btn:hover {
             transform: translateY(-1px);
         }
-
-        .alert {
-            border: none;
-            border-radius: 0.5rem;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .position-fixed.alert {
-            animation: slideInRight 0.3s ease-out;
-        }
     </style>
 @endsection
 
 @section('js')
     <script>
-        // Validate form trước khi submit
-        // $('#formCreateInventory').on('submit', function(e) {
-        //     let isValid = true;
-        //     let errorMessages = [];
-
-        //     // Duyệt qua từng sản phẩm
-        //     $('.product-item').each(function(productIndex) {
-        //         const productItem = $(this);
-        //         const variants = productItem.find('.variant-item');
-        //         const variantCombinations = new Set();
-
-        //         // Duyệt qua từng biến thể của sản phẩm
-        //         variants.each(function() {
-        //             const variantItem = $(this);
-
-        //             // Validate màu sắc chỉ được nhập 1 màu
-        //             const colorInput = variantItem.find('.color-input');
-        //             const colorValue = colorInput.val().trim();
-
-        //             if (colorValue.includes(',')) {
-        //                 isValid = false;
-        //                 colorInput.addClass('is-invalid');
-        //                 errorMessages.push(
-        //                     `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Chỉ được nhập 1 màu duy nhất`
-        //                 );
-        //             } else {
-        //                 colorInput.removeClass('is-invalid');
-        //             }
-
-        //             // Validate không nhập số lượng âm
-        //             const quantityInput = variantItem.find('.quantity-input');
-        //             const quantityValue = parseInt(quantityInput.val());
-
-        //             if (quantityValue < 1) {
-        //                 isValid = false;
-        //                 quantityInput.addClass('is-invalid');
-        //                 errorMessages.push(
-        //                     `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Số lượng phải lớn hơn 0`
-        //                 );
-        //             } else {
-        //                 quantityInput.removeClass('is-invalid');
-        //             }
-
-        //             // Validate không nhập giá âm
-        //             const priceInput = productItem.find('.price-input');
-        //             const priceValue = parseInt(priceInput.val());
-
-        //             if (priceValue < 0) {
-        //                 isValid = false;
-        //                 priceInput.addClass('is-invalid');
-        //                 errorMessages.push(`Sản phẩm #${productIndex + 1}: Giá nhập không được âm`);
-        //             } else {
-        //                 priceInput.removeClass('is-invalid');
-        //             }
-
-        //             // Validate combination màu + size không trùng lặp
-        //             const sizeValue = variantItem.find('select[name$="[size]"]').val();
-        //             const combination = `${sizeValue}-${colorValue.toUpperCase()}`;
-
-        //             if (variantCombinations.has(combination)) {
-        //                 isValid = false;
-        //                 colorInput.addClass('is-invalid');
-        //                 variantItem.find('select[name$="[size]"]').addClass('is-invalid');
-        //                 errorMessages.push(
-        //                     `Sản phẩm #${productIndex + 1}: Biến thể ${combination} đã bị trùng lặp`
-        //                 );
-        //             } else {
-        //                 variantCombinations.add(combination);
-        //                 colorInput.removeClass('is-invalid');
-        //                 variantItem.find('select[name$="[size]"]').removeClass('is-invalid');
-        //             }
-        //         });
-        //     });
-
-        //     // Nếu có lỗi thì hiển thị và ngăn form submit
-        //     if (!isValid) {
-        //         e.preventDefault();
-
-        //         // Tạo thông báo lỗi
-        //         let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
-        //         errorMessages.forEach((msg, index) => {
-        //             errorMessage += `\n${index + 1}. ${msg}`;
-        //         });
-
-        //         alert(errorMessage);
-        //     }
-        // });
-
-        // Thêm validate real-time cho các trường
-        $(document).on('input', '.quantity-input', function() {
-            const value = parseInt($(this).val());
-            if (value < 1) {
-                $(this).addClass('is-invalid');
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
-
-        $(document).on('input', '.price-input', function() {
-            const value = parseInt($(this).val());
-            if (value < 0) {
-                $(this).addClass('is-invalid');
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
-
-        $(document).on('input', '.color-input', function() {
-            const value = $(this).val().trim();
-            if (value.includes(',')) {
-                $(this).addClass('is-invalid');
-            } else {
-                $(this).removeClass('is-invalid');
-            }
-        });
-    </script>
-
-    <script>
         $(document).ready(function() {
             let productCount = 1;
-            let variantCounts = [1]; // Mảng lưu số lượng biến thể của từng sản phẩm
+
+            // ===================================
+            // SẢN PHẨM
+            // ===================================
 
             // Thêm sản phẩm mới
             $('#add-product-btn').click(function() {
                 const newProductIndex = productCount;
-                variantCounts.push(1); // Thêm một mục mới với 1 biến thể
-
                 const newProduct = $(`
-            <div class="product-item mb-4">
-                <div class="card border-2 border-primary rounded-3 shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 text-primary">
-                            <i class="fas fa-box me-2"></i>
-                            Sản phẩm #<span class="product-number">${newProductIndex + 1}</span>
-                        </h6>
-                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-product-btn">
-                            <i class="fas fa-trash me-1"></i>Xóa
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <!-- Thông tin cơ bản sản phẩm -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Tên sản phẩм <span class="text-danger">*</span></label>
-                                <input type="text" name="products[${newProductIndex}][product_name]" class="form-control product-name border-2"
-                                       placeholder="Nhập tên sản phẩm..." required>
+                    <div class="product-item mb-4" style="display:none;">
+                        <div class="card border-2 border-primary rounded-3 shadow-sm">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0 text-primary"><i class="fas fa-box me-2"></i>Sản phẩm #<span class="product-number">${newProductIndex + 1}</span></h6>
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-product-btn"><i class="fas fa-trash me-1"></i>Xóa</button>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Hình ảnh <span class="text-danger">*</span></label>
-                                <input type="file" name="products[${newProductIndex}][image]" class="form-control product-image border-2"
-                                       accept="image/*" required>
-                                <div class="preview-container mt-3 text-center">
-                                    <img class="img-thumbnail rounded-3 shadow d-none preview-img" src="" alt=""
-                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Tên sản phẩm <span class="text-danger">*</span></label>
+                                        <input type="text" name="products[${newProductIndex}][product_name]" class="form-control product-name border-2" placeholder="Nhập tên sản phẩm..." required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Hình ảnh <span class="text-danger">*</span></label>
+                                        <input type="file" name="products[${newProductIndex}][image]" class="form-control product-image border-2" accept="image/*" required>
+                                        <div class="preview-container mt-3 text-center">
+                                            <img class="img-thumbnail rounded-3 shadow d-none preview-img" src="" alt="Xem trước ảnh" style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Phân loại sản phẩm -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-lg border-2" name="products[${newProductIndex}][category_id]" required>
-                                    <option value="">-- Chọn danh mục --</option>
-                                    @foreach ($cats as $cat)
-                                        <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Thương hiệu <span class="text-danger">*</span></label>
-                                <input type="text" name="products[${newProductIndex}][brand_name]" class="form-control brand-name border-2"
-                                       placeholder="Nhập tên thương hiệu..." required>
-                            </div>
-                        </div>
-
-                        <!-- Giá sản phẩm -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label fw-bold">Giá nhập <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-light border-2">
-                                        <i class="fas fa-money-bill-wave text-success"></i>
-                                    </span>
-                                    <input type="number" name="products[${newProductIndex}][price]" class="form-control price-input border-2"
-                                           placeholder="0" min="0" step="1000" required>
-                                    <span class="input-group-text bg-light border-2">VNĐ</span>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                                        <select class="form-select form-select-lg border-2" name="products[${newProductIndex}][category_id]" required>
+                                            <option value="">-- Chọn danh mục --</option>
+                                            @foreach ($cats as $cat)
+                                                <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Thương hiệu <span class="text-danger">*</span></label>
+                                        <input type="text" name="products[${newProductIndex}][brand_name]" class="form-control brand-name border-2" placeholder="Nhập tên thương hiệu..." required>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Biến thể sản phẩm -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h6 class="text-primary mb-0">
-                                        <i class="fas fa-palette me-2"></i>Biến thể sản phẩm
-                                        <span class="text-danger">*</span>
-                                    </h6>
-                                    <button type="button" class="btn btn-outline-primary btn-sm rounded-pill add-variant-btn">
-                                        <i class="fas fa-plus me-1"></i>Thêm biến thể
-                                    </button>
+                                <div class="row mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold">Giá nhập <span class="text-danger">*</span></label>
+                                        <div class="input-group input-group-lg">
+                                            <span class="input-group-text bg-light border-2"><i class="fas fa-money-bill-wave text-success"></i></span>
+                                            <input type="number" name="products[${newProductIndex}][price]" class="form-control price-input border-2" placeholder="0" min="0" step="10000" required>
+                                            <span class="input-group-text bg-light border-2">VNĐ</span>
+                                        </div>
+                                    </div>
                                 </div>
-
-                                <div class="variants-container">
-                                    <!-- Variant template -->
-                                    <div class="variant-item mb-3">
-                                        <div class="card border-2 border-secondary rounded-3 shadow-sm">
-                                            <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                                                <h6 class="mb-0 text-secondary">
-                                                    <i class="fas fa-circle me-2" style="color: #6c757d;"></i>
-                                                    Biến thể #<span class="variant-number">1</span>
-                                                </h6>
-                                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn">
-                                                    <i class="fas fa-trash me-1"></i>Xóa
-                                                </button>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row">
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold">Màu sắc <span class="text-danger">*</span></label>
-                                                        <input type="text" name="products[${newProductIndex}][variants][0][color]" class="form-control color-input border-2"
-                                                               placeholder="VD: Đỏ, Xanh dương..." required>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <h6 class="text-primary mb-0"><i class="fas fa-palette me-2"></i>Biến thể sản phẩm <span class="text-danger">*</span></h6>
+                                            <button type="button" class="btn btn-outline-primary btn-sm rounded-pill add-variant-btn"><i class="fas fa-plus me-1"></i>Thêm màu</button>
+                                        </div>
+                                        <div class="variants-container">
+                                            <div class="variant-item mb-3">
+                                                <div class="card border-2 border-secondary rounded-3 shadow-sm">
+                                                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                                         <div class="w-50">
+                                                            <label class="form-label fw-bold mb-0">Màu sắc #<span class="variant-number">1</span><span class="text-danger">*</span></label>
+                                                            <input type="text" name="products[${newProductIndex}][variants][0][color]" class="form-control color-input border-2" placeholder="VD: Chọn hoặc nhập màu..." required>
+                                                         </div>
+                                                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn"><i class="fas fa-trash me-1"></i>Xóa màu</button>
                                                     </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold">Kích cỡ <span class="text-danger">*</span></label>
-                                                        <select class="form-select form-select-lg border-2" name="products[${newProductIndex}][variants][0][size]" required>
-                                                            <option value="">-- Chọn size --</option>
-                                                            <option value="XS">XS</option>
-                                                            <option value="S">S</option>
-                                                            <option value="M">M</option>
-                                                            <option value="L">L</option>
-                                                            <option value="XL">XL</option>
-                                                            <option value="XXL">XXL</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
-                                                        <input type="number" name="products[${newProductIndex}][variants][0][quantity]" class="form-control quantity-input border-2"
-                                                               placeholder="0" min="1" required>
+                                                    <div class="card-body">
+                                                        <h6 class="text-secondary fw-bold mb-3"><i class="fas fa-ruler-combined me-2"></i>Size & Số lượng cho màu này</h6>
+                                                        <div class="size-quantity-container">
+                                                            <div class="size-quantity-item row align-items-center mb-2">
+                                                                <div class="col-md-5">
+                                                                    <select class="form-select form-select-lg border-2 size-select" name="products[${newProductIndex}][variants][0][details][0][size]" required>
+                                                                        <option value="">-- Chọn size --</option>
+                                                                        <option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-5">
+                                                                    <input type="number" name="products[${newProductIndex}][variants][0][details][0][quantity]" class="form-control quantity-input border-2" placeholder="Số lượng" min="1" required>
+                                                                </div>
+                                                                <div class="col-md-2 text-end">
+                                                                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-size-btn" style="display: none;"><i class="fas fa-times"></i></button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill mt-2 add-size-btn"><i class="fas fa-plus me-1"></i>Thêm size</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -771,301 +531,313 @@
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `);
+                `);
 
                 $('#products-container').append(newProduct);
+                newProduct.slideDown(300);
                 productCount++;
 
-                // Ẩn nút xóa nếu chỉ có 1 sản phẩm
-                if (productCount > 1) {
-                    $('.remove-product-btn').show();
-                }
-
-                // Xử lý preview ảnh cho sản phẩm mới
-                newProduct.find('.product-image').change(function(e) {
-                    const file = e.target.files[0];
-                    const previewImg = $(this).closest('.product-item').find('.preview-img');
-                    const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/gif",
-                        "image/webp", "image/avif"
-                    ];
-
-                    if (file && validTypes.includes(file.type)) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImg.attr('src', e.target.result).removeClass('d-none').hide()
-                                .fadeIn(300);
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        previewImg.fadeOut(300, function() {
-                            $(this).addClass('d-none');
-                        });
-                    }
-                });
+                updateRemoveProductButtons();
             });
 
             // Xóa sản phẩm
             $(document).on('click', '.remove-product-btn', function() {
                 const productItem = $(this).closest('.product-item');
-                const index = productItem.index();
-
                 productItem.slideUp(300, function() {
                     $(this).remove();
-                    variantCounts.splice(index, 1);
                     productCount--;
-
-                    // Cập nhật lại số thứ tự sản phẩm
-                    $('.product-item').each(function(i) {
-                        $(this).find('.product-number').text(i + 1);
-
-                        // Cập nhật lại name attribute
-                        $(this).find('[name^="products["]').each(function() {
-                            const name = $(this).attr('name').replace(
-                                /products\[\d+\]/g, `products[${i}]`);
-                            $(this).attr('name', name);
-                        });
-                    });
-
-                    // Ẩn nút xóa nếu chỉ còn 1 sản phẩm
-                    if (productCount <= 1) {
-                        $('.remove-product-btn').hide();
-                    }
+                    updateProductIndexes();
+                    updateRemoveProductButtons();
                 });
             });
 
-            // Thêm biến thể mới
+            // Cập nhật lại index của sản phẩm
+            function updateProductIndexes() {
+                $('.product-item').each(function(productIndex) {
+                    $(this).find('.product-number').text(productIndex + 1);
+                    $(this).find('[name^="products["]').each(function() {
+                        const name = $(this).attr('name').replace(/products\[\d+\]/, `products[${productIndex}]`);
+                        $(this).attr('name', name);
+                    });
+                });
+            }
+
+            // Ẩn/hiện nút xóa sản phẩm
+            function updateRemoveProductButtons() {
+                if ($('.product-item').length <= 1) {
+                    $('.remove-product-btn').hide();
+                } else {
+                    $('.remove-product-btn').show();
+                }
+            }
+
+
+            // ===================================
+            // BIẾN THỂ (MÀU)
+            // ===================================
+
+            // Thêm biến thể (màu) mới
             $(document).on('click', '.add-variant-btn', function() {
                 const productItem = $(this).closest('.product-item');
                 const productIndex = productItem.index();
                 const variantsContainer = productItem.find('.variants-container');
-                const variantCount = productItem.find('.variant-item').length;
+                const variantCount = variantsContainer.find('.variant-item').length;
 
                 const newVariant = $(`
-            <div class="variant-item mb-3">
-                <div class="card border-2 border-secondary rounded-3 shadow-sm">
-                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0 text-secondary">
-                            <i class="fas fa-circle me-2" style="color: #6c757d;"></i>
-                            Biến thể #<span class="variant-number">${variantCount + 1}</span>
-                        </h6>
-                        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn">
-                            <i class="fas fa-trash me-1"></i>Xóa
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Màu sắc <span class="text-danger">*</span></label>
-                                <input type="text" name="products[${productIndex}][variants][${variantCount}][color]" class="form-control color-input border-2"
-                                       placeholder="VD: Đỏ, Xanh dương..." required>
+                    <div class="variant-item mb-3" style="display:none;">
+                        <div class="card border-2 border-secondary rounded-3 shadow-sm">
+                             <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                                 <div class="w-50">
+                                    <label class="form-label fw-bold mb-0">Màu sắc #<span class="variant-number">${variantCount + 1}</span><span class="text-danger">*</span></label>
+                                    <input type="text" name="products[${productIndex}][variants][${variantCount}][color]" class="form-control color-input border-2" placeholder="VD: Chọn hoặc nhập màu..." required>
+                                 </div>
+                                <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-variant-btn"><i class="fas fa-trash me-1"></i>Xóa màu</button>
                             </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Kích cỡ <span class="text-danger">*</span></label>
-                                <select class="form-select form-select-lg border-2" name="products[${productIndex}][variants][${variantCount}][size]" required>
-                                    <option value="">-- Chọn size --</option>
-                                    <option value="XS">XS</option>
-                                    <option value="S">S</option>
-                                    <option value="M">M</option>
-                                    <option value="L">L</option>
-                                    <option value="XL">XL</option>
-                                    <option value="XXL">XXL</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label fw-bold">Số lượng <span class="text-danger">*</span></label>
-                                <input type="number" name="products[${productIndex}][variants][${variantCount}][quantity]" class="form-control quantity-input border-2"
-                                       placeholder="0" min="1" required>
+                            <div class="card-body">
+                                <h6 class="text-secondary fw-bold mb-3"><i class="fas fa-ruler-combined me-2"></i>Size & Số lượng cho màu này</h6>
+                                <div class="size-quantity-container">
+                                    <div class="size-quantity-item row align-items-center mb-2">
+                                        <div class="col-md-5">
+                                            <select class="form-select form-select-lg border-2 size-select" name="products[${productIndex}][variants][${variantCount}][details][0][size]" required>
+                                                <option value="">-- Chọn size --</option>
+                                                <option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <input type="number" name="products[${productIndex}][variants][${variantCount}][details][0][quantity]" class="form-control quantity-input border-2" placeholder="Số lượng" min="1" required>
+                                        </div>
+                                        <div class="col-md-2 text-end">
+                                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-size-btn" style="display: none;"><i class="fas fa-times"></i></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill mt-2 add-size-btn"><i class="fas fa-plus me-1"></i>Thêm size</button>
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        `);
+                `);
 
                 variantsContainer.append(newVariant);
-                variantCounts[productIndex]++;
+                newVariant.slideDown(300);
+                updateRemoveVariantButtons(variantsContainer);
             });
 
-            // Xóa biến thể
+            // Xóa biến thể (màu)
             $(document).on('click', '.remove-variant-btn', function() {
                 const variantItem = $(this).closest('.variant-item');
                 const variantsContainer = variantItem.closest('.variants-container');
-
                 variantItem.slideUp(300, function() {
                     $(this).remove();
-
-                    // Cập nhật lại số thứ tự biến thể
-                    variantsContainer.find('.variant-item').each(function(i) {
-                        $(this).find('.variant-number').text(i + 1);
-
-                        // Cập nhật lại name attribute
-                        const productItem = $(this).closest('.product-item');
-                        const productIndex = productItem.index();
-
-                        $(this).find('[name^="products["]').each(function() {
-                            const name = $(this).attr('name').replace(
-                                /variants\[\d+\]/g, `variants[${i}]`);
-                            $(this).attr('name', name);
-                        });
-                    });
+                    updateVariantIndexes(variantsContainer);
+                    updateRemoveVariantButtons(variantsContainer);
                 });
             });
+
+            // Cập nhật lại index của biến thể
+            function updateVariantIndexes(variantsContainer) {
+                 const productIndex = variantsContainer.closest('.product-item').index();
+                 variantsContainer.find('.variant-item').each(function(variantIndex) {
+                    $(this).find('.variant-number').text(variantIndex + 1);
+                    $(this).find('[name*="[variants]"]').each(function() {
+                        const name = $(this).attr('name').replace(/variants\[\d+\]/, `variants[${variantIndex}]`);
+                        $(this).attr('name', name);
+                    });
+                });
+            }
+
+            // Ẩn/hiện nút xóa biến thể
+            function updateRemoveVariantButtons(variantsContainer) {
+                 if (variantsContainer.find('.variant-item').length <= 1) {
+                    variantsContainer.find('.remove-variant-btn').hide();
+                } else {
+                    variantsContainer.find('.remove-variant-btn').show();
+                }
+            }
+
+
+            // ===================================
+            // SIZE & SỐ LƯỢNG
+            // ===================================
+
+            // Thêm size & số lượng
+            $(document).on('click', '.add-size-btn', function() {
+                const sizeContainer = $(this).prev('.size-quantity-container');
+                const productIndex = $(this).closest('.product-item').index();
+                const variantIndex = $(this).closest('.variant-item').index();
+                const sizeCount = sizeContainer.find('.size-quantity-item').length;
+
+                const newSizeItem = $(`
+                    <div class="size-quantity-item row align-items-center mb-2" style="display:none;">
+                        <div class="col-md-5">
+                             <select class="form-select form-select-lg border-2 size-select" name="products[${productIndex}][variants][${variantIndex}][details][${sizeCount}][size]" required>
+                                <option value="">-- Chọn size --</option>
+                                <option value="XS">XS</option><option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option><option value="XXL">XXL</option>
+                            </select>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="number" name="products[${productIndex}][variants][${variantIndex}][details][${sizeCount}][quantity]" class="form-control quantity-input border-2" placeholder="Số lượng" min="1" required>
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="button" class="btn btn-outline-danger btn-sm rounded-pill remove-size-btn"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                `);
+
+                sizeContainer.append(newSizeItem);
+                newSizeItem.slideDown(300);
+                updateRemoveSizeButtons(sizeContainer);
+            });
+
+             // Xóa size & số lượng
+            $(document).on('click', '.remove-size-btn', function() {
+                const sizeItem = $(this).closest('.size-quantity-item');
+                const sizeContainer = sizeItem.closest('.size-quantity-container');
+                sizeItem.slideUp(300, function() {
+                    $(this).remove();
+                    updateSizeIndexes(sizeContainer);
+                    updateRemoveSizeButtons(sizeContainer);
+                });
+            });
+
+            // Cập nhật lại index của size
+            function updateSizeIndexes(sizeContainer) {
+                const productIndex = sizeContainer.closest('.product-item').index();
+                const variantIndex = sizeContainer.closest('.variant-item').index();
+
+                sizeContainer.find('.size-quantity-item').each(function(sizeIndex) {
+                    $(this).find('[name*="[details]"]').each(function() {
+                        const name = $(this).attr('name').replace(/details\[\d+\]/, `details[${sizeIndex}]`);
+                        $(this).attr('name', name);
+                    });
+                });
+            }
+
+            // Ẩn/hiện nút xóa size
+            function updateRemoveSizeButtons(sizeContainer) {
+                if (sizeContainer.find('.size-quantity-item').length <= 1) {
+                    sizeContainer.find('.remove-size-btn').hide();
+                } else {
+                    sizeContainer.find('.remove-size-btn').show();
+                }
+            }
+
+
+            // ===================================
+            // XỬ LÝ CHUNG & VALIDATE
+            // ===================================
 
             // Xử lý preview ảnh
             $(document).on('change', '.product-image', function(e) {
                 const file = e.target.files[0];
-                const previewImg = $(this).closest('.product-item').find('.preview-img');
-                const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp",
-                    "image/avif"
-                ];
-
-                if (file) {
-                    if (validTypes.includes(file.type)) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            previewImg.attr('src', e.target.result).removeClass('d-none').hide().fadeIn(
-                                300);
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        $(this).val("");
-                        previewImg.fadeOut(300);
-                        alert("Vui lòng chọn file ảnh hợp lệ (JPG, PNG, GIF, WebP, AVIF)!");
-                    }
+                const previewImg = $(this).closest('.row').find('.preview-img');
+                const validTypes = ["image/jpg", "image/jpeg", "image/png", "image/gif", "image/webp", "image/avif"];
+                if (file && validTypes.includes(file.type)) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => previewImg.attr('src', event.target.result).removeClass('d-none').hide().fadeIn(300);
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImg.fadeOut(300, () => $(this).addClass('d-none'));
                 }
             });
 
             // Validate form trước khi submit
             $('#formCreateInventory').on('submit', function(e) {
                 let isValid = true;
+                let errorMessages = [];
 
-                // Kiểm tra mỗi sản phẩm có ít nhất 1 biến thể
-                $('.product-item').each(function() {
-                    const variantCount = $(this).find('.variant-item').length;
-                    if (variantCount === 0) {
+                // Kiểm tra mỗi sản phẩm
+                $('.product-item').each(function(productIndex) {
+                    const productItem = $(this);
+
+                    // 1. Phải có ít nhất 1 màu
+                    if (productItem.find('.variant-item').length === 0) {
                         isValid = false;
-                        showNotification('error', 'Mỗi sản phẩm phải có ít nhất 1 biến thể!');
-                        return false;
+                        errorMessages.push(`Sản phẩm #${productIndex + 1}: Phải có ít nhất 1 màu.`);
                     }
+
+                    const seenColors = new Set();
+                    // Kiểm tra mỗi màu (variant)
+                    productItem.find('.variant-item').each(function(variantIndex) {
+                        const variantItem = $(this);
+                        const colorInput = variantItem.find('.color-input');
+                        const colorValue = colorInput.val().trim().toLowerCase();
+
+                        // 2. Màu không được để trống và không được trùng
+                        if (!colorValue) {
+                           isValid = false;
+                           colorInput.addClass('is-invalid');
+                           errorMessages.push(`Sản phẩm #${productIndex + 1}, Màu #${variantIndex + 1}: Tên màu không được để trống.`);
+                        } else if (seenColors.has(colorValue)) {
+                           isValid = false;
+                           colorInput.addClass('is-invalid');
+                           errorMessages.push(`Sản phẩm #${productIndex + 1}: Màu "${colorInput.val()}" bị lặp lại.`);
+                        } else {
+                           seenColors.add(colorValue);
+                           colorInput.removeClass('is-invalid');
+                        }
+
+                        // 3. Mỗi màu phải có ít nhất 1 size
+                        if (variantItem.find('.size-quantity-item').length === 0) {
+                            isValid = false;
+                            errorMessages.push(`Sản phẩm #${productIndex + 1}, Màu "${colorInput.val() || '#' + (variantIndex + 1)}": Phải có ít nhất 1 size.`);
+                        }
+
+                        const seenSizes = new Set();
+                        // Kiểm tra mỗi cặp size-số lượng
+                        variantItem.find('.size-quantity-item').each(function(sizeIndex) {
+                            const sizeItem = $(this);
+                            const sizeSelect = sizeItem.find('.size-select');
+                            const sizeValue = sizeSelect.val();
+
+                            // 4. Size không được trùng trong cùng 1 màu
+                            if (seenSizes.has(sizeValue)) {
+                                isValid = false;
+                                sizeSelect.addClass('is-invalid');
+                                errorMessages.push(`Sản phẩm #${productIndex + 1}, Màu "${colorInput.val() || '#' + (variantIndex + 1)}": Size "${sizeValue}" bị lặp lại.`);
+                            } else if(sizeValue) {
+                                seenSizes.add(sizeValue);
+                                sizeSelect.removeClass('is-invalid');
+                            }
+                        });
+                    });
                 });
 
                 if (!isValid) {
                     e.preventDefault();
-                    return;
+                     // Build error string
+                    let errorMessage = 'Vui lòng sửa các lỗi sau:\n\n';
+                    errorMessages.forEach((msg, index) => {
+                        errorMessage += `${index + 1}. ${msg}\n`;
+                    });
+                    alert(errorMessage);
                 }
-
-                showNotification('success', 'Đang lưu phiếu nhập...');
             });
-
-            // Hàm hiển thị thông báo
-            function showNotification(type, message) {
-                const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-                const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
-
-                const notification = $(`
-            <div class="alert ${alertClass} alert-dismissible fade show position-fixed"
-                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                <i class="${icon} me-2"></i>${message}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        `);
-
-                $('body').append(notification);
-
-                setTimeout(function() {
-                    notification.alert('close');
-                }, 3000);
-            }
         });
     </script>
 
     <script>
         // Color Selection Modal Logic
         $(document).ready(function() {
-            const commonColors = [{
-                    name: 'Đỏ',
-                    hex: '#e63946'
-                },
-                {
-                    name: 'Xanh dương',
-                    hex: '#1d3557'
-                },
-                {
-                    name: 'Xanh lá',
-                    hex: '#2a9d8f'
-                },
-                {
-                    name: 'Vàng',
-                    hex: '#ffd166'
-                },
-                {
-                    name: 'Đen',
-                    hex: '#212529'
-                },
-                {
-                    name: 'Trắng',
-                    hex: '#f8f9fa',
-                    textColor: '#212529'
-                },
-                {
-                    name: 'Hồng',
-                    hex: '#ffafcc'
-                },
-                {
-                    name: 'Tím',
-                    hex: '#7b2cbf'
-                },
-                {
-                    name: 'Cam',
-                    hex: '#fb8500'
-                },
-                {
-                    name: 'Xám',
-                    hex: '#6c757d'
-                },
-                {
-                    name: 'Nâu',
-                    hex: '#6d4c41'
-                },
-                {
-                    name: 'Be',
-                    hex: '#f5ebe0',
-                    textColor: '#6d4c41'
-                }
-            ];
-
-            // Initialize color modal
+            const commonColors = [{ name: 'Đỏ', hex: '#e63946' }, { name: 'Xanh dương', hex: '#1d3557' }, { name: 'Xanh lá', hex: '#2a9d8f' }, { name: 'Vàng', hex: '#ffd166' }, { name: 'Đen', hex: '#212529' }, { name: 'Trắng', hex: '#f8f9fa', textColor: '#212529' }, { name: 'Hồng', hex: '#ffafcc' }, { name: 'Tím', hex: '#7b2cbf' }, { name: 'Cam', hex: '#fb8500' }, { name: 'Xám', hex: '#6c757d' }, { name: 'Nâu', hex: '#6d4c41' }, { name: 'Be', hex: '#f5ebe0', textColor: '#6d4c41' } ];
             let currentColorInput = null;
             let selectedColor = null;
             let allColors = [...commonColors];
-
-            // Populate color palette
             const colorPalette = $('#colorPalette');
-            commonColors.forEach(color => {
-                colorPalette.append(createColorOption(color));
-            });
+            commonColors.forEach(color => colorPalette.append(createColorOption(color)));
 
-            // Open color modal when clicking on color input
             $(document).on('click', '.color-input', function() {
                 currentColorInput = $(this);
                 selectedColor = currentColorInput.val().trim();
                 updateSelectedColorDisplay();
                 $('#colorSelectionModal').modal('show');
-
-                // Reset modal state
                 $('#newColorInput').val('');
                 $('#duplicateColorError').hide();
                 $('.color-option').removeClass('selected');
-
-                // Highlight selected color if exists
                 if (selectedColor) {
                     $(`.color-option[data-color="${selectedColor}"]`).addClass('selected');
                 }
             });
 
-            // Select color from options
             $(document).on('click', '.color-option', function() {
                 $('.color-option').removeClass('selected');
                 $(this).addClass('selected');
@@ -1073,202 +845,75 @@
                 updateSelectedColorDisplay();
             });
 
-            // Add new color
             $('#addColorBtn').click(function() {
                 const newColorName = $('#newColorInput').val().trim();
-
                 if (!newColorName) return;
-
-                // Check for duplicate color
-                const isDuplicate = allColors.some(color =>
-                    color.name.toLowerCase() === newColorName.toLowerCase()
-                );
-
+                const isDuplicate = allColors.some(color => color.name.toLowerCase() === newColorName.toLowerCase());
                 if (isDuplicate) {
                     $('#duplicateColorError').show();
                     return;
                 }
-
                 $('#duplicateColorError').hide();
-
-                const newColor = {
-                    name: newColorName,
-                    hex: getRandomColor(),
-                    isCustom: true
-                };
-
+                const newColor = { name: newColorName, hex: getRandomColor(), isCustom: true };
                 allColors.push(newColor);
                 colorPalette.append(createColorOption(newColor));
                 $('#newColorInput').val('');
-
-                // Auto-select the newly added color
                 $('.color-option').removeClass('selected');
                 $(`.color-option[data-color="${newColor.name}"]`).addClass('selected');
                 selectedColor = newColor.name;
                 updateSelectedColorDisplay();
             });
 
-            // Remove color
             $(document).on('click', '.remove-color', function(e) {
                 e.stopPropagation();
                 const colorOption = $(this).closest('.color-option');
                 const colorName = colorOption.data('color');
-
-                // Remove from allColors array
                 allColors = allColors.filter(color => color.name !== colorName);
-
-                // If this color was selected, clear selection
                 if (selectedColor === colorName) {
                     selectedColor = null;
                     updateSelectedColorDisplay();
                 }
-
                 colorOption.remove();
             });
 
-            // Remove selected color
             $('#removeSelectedColor').click(function() {
                 selectedColor = null;
                 updateSelectedColorDisplay();
                 $('.color-option').removeClass('selected');
             });
 
-            // Confirm color selection
             $('#confirmColorSelection').click(function() {
-                if (currentColorInput && selectedColor) {
-                    currentColorInput.val(selectedColor);
+                if (currentColorInput) {
+                    currentColorInput.val(selectedColor || '').trigger('input'); // Cập nhật và trigger input event
                     $('#colorSelectionModal').modal('hide');
                 }
             });
 
-            // Helper function to create color option HTML
             function createColorOption(color) {
                 const textColor = color.textColor || (isLightColor(color.hex) ? '#333' : '#fff');
-                return `
-                    <div class="color-option" data-color="${color.name}"
-                         style="background-color: ${color.hex}; color: ${textColor}">
-                        ${color.name}
-                        ${color.isCustom ? '<span class="remove-color"><i class="fas fa-times"></i></span>' : ''}
-                    </div>
-                `;
+                return `<div class="color-option" data-color="${color.name}" style="background-color: ${color.hex}; color: ${textColor};" title="${color.name}">${color.name}${color.isCustom ? '<span class="remove-color"><i class="fas fa-times"></i></span>' : ''}</div>`;
             }
 
-            // Helper function to update selected color display
             function updateSelectedColorDisplay() {
                 const selectedColorBadge = $('#selectedColorBadge');
                 const selectedColorText = $('#selectedColorText');
-
                 if (selectedColor) {
                     const colorObj = allColors.find(c => c.name === selectedColor);
                     if (colorObj) {
                         const textColor = colorObj.textColor || (isLightColor(colorObj.hex) ? '#333' : '#fff');
-                        selectedColorBadge.removeClass('d-none')
-                            .css('background-color', colorObj.hex)
-                            .css('color', textColor);
+                        selectedColorBadge.removeClass('d-none').css('background-color', colorObj.hex).css('color', textColor);
                         selectedColorText.text(selectedColor);
                         return;
                     }
                 }
-
                 selectedColorBadge.addClass('d-none');
             }
 
-            // Helper function to check if color is light
             function isLightColor(hex) {
-                const r = parseInt(hex.substr(1, 2), 16);
-                const g = parseInt(hex.substr(3, 2), 16);
-                const b = parseInt(hex.substr(5, 2), 16);
-                const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-                return brightness > 155;
+                const r = parseInt(hex.substr(1, 2), 16), g = parseInt(hex.substr(3, 2), 16), b = parseInt(hex.substr(5, 2), 16);
+                return (r * 299 + g * 587 + b * 114) / 1000 > 155;
             }
-
-            // Helper function to generate random color
-            function getRandomColor() {
-                return '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
-            }
-        });
-
-        // Enhanced validation for duplicate color-size combinations
-        $('#formCreateInventory').on('submit', function(e) {
-            let isValid = true;
-            let errorMessages = [];
-
-            // Check each product
-            $('.product-item').each(function(productIndex) {
-                const productItem = $(this);
-                const variants = productItem.find('.variant-item');
-                const variantCombinations = new Set();
-
-                // Check each variant
-                variants.each(function() {
-                    const variantItem = $(this);
-                    const colorInput = variantItem.find('.color-input');
-                    const colorValue = colorInput.val().trim();
-                    const sizeValue = variantItem.find('select[name$="[size]"]').val();
-
-                    // Validate color is selected
-                    if (!colorValue) {
-                        isValid = false;
-                        colorInput.addClass('is-invalid');
-                        errorMessages.push(
-                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Vui lòng chọn màu sắc`
-                        );
-                    } else {
-                        colorInput.removeClass('is-invalid');
-                    }
-
-                    // Validate size is selected
-                    if (!sizeValue) {
-                        isValid = false;
-                        variantItem.find('select[name$="[size]"]').addClass('is-invalid');
-                        errorMessages.push(
-                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Vui lòng chọn kích cỡ`
-                        );
-                    } else {
-                        variantItem.find('select[name$="[size]"]').removeClass('is-invalid');
-                    }
-
-                    // Validate quantity
-                    const quantityValue = parseInt(variantItem.find('.quantity-input').val());
-                    if (quantityValue < 1) {
-                        isValid = false;
-                        variantItem.find('.quantity-input').addClass('is-invalid');
-                        errorMessages.push(
-                            `Biến thể #${variantItem.find('.variant-number').text()} của sản phẩm #${productIndex + 1}: Số lượng phải lớn hơn 0`
-                        );
-                    } else {
-                        variantItem.find('.quantity-input').removeClass('is-invalid');
-                    }
-
-                    // Check for duplicate color-size combinations
-                    if (colorValue && sizeValue) {
-                        const combination = `${colorValue.toLowerCase()}-${sizeValue}`;
-
-                        if (variantCombinations.has(combination)) {
-                            isValid = false;
-                            colorInput.addClass('is-invalid');
-                            variantItem.find('select[name$="[size]"]').addClass('is-invalid');
-                            errorMessages.push(
-                                `Sản phẩm #${productIndex + 1}: Biến thể màu "${colorValue}" size ${sizeValue} đã bị trùng`
-                            );
-                        } else {
-                            variantCombinations.add(combination);
-                        }
-                    }
-                });
-            });
-
-            if (!isValid) {
-                e.preventDefault();
-
-                // Show error messages
-                let errorMessage = 'Vui lòng sửa các lỗi sau:\n';
-                errorMessages.forEach((msg, index) => {
-                    errorMessage += `\n${index + 1}. ${msg}`;
-                });
-
-                alert(errorMessage);
-            }
+            function getRandomColor() { return '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'); }
         });
     </script>
 @endsection

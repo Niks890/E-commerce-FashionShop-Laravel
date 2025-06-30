@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\BlogController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
@@ -207,6 +208,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
         Route::get('/revenue-month/export-excel', [RevenueController::class, 'exportExcelMonth'])->name('admin.revenueMonth.exportExcel')->middleware('can:managers');
         Route::get('/year', [RevenueController::class, 'revenueYear'])->name('admin.revenueYear');
         Route::get('/profit', [RevenueController::class, 'profitYear'])->name('admin.profitYear');
+        Route::get('/profit/export',  [RevenueController::class, 'export'])->name('admin.exportProfit');
         Route::get('/revenue-best-seller-product', [RevenueProductController::class, 'revenueProductBestSeller'])->name('admin.revenueProductBestSeller')->middleware('can:salers');
         Route::get('/revenue-best-seller-product/export-pdf', [RevenueProductController::class, 'exportPdf'])->name('admin.revenueProductBestSeller.exportPdf')->middleware('can:salers');
         Route::get('/revenue-best-seller-product/export-excel', [RevenueProductController::class, 'exportExcel'])->name('admin.revenueProductBestSeller.exportExcel')->middleware('can:salers');
@@ -233,3 +235,20 @@ Route::post('/inventory/{id}/reject', [InventoryController::class, 'reject'])
 
 Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
 Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');
+
+// Route::group(['prefix' => 'blogcomments'], function() {
+//     // Lưu bình luận mới
+//     Route::post('/', [BlogCommentController::class, 'store'])->name('blogcomments.store');
+
+//     // Cập nhật bình luận (sử dụng ID thay vì model binding)
+//     Route::put('/{id}', [BlogCommentController::class, 'update'])->name('blogcomments.update');
+
+//     // Xóa bình luận (sử dụng ID thay vì model binding)
+//     Route::delete('/{id}', [BlogCommentController::class, 'destroy'])->name('blogcomments.destroy');
+
+//     // Like/unlike bình luận (sử dụng ID thay vì model binding)
+//     Route::post('{id}/toggleLike', [BlogCommentController::class, 'toggleLike'])->name('blogcomments.toggleLike');
+
+//     // Lấy danh sách bình luận theo blog
+//     Route::get('/blog/{blogId}', [BlogCommentController::class, 'getComments'])->name('blogcomments.get');
+// });

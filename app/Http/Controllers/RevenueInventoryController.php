@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Product;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -13,7 +14,7 @@ class RevenueInventoryController extends Controller
     {
         $query = DB::table('product_variants as pv')
             ->join('products as p', 'pv.product_id', '=', 'p.id')
-            ->select('pv.id as variant_id', 'p.product_name', 'p.id as product_id', 'pv.color', 'pv.size', 'pv.stock')
+            ->select('pv.id as variant_id', 'p.product_name', 'p.id as product_id', 'pv.color', 'pv.size', 'pv.stock', 'pv.available_stock')
             ->where('pv.stock', '>=', 0)
             ->whereIn('p.status', [0, 1]);
 
@@ -44,11 +45,20 @@ class RevenueInventoryController extends Controller
             }
         }
 
-        $inventoryRevenueCurrent = $query->orderBy('p.product_name')
-            ->paginate(10)
-            ->appends($request->query());
+            if ($request->has('export_pdf')) {
+                $data = [
+                    'inventory' => $query->get(),
+                    'filter' => $request->all(),
+                    'export_time' => now()->format('d/m/Y H:i')
+                ];
 
-        return view('admin.inventory.revenue.revenue-inventory', compact('inventoryRevenueCurrent'));
+                $pdf = Pdf::loadView('admin.inventory.revenue.export-pdf', $data);
+                return $pdf->download('bao-cao-ton-kho-'.now()->format('Ymd').'.pdf');
+            }
+
+            $inventoryRevenueCurrent = $query->paginate(10)->appends($request->query());
+            return view('admin.inventory.revenue.revenue-inventory', compact('inventoryRevenueCurrent'));
+
     }
 
 

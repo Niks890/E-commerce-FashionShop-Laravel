@@ -158,7 +158,7 @@
                         @forelse ($data as $model)
                             <tr>
                                 <td>{{ $model->id }}</td>
-                                <td>{{ $model->product_name }}</td>
+                                <td>{{ Str::words($model->product_name, 5, '...') }}</td>
                                 <td>{{ $model->category->category_name }}</td>
                                 <td class="text-center">
                                     @if ($model->has_active_discount)

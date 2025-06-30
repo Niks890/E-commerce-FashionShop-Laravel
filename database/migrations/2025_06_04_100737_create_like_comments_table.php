@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('like_comments', function (Blueprint $table) {
-            $table->unsignedBigInteger('comment_id');
-            $table->foreign('comment_id')->references('comment_id')->on('blog_comments');
+            $table->unsignedBigInteger('blog_comment_id');
+            $table->foreign('blog_comment_id')->references('comment_id')->on('blog_comments');
             $table->unsignedInteger('customer_id');
             $table->foreign('customer_id')->references('id')->on('customers');
             $table->bigInteger('like_count')->default(0);

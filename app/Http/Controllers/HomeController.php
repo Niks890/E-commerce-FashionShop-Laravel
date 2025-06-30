@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Blog;
+use App\Models\BlogComment;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -303,6 +304,7 @@ class HomeController extends Controller
         $blogDetail = Blog::where('slug', $slug)->with('staff')->firstOrFail();
         $previousBlog = Blog::where('id', '<', $blogDetail->id)->orderBy('id', 'desc')->first();
         $nextBlog = Blog::where('id', '>', $blogDetail->id)->orderBy('id', 'asc')->first();
+        // $comments = BlogComment::where('blog_id', $blogDetail->id)->paginate(5);
 
         return view('sites.pages.blogDetail', compact('blogDetail', 'previousBlog', 'nextBlog'));
     }

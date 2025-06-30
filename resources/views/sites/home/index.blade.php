@@ -168,11 +168,12 @@
     </section>
     <!-- Categories Section End -->
 
-    <hr class="w-50">
+
 
 
     <!-- Product Recently Section Begin -->
     @if (!empty($productRecentInfo) && count($productRecentInfo) > 0)
+        <hr class="w-50">
         <section class="product spad" id="product-recently-section">
             <div class="container">
                 <div class="row">
@@ -301,9 +302,10 @@
                 {{-- {{ $productRecentInfo->links() }} --}}
             </div>
         </section>
-    @endif
+        <hr class="w-50">
+        @endif
     <!-- Product Section Recently End -->
-    <hr class="w-50">
+
 
 
 
@@ -443,9 +445,10 @@
                 </div>
             </div>
         </section>
+         <hr class="w-50">
     @endif
     <!-- RecommendationProduct For UserBase Content Filtering Section End -->
-    <hr class="w-50">
+
 
     <!-- Product Discount Section Begin -->
     <section class="product spad">

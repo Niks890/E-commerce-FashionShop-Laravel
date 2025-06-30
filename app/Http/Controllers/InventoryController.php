@@ -252,38 +252,188 @@ class InventoryController extends Controller
     //     }
     // }
 
+    // Hàm nhập (form cũ)
+    // public function store(Request $request, CloudinaryService $cloudinaryService)
+    // {
+    //     DB::beginTransaction();
+    //     try {
+    //         Log::info('Data received:', $request->all());
 
+    //         $data = $request->validate([
+    //             'id' => 'required',
+    //             'provider_id' => 'required|exists:providers,id',
+    //             'note_inventory' => 'required',
+    //             'products' => 'required|array|min:1',
+    //             'products.*.product_name' => 'required|min:3|max:150|unique:products,product_name',
+    //             'products.*.brand_name' => 'required|max:100',
+    //             // 'products.*.image' => 'required|image',
+    //             'products.*.category_id' => 'required|exists:categories,id',
+    //             'products.*.price' => 'required|numeric|min:1',
+    //             'products.*.variants' => 'required|array|min:1',
+    //             'products.*.variants.*.color' => 'required|string',
+    //             'products.*.variants.*.size' => 'required|string',
+    //             'products.*.variants.*.quantity' => 'required|integer|min:1',
+    //         ], [
+    //             //  'products.*.product_name.required' => 'Tên sản phẩm không được để trống.',
+    //             //     'products.*.product_name.min' => 'Tên sản phẩm phải có ít nhất 3 ký tự.',
+    //             //     'products.*.product_name.max' => 'Tên sản phẩm đã vượt quá 150 ký tự.',
+    //             //     'products.*.product_name.unique' => 'Tên sản phẩm này đã tồn tại.',
+    //             //     'products.*.image.required' => 'Vui lòng chọn hình ảnh.',
+    //             //     'products.*.category_id.required' => 'Vui lòng chọn danh mục.',
+    //             //     'products.*.category_id.exists' => 'Tên danh mục không hợp lệ.',
+    //             //     'products.*.price.required' => 'Vui lòng điền giá nhập.',
+    //             //     'products.*.price.min' => 'Giá tiền phải lớn hơn 0.',
+    //             //     'products.*.variants.required' => 'Vui lòng nhập ít nhất một biến thể cho sản phẩm.',
+    //             //     'products.*.variants.*.color.required' => 'Vui lòng nhập màu sắc.',
+    //             //     'products.*.variants.*.size.required' => 'Vui lòng chọn kích cỡ.',
+    //             //     'products.*.variants.*.quantity.required' => 'Vui lòng nhập số lượng.',
+    //             //     'products.*.variants.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
+    //         ]);
+
+    //         // Tạo inventory với status mặc định là 'pending'
+    //         $inventory = Inventory::create([
+    //             'provider_id' => $data['provider_id'],
+    //             'staff_id' => $data['id'],
+    //             'total' => 0,
+    //             'vat' => 0,
+    //             'status' => 'pending', // Thêm trạng thái chờ duyệt
+    //             'note' => $data['note_inventory'],
+    //         ]);
+
+    //         $totalInventoryValue = 0;
+    //         $totalVat = 0;
+    //         $productsToProcessImages = [];
+    //         $inventoryDetailBatchInsert = [];
+    //         $vatRate = 0.1;
+
+    //         foreach ($request->products as $productData) {
+    //             // Tạo product (chưa xử lý ảnh)
+    //             $product = Product::create([
+    //                 'product_name' => $productData['product_name'],
+    //                 'price' => $productData['price'],
+    //                 'brand' => $productData['brand_name'],
+    //                 'status' => 2, // Sản phẩm mới tạo chưa active
+    //                 // 'sku' => strtoupper(Str::random(6)),
+    //                 'sku' => $this->generateSku($productData['product_name'], $productData['category_id'], $productData['brand_name']),
+    //                 'category_id' => $productData['category_id'],
+    //                 'image' => 'temp', // Tạm thời
+    //                 'slug' => Str::slug($productData['product_name'])
+    //             ]);
+
+    //             $productTotalQuantity = 0;
+    //             $productTotalValue = 0;
+
+    //             // Tạo các biến thể nhưng KHÔNG cập nhật stock ở đây
+    //             foreach ($productData['variants'] as $variant) {
+    //                 $productTotalQuantity += $variant['quantity'];
+
+    //                 $productVariant = ProductVariant::create([
+    //                     'color' => $variant['color'],
+    //                     'size' => $variant['size'],
+    //                     'price' => $productData['price'],
+    //                     'stock' => 0, // Khởi tạo stock = 0, sẽ cập nhật khi duyệt
+    //                     'product_id' => $product->id,
+    //                     'created_at' => now(),
+    //                     'updated_at' => now()
+    //                 ]);
+
+    //                 $inventoryDetailBatchInsert[] = [
+    //                     'product_variant_id' => $productVariant->id,
+    //                     'product_id' => $product->id,
+    //                     'inventory_id' => $inventory->id,
+    //                     'price' => $productData['price'],
+    //                     'quantity' => $variant['quantity'],
+    //                     'size' => $variant['size'] . '-' . $variant['quantity'] . '-' . $variant['color'],
+    //                     'created_at' => now(),
+    //                     'updated_at' => now()
+    //                 ];
+    //             }
+
+    //             // Tính toán giá trị
+    //             $productTotalValue = $productTotalQuantity * $productData['price'];
+    //             $productVat = $productTotalValue * $vatRate;
+    //             $totalInventoryValue += $productTotalValue + $productVat;
+    //             $totalVat += $productVat;
+
+    //             // Lưu thông tin để xử lý ảnh sau
+    //             $productsToProcessImages[] = [
+    //                 'product' => $product,
+    //                 'image' => $productData['image']
+    //             ];
+    //         }
+
+    //         // Batch insert inventory details
+    //         if (!empty($inventoryDetailBatchInsert)) {
+    //             InventoryDetail::insert($inventoryDetailBatchInsert);
+    //         }
+
+    //         // Cập nhật tổng inventory
+    //         $inventory->update([
+    //             'total' => $totalInventoryValue,
+    //             'vat' => $totalVat
+    //         ]);
+
+    //         DB::commit();
+
+    //         // Xử lý ảnh sau khi transaction thành công
+    //         foreach ($productsToProcessImages as $item) {
+    //             $this->processProductImage($item['product'], $item['image'], $cloudinaryService);
+    //         }
+
+    //         Log::info('Inventory created successfully:', [
+    //             'inventory_id' => $inventory->id,
+    //             'total_products' => count($request->products)
+    //         ]);
+
+    //         return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công với " . count($request->products) . " sản phẩm! Phiếu nhập đang chờ duyệt.");
+    //     } catch (Exception $e) {
+    //         DB::rollBack();
+    //         Log::error('Error creating inventory:', [
+    //             'error' => $e->getMessage(),
+    //             'trace' => $e->getTraceAsString()
+    //         ]);
+    //         return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+    //     }
+    // }
+
+    // Hàm nhập (form mới)
     public function store(Request $request, CloudinaryService $cloudinaryService)
     {
         DB::beginTransaction();
         try {
-            Log::info('Data received:', $request->all());
+            Log::info('Data received for inventory creation:', $request->all());
 
+            // 1. VALIDATION: Cập nhật quy tắc để khớp với cấu trúc mới
             $data = $request->validate([
-                'id' => 'required',
+                'id' => 'required|exists:staff,id',
                 'provider_id' => 'required|exists:providers,id',
-                'note_inventory' => 'required',
+                'note_inventory' => 'required|string',
                 'products' => 'required|array|min:1',
-                'products.*.product_name' => 'required|min:3|max:150|unique:products,product_name',
+                'products.*.product_name' => 'required|min:3|max:150|distinct', // Sử dụng distinct để kiểm tra trong cùng request
                 'products.*.brand_name' => 'required|max:100',
                 'products.*.image' => 'required|image',
                 'products.*.category_id' => 'required|exists:categories,id',
                 'products.*.price' => 'required|numeric|min:1',
                 'products.*.variants' => 'required|array|min:1',
                 'products.*.variants.*.color' => 'required|string',
-                'products.*.variants.*.size' => 'required|string',
-                'products.*.variants.*.quantity' => 'required|integer|min:1',
+                'products.*.variants.*.details' => 'required|array|min:1', // Mỗi màu phải có ít nhất 1 size
+                'products.*.variants.*.details.*.size' => 'required|string',
+                'products.*.variants.*.details.*.quantity' => 'required|integer|min:1',
             ], [
-                // Các message validate giữ nguyên
+                'products.*.product_name.required' => 'Tên sản phẩm không được để trống.',
+                'products.*.product_name.distinct' => 'Tên sản phẩm không được lặp lại trong cùng một phiếu nhập.',
+                'products.*.variants.min' => 'Mỗi sản phẩm phải có ít nhất một màu.',
+                'products.*.variants.*.details.min' => 'Mỗi màu phải có ít nhất một cặp Size/Số lượng.',
+                'products.*.variants.*.details.*.quantity.min' => 'Số lượng phải lớn hơn 0.',
             ]);
 
-            // Tạo inventory với status mặc định là 'pending'
+            // Tạo phiếu nhập kho
             $inventory = Inventory::create([
                 'provider_id' => $data['provider_id'],
                 'staff_id' => $data['id'],
-                'total' => 0,
-                'vat' => 0,
-                'status' => 'pending', // Thêm trạng thái chờ duyệt
+                'total' => 0, // Sẽ cập nhật sau
+                'vat' => 0, // Sẽ cập nhật sau
+                'status' => 'pending', // Trạng thái chờ duyệt
                 'note' => $data['note_inventory'],
             ]);
 
@@ -291,70 +441,81 @@ class InventoryController extends Controller
             $totalVat = 0;
             $productsToProcessImages = [];
             $inventoryDetailBatchInsert = [];
-            $vatRate = 0.1;
+            $vatRate = 0.1; // 10% VAT
 
-            foreach ($request->products as $productData) {
-                // Tạo product (chưa xử lý ảnh)
+            // 2. VÒNG LẶP: Lặp qua từng sản phẩm
+            foreach ($data['products'] as $index => $productData) {
+                // Kiểm tra tên sản phẩm đã tồn tại trong DB chưa
+                if (Product::where('product_name', $productData['product_name'])->exists()) {
+                    DB::rollBack();
+                    return redirect()->back()->withInput()->with('error', "Tên sản phẩm '{$productData['product_name']}' đã tồn tại trong hệ thống.");
+                }
+
+                // Tạo sản phẩm
                 $product = Product::create([
                     'product_name' => $productData['product_name'],
                     'price' => $productData['price'],
                     'brand' => $productData['brand_name'],
-                    'status' => 2, // Sản phẩm mới tạo chưa active
-                    // 'sku' => strtoupper(Str::random(6)),
+                    'status' => 2, // Chưa active
                     'sku' => $this->generateSku($productData['product_name'], $productData['category_id'], $productData['brand_name']),
                     'category_id' => $productData['category_id'],
-                    'image' => 'temp', // Tạm thời
+                    'image' => 'temp_placeholder', // Tạm thời
                     'slug' => Str::slug($productData['product_name'])
                 ]);
 
                 $productTotalQuantity = 0;
-                $productTotalValue = 0;
 
-                // Tạo các biến thể nhưng KHÔNG cập nhật stock ở đây
-                foreach ($productData['variants'] as $variant) {
-                    $productTotalQuantity += $variant['quantity'];
+                // Lặp qua từng màu sắc (variant)
+                foreach ($productData['variants'] as $variantData) {
+                    // Lặp qua từng cặp size/số lượng (details)
+                    foreach ($variantData['details'] as $detail) {
+                        $quantity = (int)$detail['quantity'];
+                        $productTotalQuantity += $quantity;
 
-                    $productVariant = ProductVariant::create([
-                        'color' => $variant['color'],
-                        'size' => $variant['size'],
-                        'price' => $productData['price'],
-                        'stock' => 0, // Khởi tạo stock = 0, sẽ cập nhật khi duyệt
-                        'product_id' => $product->id,
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ]);
+                        // Tạo biến thể sản phẩm cho mỗi cặp màu-size
+                        $productVariant = ProductVariant::create([
+                            'color' => $variantData['color'],
+                            'size' => $detail['size'],
+                            'price' => $productData['price'], // Giả sử giá nhập là giá của sản phẩm
+                            'stock' => 0, // Khởi tạo stock = 0, sẽ cập nhật khi duyệt
+                            'product_id' => $product->id,
+                        ]);
 
-                    $inventoryDetailBatchInsert[] = [
-                        'product_variant_id' => $productVariant->id,
-                        'product_id' => $product->id,
-                        'inventory_id' => $inventory->id,
-                        'price' => $productData['price'],
-                        'quantity' => $variant['quantity'],
-                        'size' => $variant['size'] . '-' . $variant['quantity'] . '-' . $variant['color'],
-                        'created_at' => now(),
-                        'updated_at' => now()
-                    ];
+                        // Chuẩn bị dữ liệu cho batch insert chi tiết phiếu nhập
+                        $inventoryDetailBatchInsert[] = [
+                            'product_variant_id' => $productVariant->id,
+                            'product_id' => $product->id,
+                            'inventory_id' => $inventory->id,
+                            'price' => $productData['price'],
+                            'quantity' => $quantity,
+                            'size' => $detail['size'] . '-' . $quantity . '-' .$variantData['color'] , // Mô tả chi tiết
+                            'created_at' => now(),
+                            'updated_at' => now()
+                        ];
+                    }
                 }
 
-                // Tính toán giá trị
+                // Tính toán tổng giá trị cho sản phẩm này
                 $productTotalValue = $productTotalQuantity * $productData['price'];
                 $productVat = $productTotalValue * $vatRate;
                 $totalInventoryValue += $productTotalValue + $productVat;
                 $totalVat += $productVat;
 
-                // Lưu thông tin để xử lý ảnh sau
-                $productsToProcessImages[] = [
-                    'product' => $product,
-                    'image' => $productData['image']
-                ];
+                // Lưu thông tin để xử lý ảnh sau (sử dụng index từ request gốc)
+                if ($request->hasFile("products.{$index}.image")) {
+                    $productsToProcessImages[] = [
+                        'product' => $product,
+                        'image' => $request->file("products.{$index}.image")
+                    ];
+                }
             }
 
-            // Batch insert inventory details
+            // Batch insert inventory details để tăng hiệu suất
             if (!empty($inventoryDetailBatchInsert)) {
                 InventoryDetail::insert($inventoryDetailBatchInsert);
             }
 
-            // Cập nhật tổng inventory
+            // Cập nhật tổng giá trị và VAT cho phiếu nhập
             $inventory->update([
                 'total' => $totalInventoryValue,
                 'vat' => $totalVat
@@ -362,24 +523,32 @@ class InventoryController extends Controller
 
             DB::commit();
 
-            // Xử lý ảnh sau khi transaction thành công
+            // Xử lý upload ảnh sau khi transaction đã thành công
             foreach ($productsToProcessImages as $item) {
                 $this->processProductImage($item['product'], $item['image'], $cloudinaryService);
             }
 
             Log::info('Inventory created successfully:', [
                 'inventory_id' => $inventory->id,
-                'total_products' => count($request->products)
+                'total_products' => count($data['products'])
             ]);
 
-            return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công với " . count($request->products) . " sản phẩm! Phiếu nhập đang chờ duyệt.");
+            return redirect()->route('inventory.index')->with('success', "Thêm phiếu nhập mới thành công với " . count($data['products']) . " sản phẩm! Phiếu nhập đang chờ duyệt.");
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollBack();
+            Log::error('Validation error creating inventory:', [
+                'errors' => $e->errors(),
+                'input' => $request->all()
+            ]);
+            // Quay lại với lỗi và dữ liệu đã nhập
+            return redirect()->back()->withErrors($e->validator)->withInput();
         } catch (Exception $e) {
             DB::rollBack();
             Log::error('Error creating inventory:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            return redirect()->back()->with('error', 'Đã xảy ra lỗi: ' . $e->getMessage());
+            return redirect()->back()->withInput()->with('error', 'Đã xảy ra lỗi không mong muốn: ' . $e->getMessage());
         }
     }
 

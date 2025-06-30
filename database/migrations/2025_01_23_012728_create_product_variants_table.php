@@ -15,7 +15,7 @@ return new class extends Migration
             $table->increments('id');
             $table->string('color', 15)->nullable();
             $table->string('size', 10)->nullable();
-            $table->decimal('price', 10,3)->nullable();
+            $table->bigInteger('price')->unsigned()->nullable();
             $table->unsignedInteger('stock')->nullable();
             $table->unsignedInteger('available_stock')->default(0);
             // available_stock phải <= stock

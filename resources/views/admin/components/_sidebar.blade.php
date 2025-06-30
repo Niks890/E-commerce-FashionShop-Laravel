@@ -27,14 +27,14 @@
             <ul class="nav nav-secondary">
                 <li class="nav-item">
                     <a>
-                        <p>Trang Quản Trị</p>
+                        <p class="text-white fw-bold">Trang Quản Trị</p>
                     </a>
                 </li>
                 @can('salers')
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base1">
                             <i class="fas fa-layer-group"></i>
-                            <p>Quản lý Danh mục</p>
+                            <p  class="text-white fw-bold">Quản lý Danh mục</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base1">
@@ -50,7 +50,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base2">
                             <i class="fas fa-tshirt"></i>
-                            <p>Quản lý Sản phẩm</p>
+                            <p  class="text-white fw-bold">Quản lý Sản phẩm</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base2">
@@ -76,7 +76,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base8">
                             <i class="fas fa-box"></i>
-                            <p>Quản lý Đơn hàng</p>
+                            <p  class="text-white fw-bold">Quản lý Đơn hàng</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base8">
@@ -107,7 +107,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base3">
                             <i class="fas fa-percentage"></i>
-                            <p>Quản lý Khuyến mãi/Voucher</p>
+                            <p class="text-white fw-bold">Quản lý Khuyến mãi</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base3">
@@ -128,7 +128,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base66666">
                             <i class="fas fa-users"></i>
-                            <p>Quản lý Khách Hàng</p>
+                            <p class="text-white fw-bold">Quản lý Khách Hàng</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base66666">
@@ -146,7 +146,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base999">
                             <i class="fas fa-layer-group"></i>
-                            <p>Quản lý giao hàng</p>
+                            <p class="text-white fw-bold">Quản lý giao hàng</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base999">
@@ -164,7 +164,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base4">
                             <i class="fas fa-store-alt"></i>
-                            <p>Quản lý Nhà cung cấp</p>
+                            <p class="text-white fw-bold">Quản lý Nhà cung cấp</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base4">
@@ -180,7 +180,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base5">
                             <i class="fas fa-warehouse"></i>
-                            <p>Quản lý Nhập hàng</p>
+                            <p class="text-white fw-bold">Quản lý Nhập hàng</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base5">
@@ -211,7 +211,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base6">
                             <i class="fas fa-users"></i>
-                            <p>Quản lý Nhân viên</p>
+                            <p class="text-white fw-bold">Quản lý Nhân viên</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base6">
@@ -232,7 +232,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base11">
                             <i class="fas fa-newspaper"></i>
-                            <p>Quản lý Blog</p>
+                            <p class="text-white fw-bold">Quản lý Blog</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base11">
@@ -248,7 +248,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base9999">
                             <i class="fas fa-layer-group"></i>
-                            <p>Quản lý Đánh giá</p>
+                            <p class="text-white fw-bold">Quản lý Đánh giá</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base9999">
@@ -269,7 +269,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base9">
                             <i class="fas fa-chart-line"></i>
-                            <p>Quản lý doanh thu</p>
+                            <p class="text-white fw-bold">Quản lý doanh thu</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base9">
@@ -291,7 +291,7 @@
                     <li class="nav-item">
                         <a data-bs-toggle="collapse" href="#base999999">
                             <i class="fas fa-chart-line"></i>
-                            <p>Quản lý lợi nhuận</p>
+                            <p class="text-white fw-bold">Quản lý lợi nhuận</p>
                             <span class="caret"></span>
                         </a>
                         <div class="collapse" id="base999999">

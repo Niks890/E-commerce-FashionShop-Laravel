@@ -10,8 +10,8 @@ class LikeComment extends Model
     use HasFactory;
 
 
-    protected $table = 'like_comment';
-    protected $primaryKey = ['comment_id', 'customer_id'];
+    protected $table = 'like_comments';
+    // protected $primaryKey = ['comment_id', 'customer_id'];
     protected $fillable =[
         'comment_id',
         'customer_id',
@@ -23,11 +23,11 @@ class LikeComment extends Model
 
     public function comment()
     {
-        return $this->belongsTo(BlogComment::class);
+        return $this->belongsTo(BlogComment::class, 'blog_comment_id');
     }
 
     public function customer()
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(Customer::class, 'customer_id');
     }
 }

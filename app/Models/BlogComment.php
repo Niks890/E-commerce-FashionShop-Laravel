@@ -9,7 +9,7 @@ class BlogComment extends Model
 {
     use HasFactory;
 
-    protected $fillable =[
+    protected $fillable = [
         'comment_id',
         'content',
         'status',
@@ -37,5 +37,10 @@ class BlogComment extends Model
     public function likecomments()
     {
         return $this->hasMany(LikeComment::class);
+    }
+
+    public function isLikedBy($customerId)
+    {
+        return $this->likecomments()->where('customer_id', $customerId)->exists();
     }
 }

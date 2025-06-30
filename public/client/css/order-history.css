@@ -19,7 +19,7 @@
 
 .cancel-order-modal .modal-content {
     border-radius: 8px;
-    width: 100%;
+    height: 500px;
 }
 
 .cancel-order-modal .modal-header {

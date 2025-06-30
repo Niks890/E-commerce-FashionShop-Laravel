@@ -13,20 +13,20 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('product_name', 150);//
-            $table->string('brand', 100)->nullable();//
-            $table->string('sku', 150)->nullable();//
+            $table->string('product_name', 150);
+            $table->string('brand', 100)->nullable();
+            $table->string('sku', 150)->nullable();
             $table->text('description')->nullable();
             $table->text('tags')->nullable();
             $table->string('material')->nullable();
-            $table->decimal('price', 10,3)->nullable();//
+            $table->bigInteger('price')->unsigned()->nullable();
             $table->text('short_description')->nullable();
             $table->string('slug')->nullable();
             $table->string('image')->nullable();
             $table->text('length')->nullable();
             $table->text('width')->nullable();
             $table->tinyInteger('status')->default(1);
-            $table->unsignedInteger('category_id');//
+            $table->unsignedInteger('category_id');
             $table->unsignedInteger('discount_id')->nullable();
             $table->foreign('category_id')->references('id')->on('categories');
             $table->foreign('discount_id')->references('id')->on('discounts');

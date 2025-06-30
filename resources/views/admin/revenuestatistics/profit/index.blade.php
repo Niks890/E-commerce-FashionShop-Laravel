@@ -4,9 +4,23 @@
 @section('content')
     <div class="container-fluid">
         <div class="card">
-            <div class="card-header">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
                 <h4 class="card-title">Bộ lọc thống kê lợi nhuận</h4>
+                @can('managers')
+                <div class="btn-group">
+                    <a href="{{ route('admin.exportProfit', array_merge(request()->all(), ['format' => 'pdf'])) }}"
+                    class="btn btn-danger">
+                        <i class="fas fa-file-pdf"></i> Xuất PDF
+                    </a>
+                    <a href="{{ route('admin.exportProfit', array_merge(request()->all(), ['format' => 'excel'])) }}"
+                    class="btn btn-success">
+                        <i class="fas fa-file-excel"></i> Xuất Excel
+                    </a>
+                </div>
+                @endcan
             </div>
+        </div>
             <div class="card-body">
                 <form id="filterForm" method="GET" action="{{ route('admin.profitYear') }}">
                     <div class="row">

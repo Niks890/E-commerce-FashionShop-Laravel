@@ -7,12 +7,14 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\ImageVariant;
+use App\Models\Inventory;
+use App\Models\InventoryDetail;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Services\CloudinaryService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Redis;
 
 class ProductController extends Controller
 {
@@ -151,27 +153,74 @@ class ProductController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    // public function edit(Product $product)
+    // {
+    //     $cats = Category::all();
+    //     $discounts = Discount::where('status', 'active')->get();
+    //     $lastestInventoryPrice = InventoryDetail::where('product_id', $product->id)->orderBy('created_at', 'desc')->first();
+    //     $productVariants = ProductVariant::with('ImageVariants')->where('product_id', $product->id)->get();
+    //     return view('admin.product.edit', compact('product', 'cats', 'discounts', 'productVariants', 'lastestInventoryPrice'));
+    // }
+
+
     public function edit(Product $product)
     {
         $cats = Category::all();
         $discounts = Discount::where('status', 'active')->get();
-        $productVariants = ProductVariant::with('ImageVariants')->where('product_id', $product->id)->get();
-        return view('admin.product.edit', compact('product', 'cats', 'discounts', 'productVariants'));
+        $lastestInventoryPrice = InventoryDetail::where('product_id', $product->id)
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        $productVariants = ProductVariant::with('ImageVariants')
+            ->where('product_id', $product->id)
+            ->get();
+
+        // Lấy lịch sử giá từ Redis
+        $priceHistory = $this->getPriceHistoryFromRedis($product->id);
+        $variantPriceHistories = [];
+
+        foreach ($productVariants as $variant) {
+            $variantPriceHistories[$variant->id] = $this->getPriceHistoryFromRedis($product->id, $variant->id);
+        }
+
+        return view('admin.product.edit', compact(
+            'product',
+            'cats',
+            'discounts',
+            'productVariants',
+            'lastestInventoryPrice',
+            'priceHistory',
+            'variantPriceHistories'
+        ));
     }
+
+    private function getPriceHistoryFromRedis($productId, $variantId = null)
+    {
+        $redis = Redis::connection();
+        $key = $variantId
+            ? "product:{$productId}:variant:{$variantId}:prices"
+            : "product:{$productId}:prices";
+
+        // Lấy tối đa 5 bản ghi gần nhất
+        $history = $redis->lrange($key, 0, 4);
+
+        return collect($history)->map(function($item) {
+            return json_decode($item, true);
+        });
+}
 
 
     public function update(Request $request, Product $product, CloudinaryService $cloudinaryService)
     {
-
         $rules = [
             'name' => 'required|min:3|max:100|unique:products,product_name,' . $product->id,
-            'price' => 'required|string',
             'status' => 'required',
             'category_id' => 'required|exists:categories,id',
             'image' => 'nullable|mimes:jpg,jpeg,gif,png,webp,avif',
             'image_variant.*' => 'sometimes|array',
             'image_variant.*.*' => 'sometimes|image|mimes:jpg,jpeg,png,gif,webp,avif|max:2048',
-            'price_variant.*' => 'required|string',
+            'price' => 'required|string|regex:/^[0-9,.]+$/',
+            'price_variant.*' => 'required|string|regex:/^[0-9,.]+$/',
         ];
 
         $messages = [
@@ -185,8 +234,18 @@ class ProductController extends Controller
 
         $data = $request->validate($rules, $messages);
 
+        // Cập nhật thông tin sản phẩm chính
         $product->product_name = $data['name'];
-        $product->price = $data['price'];
+
+        // $product->price = $data['price'];
+        // Xử lý giá - bỏ qua định dạng hóa đơn
+
+        $cleanPrice = preg_replace('/[^0-9]/', '', $request->price);
+        if ($product->price != $cleanPrice) {
+            $this->savePriceToRedis($product->id, null, $product->price, $cleanPrice);
+        }
+        $product->price = (int) $cleanPrice;
+
         $product->category_id = $data['category_id'];
         $product->discount_id = $request->discount_id;
         $product->tags = $request->product_tags;
@@ -195,56 +254,93 @@ class ProductController extends Controller
         $product->short_description = $request->short_description;
         $product->status = $data['status'];
 
+        // Xử lý ảnh chính
         if ($request->image != null) {
             $uploadResult = $cloudinaryService->uploadImage($request->file('image')->getPathname(), 'product_first_variant_images');
             if (isset($uploadResult['error'])) {
                 return redirect()->back()->with('error', 'Upload ảnh thất bại: ' . $uploadResult['error']);
             }
             $product->image = $uploadResult['url'];
-
-            // $product->image = $request->image->getClientOriginalName();
         } else {
             $product->image = $request->image_path;
         }
         $product->save();
 
+        // Xử lý biến thể sản phẩm
         $productVariants = ProductVariant::where('product_id', $product->id)->get();
         foreach ($productVariants as $variant) {
             $variantId = $variant->id;
 
             // Cập nhật giá biến thể
             if (isset($request->price_variant[$variantId])) {
-                $price = str_replace('.', '', $request->price_variant[$variantId]);
-                $variant->price = $price;
-                $variant->save(); // Lưu giá mới
+                // Lưu giá biến thể vào Redis trước khi cập nhật
+
+                $cleanVariantPrice = preg_replace('/[^0-9]/', '', $request->price_variant[$variantId]);
+                if ($variant->price != $cleanVariantPrice) {
+                    $this->savePriceToRedis($product->id, $variant->id, $variant->price, $cleanVariantPrice);
+                }
+                // $price = str_replace('.', '', $request->price_variant[$variantId]);
+                $variant->price = (int) $cleanVariantPrice;
+                $variant->save();
             }
 
-            // Xử lý ảnh biến thể mới (nếu có)
-            if ($request->hasFile("image_variant.{$variantId}")) {
-                $images = $request->file("image_variant.{$variantId}");
+            // Xử lý ảnh hiện có - xóa những ảnh không còn trong danh sách
+            $keptImageIds = $request->input("existing_images.$variantId", []);
+            ImageVariant::where('product_variant_id', $variantId)
+                ->whereNotIn('id', $keptImageIds)
+                ->delete();
 
-                foreach ($images as $imageFile) {
-                    // Upload lên Cloudinary
+            // Xử lý ảnh mới
+            if ($request->hasFile("image_variant.$variantId")) {
+                $images = $request->file("image_variant.$variantId");
+
+                foreach ($images as $index => $imageFile) {
                     $uploadResult = $cloudinaryService->uploadImage($imageFile->getPathname(), 'product_variant_images');
 
-                    if (isset($uploadResult['error'])) {
-                        // Thông báo lỗi cụ thể hơn
-                        return redirect()->back()->with('error', "Upload ảnh cho biến thể {$variant->size} - {$variant->color} thất bại: " . $uploadResult['error'])->withInput();
-                    }
+                    if (isset($uploadResult['error'])) continue;
 
-                    $imageUrl = $uploadResult['url'];
-
-                    // Tạo bản ghi ImageVariant mới
                     ImageVariant::create([
-                        'url' => $imageUrl,
-                        'product_variant_id' => $variantId, // <-- Sử dụng ID của biến thể
+                        'url' => $uploadResult['url'],
+                        'product_variant_id' => $variantId,
+                        'order' => $index
                     ]);
                 }
             }
         }
-        return redirect()->route('product.index')->with('success', 'Sửa thông tin sản phẩm thành công!');
+
+        return redirect()->route('product.index')->with('success', 'Cập nhật sản phẩm thành công!');
     }
 
+    private function savePriceToRedis($productId, $variantId, $oldPrice, $newPrice)
+    {
+        if ($oldPrice == $newPrice) {
+            return;
+        }
+
+        $redis = Redis::connection();
+        $key = $variantId
+            ? "product:{$productId}:variant:{$variantId}:prices"
+            : "product:{$productId}:prices";
+
+        // Kiểm tra số lượng bản ghi hiện tại
+        $currentCount = $redis->llen($key);
+
+        // Nếu đã có đủ 5 bản ghi, xóa bản ghi cũ nhất
+        if ($currentCount >= 5) {
+            $redis->rpop($key); // Xóa bản ghi cũ nhất (right pop)
+        }
+
+        $timestamp = now()->toDateTimeString();
+        $priceData = json_encode([
+            'old_price' => $oldPrice,
+            'new_price' => $newPrice,
+            'changed_at' => $timestamp,
+            'changed_by' => auth()->id() ? auth()->id() : "NaN",
+        ]);
+
+        // Thêm bản ghi mới vào đầu danh sách
+        $redis->lpush($key, $priceData);
+    }
 
     public function destroy(Product $product)
     {
