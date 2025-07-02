@@ -8,6 +8,8 @@ use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\SearchController;
+use App\Models\Product;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,6 +46,10 @@ Route::get('brand', [ApiController::class, 'brands'])->name('api.brands');
 
 Route::get('product-variant', [ApiController::class, 'productVariants'])->name('api.productVariants');
 
+
+Route::get('/products-with-variants/{id}', [InventoryController::class, 'getProductWithVariants'])->name('api.getProductWithVariants');
+Route::get('/products-with-search/search', [InventoryController::class, 'searchProducts'])->name('api.searchProducts');
+Route::get('/products-with-variants', [InventoryController::class, 'getAllProductsWithVariants'])->name('api.getAllProductsWithVariants');
 Route::get('inventory', [ApiController::class, 'inventories'])->name('api.inventories');
 Route::get('inventory/{id}', [ApiController::class, 'inventory'])->name('api.inventory');
 Route::get('inventoryDetail/{id}', [ApiController::class, 'inventoryDetail'])->name('api.inventoryDetail');
@@ -85,5 +91,4 @@ Route::get('/recommend-ibcf/user/{userId}', [RecommendationController::class, 'i
 
 Route::get('/recommendations/user-cosine/{userId}', [RecommendationController::class, 'userBasedCosine']);
 Route::get('/recommendations/item-cosine/{userId}', [RecommendationController::class, 'itemBasedCosine']);
-
 

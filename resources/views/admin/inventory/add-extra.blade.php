@@ -35,6 +35,47 @@
             </div>
         </div>
 
+        {{-- <div class="card shadow-lg mb-4 rounded-3">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Tìm kiếm sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="product_search" class="form-label fw-bold">Chọn sản phẩm:</label>
+                    <select id="product_search" class="form-select select2-product">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            </div>
+        </div> --}}
+
+        <!-- Trong file blade, phần tìm kiếm sản phẩm -->
+        <div class="card shadow-lg mb-4 rounded-3">
+            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
+                <h5 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Tìm kiếm sản phẩm</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="product_search" class="form-label fw-bold">Chọn sản phẩm:</label>
+                    <select id="product_search" class="form-select select2-product">
+                        <option value="">-- Chọn sản phẩm --</option>
+                        @foreach ($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <!-- Thêm nút load danh sách -->
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" id="loadAllProductsBtn">
+                        <i class="fas fa-list me-2"></i>Load danh sách sản phẩm
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="products_container" class="card shadow-lg mb-4 rounded-3">
             <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-boxes me-2"></i>Thông tin sản phẩm trong phiếu nhập</h5>
@@ -138,6 +179,82 @@
             </div>
         </div>
     </div>
+
+
+
+    <div class="modal fade" id="allProductsModal" tabindex="-1" aria-labelledby="allProductsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white text-center rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="allProductsModalLabel">Danh sách sản phẩm</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Thêm phần tìm kiếm và lọc -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" id="productSearchInput" class="form-control"
+                                    placeholder="Tìm kiếm sản phẩm...">
+                                <button class="btn btn-outline-secondary" type="button" id="searchProductBtn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <select class="form-select" id="stockFilterSelect">
+                                    <option value="all">Tất cả stock</option>
+                                    <option value="in_stock">Còn hàng (stock > 0)</option>
+                                    <option value="out_of_stock">Hết hàng (stock = 0)</option>
+                                    <option value="low_stock">Stock thấp (< 10)</option>
+                                </select>
+                                <button class="btn btn-outline-secondary" type="button" id="applyFilterBtn">
+                                    <i class="fas fa-filter"></i> Lọc
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover table-striped align-middle" id="allProductsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" width="50px" class="text-center">Chọn</th>
+                                    <th scope="col" width="150px">Sản phẩm</th>
+                                    <th scope="col" width="100px">Hình ảnh</th>
+                                    <th scope="col" width="120px">Thông tin cơ bản</th>
+                                    <th scope="col" class="text-center">Biến thể hiện có</th>
+                                </tr>
+                            </thead>
+                            <tbody id="all-products-tbody">
+                                <!-- Danh sách sản phẩm sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân trang và nút xem thêm -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted" id="productCountText">Hiển thị 0/0 sản phẩm</div>
+                        <button type="button" class="btn btn-outline-primary" id="loadMoreProductsBtn">
+                            <i class="fas fa-chevron-down me-2"></i>Xem thêm
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between border-top-0 pt-0">
+                    <button type="button" class="btn btn-secondary rounded-pill px-4 py-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Đóng
+                    </button>
+                    <button type="button" class="btn btn-success text-white rounded-pill px-4 py-2"
+                        id="addSelectedProductsBtn">
+                        <i class="fas fa-check me-2"></i>Thêm sản phẩm đã chọn
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @section('css')
@@ -146,6 +263,20 @@
         rel="stylesheet" />
 
     <style>
+        .select2-product .select2-selection--single {
+            height: 45px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        .select2-product .select2-selection__rendered {
+            line-height: 25px;
+        }
+
+        .select2-product .select2-selection__arrow {
+            height: 43px;
+        }
+
         .select2-results__option[aria-selected=true] {
             background-color: #f8f9fa;
             color: #6c757d;
@@ -581,14 +712,14 @@
                                             const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
                                             const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
                                             return `
-                                                                                <tr>
-                                                                                    <td>${variant.color}</td>
-                                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                                                    <td>${variant.stock || 0}</td>
-                                                                                    <td>${quantityInSlip}</td>
-                                                                                    <td>${priceInSlip}</td>
-                                                                                </tr>
-                                                                            `;
+                                                                                                                <tr>
+                                                                                                                    <td>${variant.color}</td>
+                                                                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                                                                                    <td>${variant.stock || 0}</td>
+                                                                                                                    <td>${quantityInSlip}</td>
+                                                                                                                    <td>${priceInSlip}</td>
+                                                                                                                </tr>
+                                                                                                            `;
                                         }).join('')}
                                     </tbody>
                                 </table>
@@ -727,7 +858,7 @@
                             if (productsData[productIndex].new_sizes_quantities[selectedSize]) {
                                 alert(
                                     `Size ${selectedSize} đã được chọn. Vui lòng chọn size khác hoặc cập nhật số lượng cho size này.`
-                                    );
+                                );
                                 $(this).val(Object.keys(productsData[productIndex]
                                     .new_sizes_quantities)).trigger('change');
                                 return;
@@ -1122,6 +1253,647 @@
                 // Return black or white depending on luminance
                 return luminance > 0.5 ? '#000000' : '#ffffff';
             }
+
+
+            $('#product_search').select2({
+                theme: "bootstrap-5",
+                placeholder: "Tìm kiếm sản phẩm",
+                allowClear: true,
+                width: '100%',
+                ajax: {
+                    url: '/api/products-with-search/search',
+                    dataType: 'json',
+                    delay: 250,
+                    data: function(params) {
+                        return {
+                            q: params.term, // search term
+                            page: params.page
+                        };
+                    },
+                    processResults: function(data) {
+                        // Make sure to handle the response structure correctly
+                        if (data.status_code === 200) {
+                            return {
+                                results: data.results.map(product => ({
+                                    id: product.id,
+                                    text: product.text || product.product_name
+                                }))
+                            };
+                        }
+                        return {
+                            results: []
+                        };
+                    },
+                    cache: true
+                },
+                minimumInputLength: 1
+            });
+
+            $('#product_search').on('change', function() {
+                const productId = $(this).val();
+                if (!productId) return;
+
+                // Gọi API lấy thông tin sản phẩm
+                fetch(`/api/products-with-variants/${productId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status_code === 200) {
+                            const product = data.data;
+
+                            // Kiểm tra xem sản phẩm đã có trong danh sách chưa
+                            const existingIndex = productsData.findIndex(p => p.product_id ==
+                                productId);
+                            if (existingIndex >= 0) {
+                                alert('Sản phẩm này đã được thêm vào danh sách');
+                                return;
+                            }
+
+                            // Thêm sản phẩm vào mảng productsData
+                            const newProduct = {
+                                product_id: product.id,
+                                product_name: product.name,
+                                product_image: product.image,
+                                category_name: product.category?.name || 'N/A',
+                                brand_name: product.brand || 'N/A',
+                                all_product_variants: product['product-variant'] || product
+                                    .productVariant || [],
+                                variants_in_slip: [],
+                                new_colors: [],
+                                new_price: '',
+                                new_sizes_quantities: {}
+                            };
+
+                            productsData.push(newProduct);
+
+                            // Render lại bảng
+                            renderProductsTable();
+
+                            // Reset select2
+                            $('#product_search').val(null).trigger('change');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching product:', error);
+                        alert('Không thể lấy thông tin sản phẩm');
+                    });
+            });
+
+            // Hàm render lại bảng sản phẩm (đã fix)
+            function renderProductsTable() {
+                const productsTbody = document.getElementById('products-tbody');
+                productsTbody.innerHTML = '';
+
+                productsData.forEach((productItem, index) => {
+                    const row = document.createElement('tr');
+                    row.id = `product-row-${index}`;
+                    row.innerHTML = `
+                    <td class="text-center">
+                        <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
+                        <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
+                    </td>
+                    <td>
+                        <strong>${productItem.product_name}</strong>
+                    </td>
+                    <td>
+                        <img src="${productItem.product_image}" class="product-img" alt="${productItem.product_name}">
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column">
+                            <small><strong>Danh mục:</strong> ${productItem.category_name}</small>
+                            <small><strong>Thương hiệu:</strong> ${productItem.brand_name}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
+                            <table class="variant-table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Màu</th>
+                                        <th>Size</th>
+                                        <th>Kho</th>
+                                        <th>Đã nhập</th>
+                                        <th>Giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${productItem.all_product_variants.map(variant => `
+                                                                <tr>
+                                                                    <td>${variant.color}</td>
+                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                                    <td>${variant.stock || 0}</td>
+                                                                    <td>---</td>
+                                                                    <td>---</td>
+                                                                </tr>
+                                                            `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="compact-form">
+                            <div class="form-group mb-2">
+                                <label class="form-label fw-bold small">Giá nhập:</label>
+                                <input type="number" name="products[${index}][new_price]"
+                                    class="form-control form-control-sm new-price-input"
+                                    data-index="${index}"
+                                    placeholder="Giá nhập"
+                                    min="0">
+                            </div>
+
+                            <div class="form-group mb-2">
+                                <label class="form-label fw-bold small">Màu mới:</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary w-100 btn-select-colors"
+                                        data-index="${index}">
+                                    <i class="fas fa-palette me-1"></i> Chọn màu
+                                </button>
+                                <div class="selected-colors-display mt-1" data-index="${index}"></div>
+                                <input type="hidden" name="products[${index}][new_colors]"
+                                    class="formatted-new-colors"
+                                    data-index="${index}">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label fw-bold small">Size & SL:</label>
+                                <select class="form-select form-select-sm select-sizes"
+                                        name="products[${index}][new_sizes][]"
+                                        multiple="multiple"
+                                        data-index="${index}">
+                                    ${['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size =>
+                                        `<option value="${size}">${size}</option>`
+                                    ).join('')}
+                                </select>
+                                <input type="hidden" name="products[${index}][formatted_new_sizes]"
+                                    class="formatted-new-sizes"
+                                    data-index="${index}">
+                            </div>
+                        </div>
+                    </td>
+                `;
+                    productsTbody.appendChild(row);
+                });
+
+                // Khởi tạo lại select2 cho các select size
+                $('.select-sizes').select2({
+                    theme: "bootstrap-5",
+                    placeholder: "Chọn size",
+                    allowClear: true,
+                    width: '100%',
+                    dropdownParent: $('#products_container'),
+                    templateSelection: formatSizeSelection,
+                    templateResult: formatSizeResult
+                });
+
+                // Bind lại event handlers cho các sản phẩm mới
+                bindProductEventHandlers();
+            }
+
+            // Hàm bind event handlers cho sản phẩm mới
+            function bindProductEventHandlers() {
+                // Color selection
+                $('.btn-select-colors').off('click').on('click', function() {
+                    currentProductIndex = $(this).data('index');
+                    selectedColors = productsData[currentProductIndex].new_colors || [];
+                    updateSelectedColorsDisplay();
+                    $('#modal-colors').modal('show');
+                });
+
+                // Size selection
+                $('.select-sizes').off('select2:select').on("select2:select", function(e) {
+                    const selectedSize = e.params.data.id;
+                    const productIndex = $(this).data('index');
+
+                    if (productsData[productIndex].new_sizes_quantities[selectedSize]) {
+                        alert(
+                            `Size ${selectedSize} đã được chọn. Vui lòng chọn size khác hoặc cập nhật số lượng cho size này.`
+                        );
+                        $(this).val(Object.keys(productsData[productIndex].new_sizes_quantities)).trigger(
+                            'change');
+                        return;
+                    }
+
+                    $('#modal-quantity-label').text(`Nhập số lượng cho size ${selectedSize}`);
+                    $("#quantity_variant").val(productsData[productIndex].new_sizes_quantities[
+                        selectedSize] || 1);
+
+                    $('#modal-quantity').data('product-index', productIndex);
+                    $('#modal-quantity').data('selected-size', selectedSize);
+                    $("#modal-quantity").modal("show");
+                });
+
+                $('.select-sizes').off('select2:unselect').on("select2:unselect", function(e) {
+                    const unselectedSize = e.params.data.id;
+                    const productIndex = $(this).data('index');
+                    delete productsData[productIndex].new_sizes_quantities[unselectedSize];
+                    updateProductSizesDisplay(productIndex);
+                });
+
+                // Product checkbox
+                $('.product-check').off('change').on('change', function() {
+                    const index = this.dataset.index;
+                    const isChecked = this.checked;
+                    toggleProductRow(index, isChecked);
+
+                    if (!isChecked) {
+                        // Reset data when unchecking
+                        productsData[index].new_colors = [];
+                        productsData[index].new_price = '';
+                        productsData[index].new_sizes_quantities = {};
+
+                        // Update UI
+                        $(`#product-row-${index} .selected-colors-display`).empty();
+                        $(`#product-row-${index} .formatted-new-colors`).val('');
+                        $(`#product-row-${index} .new-price-input`).val('');
+                        $(`#product-row-${index} .select-sizes`).val(null).trigger('change');
+                        $(`#product-row-${index} .formatted-new-sizes`).val('');
+                    }
+                });
+            }
+
+
+            //       // Thêm vào phần JavaScript
+            // document.getElementById('loadAllProductsBtn').addEventListener('click', function() {
+            //     // Hiển thị modal
+            //     $('#allProductsModal').modal('show');
+
+            //     // Gọi API để lấy danh sách sản phẩm
+            //     fetch('/api/products-with-variants')
+            //         .then(response => response.json())
+            //         .then(data => {
+            //             if (data.status_code === 200) {
+            //                 renderAllProductsTable(data.data);
+            //             } else {
+            //                 alert('Không thể tải danh sách sản phẩm');
+            //             }
+            //         })
+            //         .catch(error => {
+            //             console.error('Error:', error);
+            //             alert('Lỗi khi tải danh sách sản phẩm');
+            //         });
+            // });
+
+            // Biến toàn cục
+            let allProductsData = []; // Lưu trữ tất cả sản phẩm từ API
+            let displayedProductsCount = 5; // Số sản phẩm hiển thị ban đầu
+            let currentSearchTerm = ''; // Từ khóa tìm kiếm hiện tại
+            let currentStockFilter = 'all'; // Bộ lọc stock hiện tại
+
+            // Khởi tạo modal khi nhấn nút "Load danh sách sản phẩm"
+            document.getElementById('loadAllProductsBtn').addEventListener('click', function() {
+                // Reset các giá trị khi mở modal
+                displayedProductsCount = 5;
+                currentSearchTerm = '';
+                currentStockFilter = 'all';
+                document.getElementById('productSearchInput').value = '';
+                document.getElementById('stockFilterSelect').value = 'all';
+
+                $('#allProductsModal').modal('show');
+                loadAllProducts();
+            });
+
+            // Hàm tải tất cả sản phẩm từ API
+            function loadAllProducts() {
+                fetch('/api/products-with-variants')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status_code === 200) {
+                            allProductsData = data.data;
+                            renderFilteredProducts();
+                        } else {
+                            alert('Không thể tải danh sách sản phẩm');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Lỗi khi tải danh sách sản phẩm');
+                    });
+            }
+
+            // Hàm render sản phẩm đã lọc
+            function renderFilteredProducts() {
+                // Lọc sản phẩm theo search term và stock
+                let filteredProducts = allProductsData.filter(product => {
+                    // Lọc theo tìm kiếm
+                    const matchesSearch = currentSearchTerm === '' ||
+                        product.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+                        (product.brand && product.brand.toLowerCase().includes(currentSearchTerm
+                            .toLowerCase()));
+
+                    // Lọc theo stock
+                    let matchesStock = true;
+                    if (currentStockFilter !== 'all') {
+                        const hasStock = product['product-variant']?.some(variant => {
+                            switch (currentStockFilter) {
+                                case 'in_stock':
+                                    return variant.stock > 0;
+                                case 'out_of_stock':
+                                    return variant.stock === 0;
+                                case 'low_stock':
+                                    return variant.stock > 0 && variant.stock < 10;
+                                default:
+                                    return true;
+                            }
+                        });
+                        matchesStock = hasStock;
+                    }
+
+                    return matchesSearch && matchesStock;
+                });
+
+                // Hiển thị số lượng sản phẩm đã lọc
+                updateProductCount(filteredProducts.length);
+
+                // Render sản phẩm
+                const tbody = document.getElementById('all-products-tbody');
+                tbody.innerHTML = '';
+
+                filteredProducts.slice(0, displayedProductsCount).forEach((product) => {
+                    const row = createProductRow(product);
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Hàm tạo HTML cho một hàng sản phẩm
+            function createProductRow(product) {
+                const row = document.createElement('tr');
+
+                // Kiểm tra xem sản phẩm đã có trong danh sách chính chưa
+                const isAlreadyAdded = productsData.some(p => p.product_id == product.id);
+
+                row.innerHTML = `
+        <td class="text-center">
+            <input type="checkbox" class="product-select-checkbox"
+                   data-product-id="${product.id}"
+                   ${isAlreadyAdded ? 'disabled' : ''}>
+            ${isAlreadyAdded ? '<i class="fas fa-check text-success ms-1"></i>' : ''}
+        </td>
+        <td>
+            <strong>${product.name}</strong>
+        </td>
+        <td>
+            <img src="${product.image || '/images/default-product.png'}"
+                 class="product-img" alt="${product.name}"
+                 onerror="this.src='/images/default-product.png'">
+        </td>
+        <td>
+            <div class="d-flex flex-column">
+                <small><strong>Danh mục:</strong> ${product.category?.name || 'N/A'}</small>
+                <small><strong>Thương hiệu:</strong> ${product.brand || 'N/A'}</small>
+            </div>
+        </td>
+        <td>
+            <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
+                <table class="variant-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Màu</th>
+                            <th>Size</th>
+                            <th>Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${renderProductVariants(product['product-variant'])}
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    `;
+                return row;
+            }
+
+            // Hàm render các biến thể của sản phẩm
+            function renderProductVariants(variants) {
+                if (!variants || variants.length === 0) {
+                    return '<tr><td colspan="3" class="text-center">Không có biến thể</td></tr>';
+                }
+
+                let html = '';
+                const variantsToShow = variants.slice(0, 5);
+
+                variantsToShow.forEach(variant => {
+                    const stockClass = variant.stock <= 0 ? 'text-danger' : variant.stock < 10 ?
+                        'text-warning' : 'text-success';
+                    html += `
+            <tr>
+                <td>${variant.color || 'N/A'}</td>
+                <td><span class="badge bg-secondary">${variant.size || 'N/A'}</span></td>
+                <td class="${stockClass}">${variant.stock || 0}</td>
+            </tr>
+        `;
+                });
+
+                if (variants.length > 5) {
+                    html += `
+            <tr>
+                <td colspan="3" class="text-center">
+                    <small>+ ${variants.length - 5} biến thể khác</small>
+                </td>
+            </tr>
+        `;
+                }
+
+                return html;
+            }
+
+            // Hàm cập nhật số lượng sản phẩm hiển thị
+            function updateProductCount(totalProducts) {
+                const showingCount = Math.min(displayedProductsCount, totalProducts);
+                const countText = document.getElementById('productCountText');
+                const loadMoreBtn = document.getElementById('loadMoreProductsBtn');
+
+                countText.textContent = `Hiển thị ${showingCount}/${totalProducts} sản phẩm`;
+
+                if (displayedProductsCount >= totalProducts) {
+                    loadMoreBtn.style.display = 'none';
+                    countText.innerHTML += ' <span class="text-muted">(đã hiển thị tất cả)</span>';
+                } else {
+                    loadMoreBtn.style.display = 'block';
+                }
+            }
+
+            // Xử lý tìm kiếm sản phẩm
+            document.getElementById('searchProductBtn').addEventListener('click', function() {
+                currentSearchTerm = document.getElementById('productSearchInput').value;
+                displayedProductsCount = 5;
+                renderFilteredProducts();
+            });
+
+            // Xử lý khi nhấn Enter trong ô tìm kiếm
+            document.getElementById('productSearchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    currentSearchTerm = this.value;
+                    displayedProductsCount = 5;
+                    renderFilteredProducts();
+                }
+            });
+
+            // Xử lý lọc theo stock
+            document.getElementById('applyFilterBtn').addEventListener('click', function() {
+                currentStockFilter = document.getElementById('stockFilterSelect').value;
+                displayedProductsCount = 5;
+                renderFilteredProducts();
+            });
+
+            // Xử lý nút "Xem thêm"
+            document.getElementById('loadMoreProductsBtn').addEventListener('click', function() {
+                displayedProductsCount += 5;
+                renderFilteredProducts();
+            });
+
+            // Xử lý thêm sản phẩm đã chọn vào danh sách chính
+            document.getElementById('addSelectedProductsBtn').addEventListener('click', function() {
+                const selectedCheckboxes = document.querySelectorAll(
+                    '#allProductsTable .product-select-checkbox:checked:not(:disabled)');
+
+                if (selectedCheckboxes.length === 0) {
+                    alert('Vui lòng chọn ít nhất một sản phẩm chưa được thêm');
+                    return;
+                }
+
+                const productIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset
+                    .productId);
+
+                // Thêm các sản phẩm đã chọn vào danh sách chính
+                productIds.forEach(productId => {
+                    const product = allProductsData.find(p => p.id == productId);
+                    if (product) {
+                        const existingIndex = productsData.findIndex(p => p.product_id == product
+                            .id);
+                        if (existingIndex === -1) {
+                            productsData.push({
+                                product_id: product.id,
+                                product_name: product.name,
+                                product_image: product.image ||
+                                    '/images/default-product.png',
+                                category_name: product.category?.name || 'N/A',
+                                brand_name: product.brand || 'N/A',
+                                all_product_variants: product['product-variant'] || [],
+                                variants_in_slip: [],
+                                new_colors: [],
+                                new_price: '',
+                                new_sizes_quantities: {}
+                            });
+                        }
+                    }
+                });
+
+                // Render lại bảng sản phẩm chính
+                renderProductsTable();
+
+                // Đóng modal
+                $('#allProductsModal').modal('hide');
+
+                // Cuộn đến phần danh sách sản phẩm chính
+                document.getElementById('products_container').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+
+            function renderAllProductsTable(products) {
+                const tbody = document.getElementById('all-products-tbody');
+                tbody.innerHTML = '';
+
+                products.forEach((product, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+            <td class="text-center">
+                <input type="checkbox" class="product-select-checkbox" data-product-id="${product.id}">
+            </td>
+            <td>
+                <strong>${product.name}</strong>
+            </td>
+            <td>
+                <img src="${product.image}" class="product-img" alt="${product.name}">
+            </td>
+            <td>
+                <div class="d-flex flex-column">
+                    <small><strong>Danh mục:</strong> ${product.category?.name || 'N/A'}</small>
+                    <small><strong>Thương hiệu:</strong> ${product.brand || 'N/A'}</small>
+                </div>
+            </td>
+            <td>
+                <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
+                    <table class="variant-table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Màu</th>
+                                <th>Size</th>
+                                <th>Kho</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${product['product-variant']?.map(variant => `
+                                                <tr>
+                                                    <td>${variant.color}</td>
+                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                                    <td>${variant.stock || 0}</td>
+                                                </tr>
+                                            `).join('') || '<tr><td colspan="3" class="text-center">Không có biến thể</td></tr>'}
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            // Xử lý khi nhấn nút thêm sản phẩm đã chọn
+            document.getElementById('addSelectedProductsBtn').addEventListener('click', function() {
+                const selectedCheckboxes = document.querySelectorAll(
+                    '#allProductsTable .product-select-checkbox:checked');
+
+                if (selectedCheckboxes.length === 0) {
+                    alert('Vui lòng chọn ít nhất một sản phẩm');
+                    return;
+                }
+
+                const productIds = Array.from(selectedCheckboxes).map(checkbox => checkbox.dataset
+                    .productId);
+
+                // Gọi API để lấy thông tin chi tiết các sản phẩm đã chọn
+                Promise.all(productIds.map(id => fetch(`/api/products-with-variants/${id}`).then(res => res
+                        .json())))
+                    .then(results => {
+                        results.forEach(result => {
+                            if (result.status_code === 200) {
+                                const product = result.data;
+
+                                // Kiểm tra xem sản phẩm đã có trong danh sách chưa
+                                const existingIndex = productsData.findIndex(p => p
+                                    .product_id == product
+                                    .id);
+                                if (existingIndex >= 0) {
+                                    return; // Bỏ qua nếu đã tồn tại
+                                }
+
+                                // Thêm sản phẩm vào mảng productsData
+                                productsData.push({
+                                    product_id: product.id,
+                                    product_name: product.name,
+                                    product_image: product.image,
+                                    category_name: product.category?.name || 'N/A',
+                                    brand_name: product.brand || 'N/A',
+                                    all_product_variants: product['product-variant'] ||
+                                        [],
+                                    variants_in_slip: [],
+                                    new_colors: [],
+                                    new_price: '',
+                                    new_sizes_quantities: {}
+                                });
+                            }
+                        });
+
+                        // Render lại bảng sản phẩm
+                        renderProductsTable();
+
+                        // Đóng modal
+                        $('#allProductsModal').modal('hide');
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Lỗi khi thêm sản phẩm');
+                    });
+            });
         });
     </script>
 @endsection

@@ -54,10 +54,6 @@
                             <i class="fas fa-user-tie"></i>
                             Áo sơ mi
                         </button>
-                        <button class="quick-reply-btn" data-message="Quần cotton có mẫu nào?">
-                            <i class="fas fa-user"></i>
-                            Quần cotton
-                        </button>
                         <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
                             <i class="fas fa-tags"></i>
                             Sản phẩm giá mềm
@@ -66,7 +62,7 @@
                             <i class="fas fa-tags"></i>
                             Sản phẩm khuyến mãi
                         </button>
-                        <button class="quick-reply-btn" data-message="Bảng size quần áo như thế nào?">
+                        <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
                             <i class="fas fa-ruler"></i>
                             Hướng dẫn chọn size
                         </button>
@@ -303,25 +299,25 @@
                     // Trường hợp response từ handleSpecialCases với ảnh size
                     if (data.type === 'text_with_image' && data.image_url) {
                         messageContent.innerHTML = `
-                <div>${data.content.replace(/\n/g, '<br>')}</div>
-                <div class="mt-2 text-center">
-                    <img src="${data.image_url}" alt="Bảng size áo"
-                         class="img-fluid rounded border shadow-sm"
-                         style="max-width: 100%; max-height: 300px; object-fit: contain;">
-                </div>
-                <div class="mt-2">
-                    <a href="http://127.0.0.1:8000/size-guide" target="_blank"
-                       class="text-primary text-decoration-none">
-                       <i class="fas fa-external-link-alt"></i> Xem hướng dẫn chọn size chi tiết
-                    </a>
-                </div>
+                    <div>${data.content.replace(/\n/g, '<br>')}</div>
+                    <div class="mt-2 text-center">
+                        <img src="${data.image_url}" alt="Bảng size áo"
+                            class="img-fluid rounded border shadow-sm"
+                            style="max-width: 100%; max-height: 300px; object-fit: contain;">
+                    </div>
+                    <div class="mt-2">
+                        <a href="http://127.0.0.1:8000/size-guide" target="_blank"
+                        class="text-primary text-decoration-none">
+                        <i class="fas fa-external-link-alt"></i> Xem hướng dẫn chọn size chi tiết
+                        </a>
+                    </div>
             `;
                     }
                     // Trường hợp response từ handleSpecialCases thông thường
                     else if (data.content) {
                         messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
                     } else if (data.type === 'product_list') {
-                        console.log(data);
+                        // console.log(data);
                         let html = `<strong>${data.intro_message}</strong><br><br>`;
                         data.products.forEach(product => {
                             let priceHtml = `<span class="product-price">${product.price}</span>`;
@@ -429,7 +425,7 @@
         // Tìm kiếm sản phẩm bằng AJAX
         $("#search-box").on("input", function(e) {
             let query = $("#search-box").val();
-            console.log(query);
+            // console.log(query);
             if (query.length > 1) {
                 $.ajax({
                     url: "http://127.0.0.1:8000/api/search",
@@ -439,12 +435,12 @@
                     },
                     success: function(data) {
                         let results = $("#search-results");
-                        console.log(results);
+                        // console.log(results);
                         results.empty();
 
                         if (data.results.length > 0) {
                             data.results.forEach(function(item) {
-                                console.log(item);
+                                // console.log(item);
                                 let price = Intl.NumberFormat('vi-VN').format(item.price);
                                 if (item.discount_id != null) {
                                     price = Intl.NumberFormat('vi-VN').format(item.price - (item

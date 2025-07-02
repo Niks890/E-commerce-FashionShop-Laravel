@@ -467,7 +467,7 @@
                             let response = await fetch("http://127.0.0.1:8000/api/product-discount");
                             let data = await response.json();
                             let products = data.data;
-                            console.log(products);
+                            // console.log(products);
 
                             let container = document.querySelector('#product-discount-container');
                             container.innerHTML = "";

@@ -46,7 +46,7 @@
                     <div class="card-body py-4">
                         <div class="d-flex align-items-center">
                             <div class="icon-circle bg-white bg-opacity-20 me-3">
-                                <i class="fas fa-edit fs-4"></i>
+                                <i class="fas fa-edit fs-4 text-dark"></i>
                             </div>
                             <div>
                                 <h4 class="mb-1 fw-bold">Chỉnh sửa thông tin sản phẩm</h4>

@@ -16,7 +16,17 @@
         .text-danger { color: #e74c3c; }
         .text-warning { color: #f39c12; }
         .text-success { color: #27ae60; }
-        .footer { margin-top: 20px; font-size: 10px; text-align: right; }
+        .footer {
+            margin-top: 20px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        .page-info { float: right; }
+        .signature { text-align: center; margin-top: 30px; }
     </style>
 </head>
 <body>
@@ -69,7 +79,21 @@
     </table>
 
     <div class="footer">
-        Trang quản lý TFashionShop | Hệ thống quản lý kho hàng
+        <div>
+            <span>Người xuất báo cáo: {{ auth()->user()->name ?? 'Hệ thống' }}</span>
+        </div>
+        <div class="page-info">
+            Trang 1/1 | Ngày xuất: {{ date('d/m/Y H:i') }}
+        </div>
+    </div>
+
+    <div class="signature">
+        <div style="margin-bottom: 30px;"></div>
+        <div style="display: inline-block; width: 200px; text-align: center;">
+            <div style="border-top: 1px solid #000; width: 150px; margin: 0 auto;"></div>
+            <div>Người lập báo cáo</div>
+            <div style="font-style: italic; font-size: 9px;">(Ký, ghi rõ họ tên)</div>
+        </div>
     </div>
 </body>
-</html
+</html>

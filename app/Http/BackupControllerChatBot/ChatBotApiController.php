@@ -28,8 +28,7 @@ class ChatBotApiController extends Controller
         - Sử dụng link hãy gửi kèm thẻ <a> để truy cập thay vì text
         - Khi người dùng hỏi còn hàng không chỉ trả lời những size và màu có available_stock lớn hơn 0
         - So sánh, tư vấn dựa trên sản phẩm đã biết
-        - Kèm link sản phẩm khi có thể theo định dạng http://127.0.0.1:8000/product/{slug}
-
+        - Kèm link sản phẩm khi có thể
 
         2. Tương tác thông minh:
         - Khi khách hỏi 'cái nào đẹp hơn' → So sánh các sản phẩm đã show
@@ -206,6 +205,32 @@ class ChatBotApiController extends Controller
         ];
     }
 
+    // protected function buildSystemPromptWithProductContext(string $userId): string
+    // {
+    //     $productContextKey = "product_context:$userId";
+    //     $productContextRaw = Redis::lrange($productContextKey, 0, -1);
+
+    //     $fullSystemPrompt = $this->defaultPrompt;
+
+    //     if (!empty($productContextRaw)) {
+    //         $productContext = array_map('json_decode', $productContextRaw);
+    //         $contextText = "\n\n### SAN PHẨM ĐÃ THẢO LUẬN TRONG PHIÊN:\n";
+
+    //         foreach ($productContext as $item) {
+    //             $contextText .= "- {$item->name}: {$item->price} - {$item->link}\n";
+    //             if (!empty($item->details)) {
+    //                 $contextText .= "  Chi tiết: {$item->details}\n";
+    //             }
+    //         }
+    //         $contextText .= "\nHãy sử dụng thông tin này để tư vấn, so sánh và gợi ý cho khách hàng.\n";
+
+    //         $fullSystemPrompt .= $contextText;
+    //     }
+
+    //     return $fullSystemPrompt;
+    // }
+
+
     protected function buildSystemPromptWithProductContext(string $userId): string
     {
         $productContextKey = "product_context:$userId";
@@ -215,15 +240,12 @@ class ChatBotApiController extends Controller
 
         if (!empty($productContextRaw)) {
             $productContext = array_map('json_decode', $productContextRaw);
-            $contextText = "\n\n### SẢN PHẨM ĐÃ THẢO LUẬN TRONG PHIÊN:\n";
+            $contextText = "\n\n### SAN PHẨM ĐÃ THẢO LUẬN TRONG PHIÊN:\n";
 
             foreach ($productContext as $item) {
                 $contextText .= "- {$item->name}: {$item->price} - {$item->link}\n";
                 if (!empty($item->details)) {
                     $contextText .= "  Chi tiết: {$item->details}\n";
-                }
-                if (!empty($item->stock_summary)) {
-                    $contextText .= "  Tình trạng: {$item->stock_summary}\n";
                 }
             }
             $contextText .= "\nHãy sử dụng thông tin này để tư vấn, so sánh và gợi ý cho khách hàng.\n";
@@ -231,13 +253,12 @@ class ChatBotApiController extends Controller
             $fullSystemPrompt .= $contextText;
         }
 
-        // Thêm hướng dẫn xử lý câu hỏi tồn kho
-        $fullSystemPrompt .= "\n\n### HƯỚNG DẪN XỬ LÝ CÂU HỎI TỒN KHO:\n"
-            . "- Khi khách hỏi 'còn hàng không' hoặc về tình trạng kho:\n"
-            . "  + Kiểm tra thông tin variants trong context sản phẩm\n"
-            . "  + Chỉ liệt kê các size/màu có available_stock > 0\n"
-            . "  + Nếu hết hàng, đề nghị xem sản phẩm tương tự\n"
-            . "  + Khi hỏi cụ thể về size, chỉ trả lời thông tin của size đó"
+        // Thêm phần hướng dẫn xử lý câu hỏi tiếp theo
+        $fullSystemPrompt .= "\n\n### HƯỚNG DẪN XỬ LÝ CÂU HỎI TIẾP THEO:\n"
+            . "- Khi khách hỏi về thông tin chi tiết sản phẩm (kho hàng, chất liệu...):\n"
+            . "  + Kiểm tra thông tin trong context sản phẩm trước\n"
+            . "  + Trả lời chính xác thông tin có sẵn\n"
+            . "  + Nếu không có thông tin, đề nghị khách xem chi tiết trên website\n"
             . "- Khi khách hỏi về phối đồ:\n"
             . "  + Đưa ra 3-4 gợi ý phối đồ phù hợp\n"
             . "  + Kèm hình ảnh minh họa nếu có";
@@ -274,60 +295,9 @@ class ChatBotApiController extends Controller
         return $chatPrompt;
     }
 
-
-    protected function handleFollowUpQuestions(string $message, string $userId): ?array
-    {
-        $productContextKey = "product_context:$userId";
-        $contextRaw = Redis::lrange($productContextKey, 0, -1);
-
-        if (empty($contextRaw)) return null;
-
-        $lastProduct = json_decode(end($contextRaw));
-        $message = mb_strtolower(trim($message));
-
-        // Xử lý các câu hỏi follow-up về sản phẩm
-        if (preg_match('/^(chi tiết|thông tin|cho xem|sản phẩm|sp)\s*(\d+|.*)?$/ui', $message, $matches)) {
-            $productRef = trim($matches[2] ?? '');
-
-            // Nếu không chỉ rõ sản phẩm, dùng sản phẩm cuối cùng
-            if (empty($productRef)) {
-                return $this->formatProductDetailResponse($lastProduct);
-            }
-
-            // Nếu chỉ số sản phẩm (1, 2...)
-            if (is_numeric($productRef)) {
-                $index = (int)$productRef - 1;
-                if (isset($contextRaw[$index])) {
-                    return $this->formatProductDetailResponse(json_decode($contextRaw[$index]));
-                }
-            }
-
-            // Nếu chỉ tên sản phẩm
-            foreach ($contextRaw as $item) {
-                $product = json_decode($item);
-                if (str_contains(mb_strtolower($product->name), mb_strtolower($productRef))) {
-                    return $this->formatProductDetailResponse($product);
-                }
-            }
-
-            // Nếu không tìm thấy sản phẩm cụ thể
-            return [
-                'type' => 'text',
-                'content' => "Mình không tìm thấy sản phẩm '$productRef' trong danh sách đã hiển thị. Bạn có thể xem lại các sản phẩm ở trên hoặc yêu cầu cụ thể hơn."
-            ];
-        }
-
-        return null;
-    }
-
     protected function handleSpecialCases(string $message, string $userId): ?array
     {
         $message = mb_strtolower(trim($message));
-
-        // Xử lý câu hỏi về tình trạng tồn kho
-        if (preg_match('/(còn hàng không|hết hàng chưa|cho xem kho hàng|tồn kho|còn size|size nào còn)\s*(.*)/ui', $message, $matches)) {
-            return $this->handleStockInquiry($message, $userId);
-        }
 
         // Check for product keywords first
         $productKeywords = $this->detectProductKeywords($message);
@@ -406,175 +376,6 @@ class ChatBotApiController extends Controller
 
         if (preg_match('/^(mấy giờ rồi|giờ hôm nay)\??$/u', $message)) {
             return ['type' => 'text', 'content' => "Bây giờ là: " . date('H:i')];
-        }
-
-        return null;
-    }
-
-
-    // protected function handleStockInquiry(string $message, string $userId): ?array
-    // {
-    //     $productContextKey = "product_context:$userId";
-    //     $contextRaw = Redis::lrange($productContextKey, 0, -1);
-
-    //     if (empty($contextRaw)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện mình chưa có thông tin sản phẩm nào trong phiên chat. Bạn có thể cho mình biết sản phẩm bạn quan tâm không ạ?"
-    //         ];
-    //     }
-
-    //     // Lấy sản phẩm cuối cùng được thảo luận
-    //     $lastProduct = json_decode(end($contextRaw));
-
-    //     // Kiểm tra nếu hỏi cụ thể về sản phẩm linen
-    //     $isLinenInquiry = str_contains(mb_strtolower($message), 'linen');
-
-    //     // Nếu hỏi cụ thể về linen mà sản phẩm cuối không phải linen
-    //     if ($isLinenInquiry && !str_contains(mb_strtolower($lastProduct->name), 'linen')) {
-    //         // Tìm sản phẩm linen trong context
-    //         foreach ($contextRaw as $itemRaw) {
-    //             $item = json_decode($itemRaw);
-    //             if (str_contains(mb_strtolower($item->name), 'linen')) {
-    //                 $lastProduct = $item;
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // Nếu không có thông tin variants
-    //     if (empty($lastProduct->variants)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện mình không có thông tin tồn kho chi tiết cho sản phẩm này. " .
-    //                 "Bạn vui lòng kiểm tra trên trang chi tiết sản phẩm nhé: " .
-    //                 "<a href='{$lastProduct->link}'>{$lastProduct->name}</a>"
-    //         ];
-    //     }
-
-    //     // Lọc các variant còn hàng
-    //     $availableVariants = array_filter($lastProduct->variants, function ($variant) {
-    //         return $variant->available_stock > 0;
-    //     });
-
-    //     // Nếu hết hàng tất cả
-    //     if (empty($availableVariants)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện sản phẩm {$lastProduct->name} đã hết hàng tất cả các size. " .
-    //                 "Bạn có muốn xem sản phẩm tương tự không ạ?"
-    //         ];
-    //     }
-
-    //     // Format thông tin tồn kho
-    //     $variantInfo = array_map(function ($variant) {
-    //         $color = $variant->color ?? 'đang cập nhật';
-    //         return "Size {$variant->size} - Màu {$color} (Còn {$variant->available_stock})";
-    //     }, $availableVariants);
-
-    //     return [
-    //         'type' => 'text',
-    //         'content' => "Sản phẩm {$lastProduct->name} hiện còn các lựa chọn sau:\n- " .
-    //             implode("\n- ", $variantInfo) .
-    //             "\nBạn quan tâm size và màu nào ạ?"
-    //     ];
-    // }
-
-
-    protected function handleStockInquiry(string $message, string $userId): ?array
-    {
-        $productContextKey = "product_context:$userId";
-        $contextRaw = Redis::lrange($productContextKey, 0, -1);
-
-        if (empty($contextRaw)) {
-            return [
-                'type' => 'text',
-                'content' => "Hiện mình chưa có thông tin sản phẩm nào trong phiên chat..."
-            ];
-        }
-
-        // Xác định sản phẩm cụ thể mà người dùng hỏi
-        $targetProduct = null;
-        $message = mb_strtolower(trim($message));
-
-        // Kiểm tra xem người dùng có đề cập đến tên sản phẩm không
-        foreach ($contextRaw as $itemRaw) {
-            $item = json_decode($itemRaw);
-            $productNameLower = mb_strtolower($item->name);
-
-            // Nếu tìm thấy tên sản phẩm trong câu hỏi
-            if (str_contains($message, $productNameLower)) {
-                $targetProduct = $item;
-                break;
-            }
-        }
-
-        // Nếu không tìm thấy sản phẩm cụ thể, dùng sản phẩm cuối cùng
-        if (!$targetProduct) {
-            $targetProduct = json_decode(end($contextRaw));
-        }
-
-        // Kiểm tra nếu hỏi cụ thể về size
-        $sizeInquiry = null;
-        if (preg_match('/size\s*(L|XL|M|S)/i', $message, $matches)) {
-            $sizeInquiry = strtoupper($matches[1]);
-        }
-
-        // Xử lý thông tin tồn kho
-        if (empty($targetProduct->variants)) {
-            return [
-                'type' => 'text',
-                'content' => "Hiện mình không có thông tin tồn kho chi tiết cho sản phẩm này..."
-            ];
-        }
-
-        $availableVariants = array_filter($targetProduct->variants, function ($variant) use ($sizeInquiry) {
-            // Nếu có yêu cầu size cụ thể thì lọc theo size
-            if ($sizeInquiry) {
-                return ($variant->available_stock > 0) &&
-                    (strtoupper($variant->size) === $sizeInquiry);
-            }
-            return $variant->available_stock > 0;
-        });
-
-        if (empty($availableVariants)) {
-            $response = "Hiện sản phẩm {$targetProduct->name}";
-            $response .= $sizeInquiry ? " đã hết hàng size {$sizeInquiry}" : " đã hết hàng";
-            $response .= ". Bạn có muốn xem sản phẩm tương tự không ạ?";
-
-            return ['type' => 'text', 'content' => $response];
-        }
-
-        // Format response
-        $variantInfo = array_map(function ($variant) {
-            $color = $variant->color ?? 'đang cập nhật';
-            return "Size {$variant->size} - Màu {$color} (Còn {$variant->available_stock})";
-        }, $availableVariants);
-
-        $response = "Sản phẩm {$targetProduct->name} hiện còn:\n- ";
-        $response .= implode("\n- ", $variantInfo);
-        $response .= "\nBạn quan tâm size và màu nào ạ?";
-
-        return ['type' => 'text', 'content' => $response];
-    }
-
-    protected function detectSpecificProductInquiry(string $message, array $context): ?string
-    {
-        // Kiểm tra tên sản phẩm cụ thể trong message
-        $productNames = array_map(function ($item) {
-            return mb_strtolower(trim($item->name));
-        }, $context);
-
-        foreach ($productNames as $name) {
-            if (str_contains(mb_strtolower($message), $name)) {
-                return $name;
-            }
-
-            // Kiểm tra từ khóa chính
-            $mainKeyword = explode(' ', $name)[0] ?? '';
-            if (str_contains(mb_strtolower($message), $mainKeyword)) {
-                return $name;
-            }
         }
 
         return null;
@@ -689,11 +490,11 @@ class ChatBotApiController extends Controller
     protected function saveProductsToContext(string $userId, array $products, string $userQuery): void
     {
         $productContextKey = "product_context:$userId";
+
+        // Clear previous context for this query
         Redis::del($productContextKey);
 
         foreach ($products as $product) {
-            $variants = $product['variants'] ?? [];
-
             $contextItem = [
                 'name' => $product['name'],
                 'price' => $product['price'],
@@ -704,30 +505,13 @@ class ChatBotApiController extends Controller
                 'query' => $userQuery,
                 'timestamp' => time(),
                 'details' => $this->extractProductDetails($product),
-                'variants' => $variants,
-                'stock_summary' => $this->generateStockSummary($variants)
+                'variants' => $product['variants'] ?? []
             ];
 
             Redis::rpush($productContextKey, json_encode($contextItem));
         }
 
         Redis::expire($productContextKey, 60 * 60 * 2);
-    }
-
-    protected function generateStockSummary(array $variants): string
-    {
-        if (empty($variants)) return 'Thông tin tồn kho chưa cập nhật';
-
-        $available = array_filter($variants, function ($v) {
-            return ($v['available_stock'] ?? 0) > 0;
-        });
-        if (empty($available)) return 'Đã hết hàng';
-
-        $sizes = array_unique(array_column($available, 'size'));
-        $colors = array_unique(array_column($available, 'color'));
-
-        return 'Còn hàng size: ' . implode(', ', $sizes) .
-            ' | Màu: ' . implode(', ', $colors);
     }
 
     protected function isProductInContext(string $userId, string $productName): bool
@@ -763,20 +547,16 @@ class ChatBotApiController extends Controller
         if (!empty($product['variants'])) {
             $variantDetails = [];
             foreach ($product['variants'] as $variant) {
-                if (($variant['available_stock'] ?? 0) > 0) {
-                    $variantDetails[] = sprintf(
-                        "%s - %s (Còn %d)",
-                        $variant['size'],
-                        $variant['color'],
-                        $variant['available_stock']
-                    );
-                }
+                $variantDetails[] = sprintf(
+                    "%s - %s (Còn %d)",
+                    $variant['size'],
+                    $variant['color'],
+                    $variant['available_stock']
+                );
             }
 
             if (!empty($variantDetails)) {
-                $details[] = 'Size & màu còn hàng: ' . implode(', ', $variantDetails);
-            } else {
-                $details[] = 'Đã hết hàng';
+                $details[] = 'Size & màu: ' . implode(', ', $variantDetails);
             }
         }
 
@@ -835,8 +615,7 @@ class ChatBotApiController extends Controller
             },
             'ProductVariants' => function ($query) {
                 $query->select('id', 'product_id', 'size', 'color', 'available_stock')
-                    ->where('active', 1)
-                    ->where('available_stock', '>', 0); // Chỉ lấy các variant còn hàng
+                    ->where('active', 1);
             }
         ])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id')
             ->where('status', 1);
