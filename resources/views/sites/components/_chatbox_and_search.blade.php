@@ -11,14 +11,20 @@
     <div class="modal fade" id="chatbox-modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-end">
             <div class="modal-content">
+
                 <div class="modal-header">
                     <h5 class="modal-title mb-0">
                         <i class="fas fa-robot"></i>
                         Trợ Lý Tư Vấn TFashionShop
                     </h5>
-                    <button type="button" class="btn-close-chatbot" data-bs-dismiss="modal" aria-label="Close">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <div class="header-actions">
+                        <button type="button" class="btn-clear-history" title="Xóa lịch sử chat">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                        <button type="button" class="btn-close-chatbot" data-bs-dismiss="modal" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="modal-body" id="chatbox-messages">
                     <!-- Welcome Message -->
@@ -28,9 +34,10 @@
                         </div>
 
                         <h4>Chào mừng bạn đến với TFashionShop!</h4>
-                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản phẩm...)!</p>
-                        <strong style="color: red; font-weight: bold; font-size: 14px;">(*Do còn trong quá trình phát
-                            triển, Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin tư vấn chỉ là tham
+                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản
+                            phẩm...)!</p>
+                        <strong style="color: red; font-weight: bold; font-size: 14px;">(*Chatbot có thể phản hồi thông
+                            tin chưa chính xác! Mọi thông tin chỉ mang tính chất tham
                             khảo!*)</strong>
                     </div>
 
@@ -112,6 +119,7 @@
 @section('js')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
             const chatboxIcon = document.getElementById("chatbox-icon");
             const chatboxMessages = document.getElementById("chatbox-messages");
             const chatboxInput = document.getElementById("chatbox-input");
@@ -405,6 +413,101 @@
             setTimeout(() => {
                 if (chatboxMessages.querySelector('.welcome-message')) {}
             }, 3000);
+
+
+            const clearHistoryBtn = document.querySelector('.btn-clear-history');
+
+            // Thay thế phần xử lý sự kiện clearHistoryBtn
+            clearHistoryBtn.addEventListener('click', function() {
+                if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử chat?')) {
+                    fetch('/chat/clear-history', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .content
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // Xóa nội dung chat hiện tại
+                                chatboxMessages.innerHTML = `
+                    <div class="welcome-message fade-in">
+                        <div class="bot-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>Lịch sử chat đã được xóa</h4>
+                        <p>Bạn có thể bắt đầu cuộc trò chuyện mới!</p>
+                    </div>
+                    <div class="topic-guide">
+                        <h5><i class="fas fa-compass"></i> Hãy chọn một chủ đề</h5>
+                        <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
+                    </div>
+                    <div class="quick-replies">
+                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
+                            <i class="fas fa-tshirt"></i> Áo thun
+                        </button>
+                        <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
+                            <i class="fas fa-user-tie"></i> Áo sơ mi
+                        </button>
+                        <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
+                            <i class="fas fa-tags"></i> Sản phẩm giá mềm
+                        </button>
+                        <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
+                            <i class="fas fa-tags"></i> Sản phẩm khuyến mãi
+                        </button>
+                        <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
+                            <i class="fas fa-ruler"></i> Hướng dẫn chọn size
+                        </button>
+                    </div>
+                `;
+
+                                // Thêm hiệu ứng thông báo
+                                showToast('Lịch sử chat đã được xóa thành công');
+
+                                // Khởi tạo lại sự kiện cho các nút quick-reply
+                                initQuickReplyButtons();
+                            } else {
+                                showToast('Có lỗi xảy ra khi xóa lịch sử', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            showToast('Có lỗi xảy ra khi xóa lịch sử', 'error');
+                        });
+                }
+            });
+
+            // Hàm hiển thị thông báo toast
+            function showToast(message, type = 'success') {
+                const toast = document.createElement('div');
+                toast.className = `toast-notification ${type}`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('show');
+                }, 10);
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300);
+                }, 3000);
+            }
+
+            // Hàm khởi tạo lại sự kiện cho nút quick-reply
+            function initQuickReplyButtons() {
+                document.querySelectorAll('.quick-reply-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const message = this.getAttribute('data-message');
+                        chatboxInput.value = message;
+                        sendMessage();
+                    });
+                });
+            }
         });
     </script>
 
@@ -495,8 +598,6 @@
                 suggestions.append('<li class="list-group-item text-muted p-3">Không có gợi ý nào</li>');
             }
         });
-
-
 
         $(".dropdown-btn").click(function(event) {
             event.stopPropagation(); // Ngăn chặn sự kiện lan ra ngoài

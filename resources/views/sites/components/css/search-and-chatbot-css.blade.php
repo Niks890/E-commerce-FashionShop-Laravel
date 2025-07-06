@@ -1,4 +1,46 @@
 <style>
+    .toast-notification {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 24px;
+        background-color: #28a745;
+        color: white;
+        border-radius: 4px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1100;
+    }
+
+    .toast-notification.show {
+        opacity: 1;
+    }
+
+    .toast-notification.error {
+        background-color: #dc3545;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-clear-history {
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 1rem;
+        margin-right: 10px;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .btn-clear-history:hover {
+        color: #dc3545;
+    }
+
     :root {
         --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -692,27 +734,4 @@
         opacity: 0.9;
         font-size: 14px;
     }
-
-
-
-    /* .variant-info {
-        color: #666;
-        font-size: 0.8rem;
-    }
-
-    .color-group {
-        margin-right: 10px;
-    }
-
-    .color-group strong {
-        color: #333;
-    }
-
-    .more-products-btn {
-        transition: all 0.3s ease;
-    }
-
-    .more-products-btn:hover {
-        transform: translateY(-2px);
-    } */
 </style>

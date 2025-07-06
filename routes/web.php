@@ -224,6 +224,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
 //CHATBOT REDIS TEST
 // Route::get('/chatbot-redis', [ChatBotApiController::class, 'chatbot'])->name('sites.chatbot-redis');
 Route::post('/chat/send', [ChatBotApiController::class, 'sendMessage'])->name('chatbot.send');
+Route::post('/chat/clear-history', [ChatBotApiController::class, 'clearHistory'])->name('chat.clear-history');
 // Route::get('/cloudinary', [CloudinaryUploadController::class, 'showForm'])->name('cloudinary.showForm');
 Route::get('/inventory/generatePDF/{id}', [InventoryController::class, 'generatePDF'])->name('inventory.generatePDF');
 Route::post('/inventory/{inventory}/approve', [InventoryController::class, 'approve'])
@@ -235,7 +236,6 @@ Route::post('/inventory/{id}/reject', [InventoryController::class, 'reject'])
 
 Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
 Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');
-
 // Route::group(['prefix' => 'blogcomments'], function() {
 //     // Lưu bình luận mới
 //     Route::post('/', [BlogCommentController::class, 'store'])->name('blogcomments.store');

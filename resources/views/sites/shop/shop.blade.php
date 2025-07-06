@@ -139,7 +139,8 @@
                                             dần</option>
                                         <option value="price_desc" {{ $sortBy == 'price_desc' ? 'selected' : '' }}>Giá giảm
                                             dần</option>
-                                        <option value="best_selling" {{ $sortBy == 'best_selling' ? 'selected' : '' }}>Bán chạy nhất</option>
+                                        <option value="best_selling" {{ $sortBy == 'best_selling' ? 'selected' : '' }}>Bán
+                                            chạy nhất</option>
                                     </select>
                                 </div>
                             </form>
@@ -153,7 +154,8 @@
                     <div class="shop__sidebar">
                         <div class="shop__sidebar__search">
                             <form action="/shop" method="GET">
-                                <input style="border: 1px solid #000000;" class="form-control" type="text" name="q" placeholder="Tìm kiếm..." value="{{ request('q') }}">
+                                <input style="border: 1px solid #000000;" class="form-control" type="text" name="q"
+                                    placeholder="Tìm kiếm..." value="{{ request('q') }}">
                                 <button type="submit"><span class="icon_search text-dark"></span></button>
                             </form>
                         </div>
@@ -301,17 +303,17 @@
                                         <div class="card-body">
                                             <div class="shop__sidebar__colors">
                                                 <ul>
-                                                    @foreach($colors as $color)
+                                                    @foreach ($colors as $color)
                                                         <li>
                                                             <a href="{{ request()->fullUrlWithQuery(['color' => $color, 'page' => 1]) }}"
-                                                               class="color-item"
-                                                               style="background-color: {{ getColorHex($color) }};
+                                                                class="color-item"
+                                                                style="background-color: {{ getColorHex($color) }};
                                                                       display: inline-block;
                                                                       width: 20px;
                                                                       height: 20px;
                                                                       border-radius: 50%;
                                                                       margin-right: 5px;"
-                                                               title="{{ $color }}"></a>
+                                                                title="{{ $color }}"></a>
                                                         </li>
                                                     @endforeach
                                                 </ul>
@@ -327,10 +329,11 @@
                                         <div class="card-body">
                                             <div class="shop__sidebar__sizes">
                                                 <ul>
-                                                    @foreach($sizes as $size)
+                                                    @foreach ($sizes as $size)
                                                         <li>
-                                                            <a class="text-dark" href="{{ request()->fullUrlWithQuery(['size' => $size, 'page' => 1]) }}"
-                                                               class="{{ request('size') == $size ? 'active' : '' }}">
+                                                            <a class="text-dark"
+                                                                href="{{ request()->fullUrlWithQuery(['size' => $size, 'page' => 1]) }}"
+                                                                class="{{ request('size') == $size ? 'active' : '' }}">
                                                                 {{ $size }}
                                                             </a>
                                                         </li>
@@ -351,7 +354,7 @@
                                                 <ul>
                                                     <li>
                                                         <a href="{{ request()->fullUrlWithQuery(['promotion' => 1, 'page' => 1]) }}"
-                                                           class="promotion-item">
+                                                            class="promotion-item">
                                                             Đang khuyến mãi
                                                         </a>
                                                     </li>
@@ -461,22 +464,22 @@
                                                     '">+Add To Cart</a>';
                                             }
                                         @endphp
-                                         <div class="rating mt-2">
-                                                @php
-                                                    $avgRating = $items->comments->avg('star') ?? 0;
-                                                    $fullStars = floor($avgRating);
-                                                    $hasHalfStar = ($avgRating - $fullStars) >= 0.5;
-                                                @endphp
+                                        <div class="rating mt-2">
+                                            @php
+                                                $avgRating = $items->comments->avg('star') ?? 0;
+                                                $fullStars = floor($avgRating);
+                                                $hasHalfStar = $avgRating - $fullStars >= 0.5;
+                                            @endphp
 
-                                                @for ($i = 1; $i <= 5; $i++)
-                                                    @if ($i <= $fullStars)
-                                                        <i class="fa fa-star text-warning"></i>
-                                                    @elseif ($i == $fullStars + 1 && $hasHalfStar)
-                                                        <i class="fa fa-star-half-o"></i>
-                                                    @else
-                                                        <i class="fa fa-star-o"></i>
-                                                    @endif
-                                                @endfor
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                @if ($i <= $fullStars)
+                                                    <i class="fa fa-star text-warning"></i>
+                                                @elseif ($i == $fullStars + 1 && $hasHalfStar)
+                                                    <i class="fa fa-star-half-o"></i>
+                                                @else
+                                                    <i class="fa fa-star-o"></i>
+                                                @endif
+                                            @endfor
                                             <span class="text-muted"> ({{ round($items->comments->count()) ?? 0 }})</span>
                                         </div>
                                         <h5>{{ number_format($items->price) }} VND</h5>
@@ -485,9 +488,10 @@
                                                 {{ number_format($originalPrice) }} VND</h6>
                                         @endif
                                         <div class="product__color__select">
-                                            @if($items->ProductVariants && $items->ProductVariants->count() > 0)
-                                                @foreach($items->ProductVariants->unique('color')->take(3) as $variant)
-                                                    <label for="pc-{{ $variant->id }}" style="background-color: {{ $variant->color }};"></label>
+                                            @if ($items->ProductVariants && $items->ProductVariants->count() > 0)
+                                                @foreach ($items->ProductVariants->unique('color')->take(3) as $variant)
+                                                    <label for="pc-{{ $variant->id }}"
+                                                        style="background-color: {{ $variant->color }};"></label>
                                                 @endforeach
                                             @endif
                                         </div>
@@ -757,6 +761,66 @@
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
     <script>
         $(document).ready(function() {
+
+
+            // gắn sự kiện click vao nút tìm kiếm do bên đây ko ăn js
+            $('.search-btn').click(function() {
+                $('.js-modal').addClass("open");
+            });
+
+            $('.js-modal-close').click(function() {
+                $('.js-modal').removeClass("open");
+            });
+
+            // Tìm kiếm sản phẩm bằng AJAX
+            $("#search-box").on("input", function(e) {
+                let query = $("#search-box").val();
+                // console.log(query);
+                if (query.length > 1) {
+                    $.ajax({
+                        url: "http://127.0.0.1:8000/api/search",
+                        type: "GET",
+                        data: {
+                            q: query
+                        },
+                        success: function(data) {
+                            let results = $("#search-results");
+                            // console.log(results);
+                            results.empty();
+
+                            if (data.results.length > 0) {
+                                data.results.forEach(function(item) {
+                                    // console.log(item);
+                                    let price = Intl.NumberFormat('vi-VN').format(item
+                                        .price);
+                                    if (item.discount_id != null) {
+                                        price = Intl.NumberFormat('vi-VN').format(item
+                                            .price - (item
+                                                .price * item.discount
+                                                .percent_discount));
+                                    }
+                                    results.append(`
+                                        <li class="list-group-item d-flex align-items-center p-3 border-bottom"
+                                                style="cursor: pointer;"
+                                                onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
+                                                onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
+                                            <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
+                                            <img src="${item.image}" width="50" height="50" alt="">
+                                            ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+                                            </a>
+                                        </li>
+
+                                `);
+                                });
+                            } else {
+                                results.append("<li>Không tìm thấy kết quả</li>");
+                            }
+                        }
+                    });
+                }
+            });
+
+
             $('#sortSelect').change(function() {
                 let sortBy = $(this).val();
                 let url = new URL(window.location.href);
@@ -764,6 +828,11 @@
                 url.searchParams.delete('page');
                 window.location.href = url.toString() + '#product-list-shop';
             });
+
+
+
         });
+
+
     </script>
 @endsection

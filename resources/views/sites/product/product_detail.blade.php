@@ -590,7 +590,7 @@
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
-                       <h3 class="related-title font-weight-bold">Sản phẩm bạn đã xem gần đây</h3>
+                        <h3 class="related-title font-weight-bold">Sản phẩm bạn đã xem gần đây</h3>
                     </div>
                 </div>
 
@@ -1430,6 +1430,71 @@
 
             // Kích hoạt lọc ban đầu
             filterReviews();
+        });
+    </script>
+
+
+    {{-- xử lý click thanh tìm kiếm --}}
+    <script>
+        $(document).ready(function() {
+            // gắn sự kiện click vao nút tìm kiếm do bên đây ko ăn js
+            $('.search-btn').click(function(e) {
+                console.log("click");
+                $('.js-modal').addClass("open");
+            });
+
+            $('.js-modal-close').click(function() {
+                $('.js-modal').removeClass("open");
+            });
+
+            // Tìm kiếm sản phẩm bằng AJAX
+            $("#search-box").on("input", function(e) {
+                let query = $("#search-box").val();
+                // console.log(query);
+                if (query.length > 1) {
+                    $.ajax({
+                        url: "http://127.0.0.1:8000/api/search",
+                        type: "GET",
+                        data: {
+                            q: query
+                        },
+                        success: function(data) {
+                            let results = $("#search-results");
+                            // console.log(results);
+                            results.empty();
+
+                            if (data.results.length > 0) {
+                                data.results.forEach(function(item) {
+                                    // console.log(item);
+                                    let price = Intl.NumberFormat('vi-VN').format(item
+                                        .price);
+                                    if (item.discount_id != null) {
+                                        price = Intl.NumberFormat('vi-VN').format(item
+                                            .price - (item
+                                                .price * item.discount
+                                                .percent_discount));
+                                    }
+                                    results.append(`
+                                        <li class="list-group-item d-flex align-items-center p-3 border-bottom"
+                                                style="cursor: pointer;"
+                                                onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
+                                                onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
+                                            <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
+                                            <img src="${item.image}" width="50" height="50" alt="">
+                                            ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+                                            </a>
+                                        </li>
+
+                                `);
+                                });
+                            } else {
+                                results.append("<li>Không tìm thấy kết quả</li>");
+                            }
+                        }
+                    });
+                }
+            });
+
         });
     </script>
     <script src="{{ asset('client/js/cart-add.js') }}"></script>

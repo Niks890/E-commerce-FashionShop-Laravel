@@ -61,7 +61,10 @@ class ChatBotApiController extends Controller
         - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
 
         ### LƯU Ý:
-         - Luôn hỏi rõ nhu cầu khi khách hỏi chung chung";
+        -  Không bịa thông tin sản phẩm
+        -  Luôn kiểm tra lại thông tin trong context trước khi trả lời
+         - Luôn hỏi rõ nhu cầu khi khách hỏi chung chung
+         - Nếu câu hỏi ngoài lề liên quan đến lĩnh vực chính trị, tôn giáo, y tế hãy từ chối và nói là bạn không được đào tạo để trả lời.";
     //  - Nếu câu hỏi không phù hợp phạm vi cửa hàng , tuyệt đối không được bịa câu trả lời
 
     // Main message handling endpoint
@@ -432,73 +435,6 @@ class ChatBotApiController extends Controller
     }
 
 
-    // protected function handleStockInquiry(string $message, string $userId): ?array
-    // {
-    //     $productContextKey = "product_context:$userId";
-    //     $contextRaw = Redis::lrange($productContextKey, 0, -1);
-
-    //     if (empty($contextRaw)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện mình chưa có thông tin sản phẩm nào trong phiên chat. Bạn có thể cho mình biết sản phẩm bạn quan tâm không ạ?"
-    //         ];
-    //     }
-
-    //     // Lấy sản phẩm cuối cùng được thảo luận
-    //     $lastProduct = json_decode(end($contextRaw));
-
-    //     // Kiểm tra nếu hỏi cụ thể về sản phẩm linen
-    //     $isLinenInquiry = str_contains(mb_strtolower($message), 'linen');
-
-    //     // Nếu hỏi cụ thể về linen mà sản phẩm cuối không phải linen
-    //     if ($isLinenInquiry && !str_contains(mb_strtolower($lastProduct->name), 'linen')) {
-    //         // Tìm sản phẩm linen trong context
-    //         foreach ($contextRaw as $itemRaw) {
-    //             $item = json_decode($itemRaw);
-    //             if (str_contains(mb_strtolower($item->name), 'linen')) {
-    //                 $lastProduct = $item;
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // Nếu không có thông tin variants
-    //     if (empty($lastProduct->variants)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện mình không có thông tin tồn kho chi tiết cho sản phẩm này. " .
-    //                 "Bạn vui lòng kiểm tra trên trang chi tiết sản phẩm nhé: " .
-    //                 "<a href='{$lastProduct->link}'>{$lastProduct->name}</a>"
-    //         ];
-    //     }
-
-    //     // Lọc các variant còn hàng
-    //     $availableVariants = array_filter($lastProduct->variants, function ($variant) {
-    //         return $variant->available_stock > 0;
-    //     });
-
-    //     // Nếu hết hàng tất cả
-    //     if (empty($availableVariants)) {
-    //         return [
-    //             'type' => 'text',
-    //             'content' => "Hiện sản phẩm {$lastProduct->name} đã hết hàng tất cả các size. " .
-    //                 "Bạn có muốn xem sản phẩm tương tự không ạ?"
-    //         ];
-    //     }
-
-    //     // Format thông tin tồn kho
-    //     $variantInfo = array_map(function ($variant) {
-    //         $color = $variant->color ?? 'đang cập nhật';
-    //         return "Size {$variant->size} - Màu {$color} (Còn {$variant->available_stock})";
-    //     }, $availableVariants);
-
-    //     return [
-    //         'type' => 'text',
-    //         'content' => "Sản phẩm {$lastProduct->name} hiện còn các lựa chọn sau:\n- " .
-    //             implode("\n- ", $variantInfo) .
-    //             "\nBạn quan tâm size và màu nào ạ?"
-    //     ];
-    // }
 
 
     protected function handleStockInquiry(string $message, string $userId): ?array
@@ -1120,5 +1056,29 @@ class ChatBotApiController extends Controller
         }, $content);
 
         return $processedContent;
+    }
+
+
+    public function clearHistory(Request $request)
+    {
+        try {
+            $userId = 'user_gemma3_newway'; // Sử dụng cùng userId như các phương thức khác
+            $historyKey = "chat_history:$userId";
+            $productContextKey = "product_context:$userId";
+
+            // Xóa cả lịch sử chat và context sản phẩm
+            Redis::del($historyKey);
+            Redis::del($productContextKey);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Lịch sử chat đã được xóa'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi khi xóa lịch sử: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
