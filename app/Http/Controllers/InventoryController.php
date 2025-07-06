@@ -682,32 +682,32 @@ class InventoryController extends Controller
 
 
     // Thêm vào InventoryController
-public function getAllProductsWithVariants()
-{
-    $products = Product::with(['category', 'productVariants'])->get();
+    public function getAllProductsWithVariants()
+    {
+        $products = Product::with(['category', 'productVariants'])->get();
 
-    $transformedProducts = $products->map(function($product) {
-        return [
-            'id' => $product->id,
-            'name' => $product->product_name,
-            'image' => $product->image,
-            'category' => [
-                'name' => $product->category->category_name ?? null
-            ],
-            'brand' => $product->brand,
-            'product-variant' => $product->productVariants->map(function($variant) {
-                return [
-                    'color' => $variant->color,
-                    'size' => $variant->size,
-                    'stock' => $variant->stock
-                ];
-            })
-        ];
-    });
+        $transformedProducts = $products->map(function ($product) {
+            return [
+                'id' => $product->id,
+                'name' => $product->product_name,
+                'image' => $product->image,
+                'category' => [
+                    'name' => $product->category->category_name ?? null
+                ],
+                'brand' => $product->brand,
+                'product-variant' => $product->productVariants->map(function ($variant) {
+                    return [
+                        'color' => $variant->color,
+                        'size' => $variant->size,
+                        'stock' => $variant->stock
+                    ];
+                })
+            ];
+        });
 
-    return response()->json([
-        'status_code' => 200,
-        'data' => $transformedProducts
-    ]);
-}
+        return response()->json([
+            'status_code' => 200,
+            'data' => $transformedProducts
+        ]);
+    }
 }

@@ -17,32 +17,52 @@ class ChatBotApiController extends Controller
 
         ### THÔNG TIN CỬA HÀNG:
         - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
-        - Chính sách đổi trả: 7 ngày
+        - Hotline: 0123456789
+        - Chính sách đổi trả: 7 ngày và miễn phí vận chuyển
         - Phương thức thanh toán: COD, VNPay, Momo, ZaloPay
         - Size áo/quần: XS, S, M, L, XL, XXL
 
+        ### CHÍNH SÁCH & DỊCH VỤ:
+        - [Bảo hành] 1 đổi 1 trong 7 ngày nếu lỗi nhà sản xuất
+        - [Giao hàng] Giao trong 2h tại nội thành Cần Thơ
+        - [Hỗ trợ] Tư vấn 24/7 qua hotline 0123456789
+
         ### HƯỚNG DẪN PHẢN HỒI:
-        1. Khi hỏi về sản phẩm:
-        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có
-        - Cung cấp thông tin chi tiết: chất liệu, size, màu sắc, giá
+        1. Khi khách hỏi về sản phẩm:
+        - Khi khách hỏi về sản phẩm hoặc đặt hàng sản phẩm nào mà dữ liệu trong context và cuộc hội thoại là rỗng hoặc chưa có hãy hỏi rõ khách muốn mua gì, hoặc giới thiệu trang shop: <a href='http://127.0.0.1:8000/shop'>Shop</a> để tham khảo.
+        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có, tuyệt đối không được bịa ra mà hãy trả lời là không tìm thấy hoặc hiện chưa có sản phẩm đó
+        - Cung cấp thông tin chi tiết: chất liệu (material), thương hiệu (brand), mô tả ngắn (short_description), size, màu sắc, giá
+        - Khi mô tả sản phẩm, hãy sử dụng thông tin từ short_description và description nếu có
+        - Đối với chất liệu, luôn đề cập nếu có thông tin material
+        - Đối với thương hiệu, luôn đề cập nếu có thông tin brand
         - Sử dụng link hãy gửi kèm thẻ <a> để truy cập thay vì text
         - Khi người dùng hỏi còn hàng không chỉ trả lời những size và màu có available_stock lớn hơn 0
         - So sánh, tư vấn dựa trên sản phẩm đã biết
         - Kèm link sản phẩm khi có thể theo định dạng http://127.0.0.1:8000/product/{slug}
 
-
         2. Tương tác thông minh:
-        - Khi khách hỏi 'cái nào đẹp hơn' → So sánh các sản phẩm đã show
-        - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context
-        - Khi hỏi về size → Dựa vào sản phẩm đã đề cập
-        - Gợi ý combo, phối đồ từ các sản phẩm có sẵn
+        - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm, hãy phân tích và so sánh thông tin sản phẩm dựa vào thông tin lưu trong context → So sánh các sản phẩm đã show
+        - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context.
+        - Khi hỏi về size → Dựa vào sản phẩm đã đề cập.
+        - Gợi ý combo, phối đồ từ các sản phẩm có sẵn.
 
+        3. Khi hỏi về cách đặt hàng:
+        - Hãy hướng dẫn step by step từ bước từ tìm kiếm tên sản phẩm, chọn vào sản phẩm, chọn size và số lượng, nhấn thêm vào giỏ hàng, kiểm tra giỏ hàng và chọn thanh toán, nhập thông tin giao hàng và chọn phương thức thanh toán, nhấn nút thanh toán.
+
+        4. Khi khách hỏi về đơn hàng
+        - Hãy hướng dẫn khách liên hệ cửa hàng qua contact hoặc hotline để được giải đáp.
+
+
+        5. Khi câu trả lời dính từ khoá trong rulebase hãy trả lời một cách tự nhiên là bạn tìm sản phẩm hay thông tin do bắt gặp từ khoá đó.
         ### LIÊN KẾT QUAN TRỌNG:
         - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
         - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
         - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
         - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
-    ";
+
+        ### LƯU Ý:
+         - Luôn hỏi rõ nhu cầu khi khách hỏi chung chung";
+    //  - Nếu câu hỏi không phù hợp phạm vi cửa hàng , tuyệt đối không được bịa câu trả lời
 
     // Main message handling endpoint
     public function sendMessage(Request $request)
@@ -689,26 +709,31 @@ class ChatBotApiController extends Controller
     protected function saveProductsToContext(string $userId, array $products, string $userQuery): void
     {
         $productContextKey = "product_context:$userId";
-        Redis::del($productContextKey);
+        // Redis::del($productContextKey);
 
         foreach ($products as $product) {
             $variants = $product['variants'] ?? [];
 
-            $contextItem = [
-                'name' => $product['name'],
-                'price' => $product['price'],
-                'original_price' => $product['original_price'] ?? null,
-                'discount_percent' => $product['discount_percent'] ?? null,
-                'link' => $product['link'],
-                'image' => $product['image_url'] ?? $product['image'],
-                'query' => $userQuery,
-                'timestamp' => time(),
-                'details' => $this->extractProductDetails($product),
-                'variants' => $variants,
-                'stock_summary' => $this->generateStockSummary($variants)
-            ];
-
-            Redis::rpush($productContextKey, json_encode($contextItem));
+            if (!$this->isProductInContext($userId, $product['name'])) {
+                $contextItem = [
+                    'name' => $product['name'],
+                    'price' => $product['price'],
+                    'original_price' => $product['original_price'] ?? null,
+                    'discount_percent' => $product['discount_percent'] ?? null,
+                    'link' => $product['link'],
+                    'image' => $product['image_url'] ?? $product['image'],
+                    'query' => $userQuery,
+                    'timestamp' => time(),
+                    'details' => $this->extractProductDetails($product),
+                    'variants' => $variants,
+                    'stock_summary' => $this->generateStockSummary($variants),
+                    'material' => $product['material'] ?? null,
+                    'description' => $product['description'] ?? null,
+                    'short_description' => $product['short_description'] ?? null,
+                    'brand' => $product['brand'] ?? null
+                ];
+                Redis::rpush($productContextKey, json_encode($contextItem));
+            }
         }
 
         Redis::expire($productContextKey, 60 * 60 * 2);
@@ -758,6 +783,20 @@ class ChatBotApiController extends Controller
         }
         if (str_contains($name, 'polo')) {
             $details[] = 'dáng polo';
+        }
+        // Thêm thông tin material nếu có
+        if (!empty($product['material'])) {
+            $details[] = 'Chất liệu: ' . $product['material'];
+        }
+
+        // Thêm thông tin brand nếu có
+        if (!empty($product['brand'])) {
+            $details[] = 'Thương hiệu: ' . $product['brand'];
+        }
+
+        // Thêm short description nếu có
+        if (!empty($product['short_description'])) {
+            $details[] = $product['short_description'];
         }
 
         if (!empty($product['variants'])) {
@@ -838,7 +877,7 @@ class ChatBotApiController extends Controller
                     ->where('active', 1)
                     ->where('available_stock', '>', 0); // Chỉ lấy các variant còn hàng
             }
-        ])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id')
+        ])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id', 'material', 'description', 'short_description', 'brand')
             ->where('status', 1);
 
         // Filter by category/keywords
@@ -937,7 +976,11 @@ class ChatBotApiController extends Controller
                 'image' => $product->image,
                 'image_url' => $product->image,
                 'has_discount' => !is_null($discountPercent),
-                'variants' => $variants
+                'variants' => $variants,
+                'material' => $product->material ?? null,
+                'description' => $product->description ?? null,
+                'short_description' => $product->short_description ?? null,
+                'brand' => $product->brand ?? null,
             ];
         }
 

@@ -1,0 +1,233 @@
+.select2-product .select2-selection--single {
+    height: 45px;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.select2-product .select2-selection__rendered {
+    line-height: 25px;
+}
+
+.select2-product .select2-selection__arrow {
+    height: 43px;
+}
+
+.select2-results__option[aria-selected=true] {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    position: relative;
+}
+
+.select2-results__option[aria-selected=true]:after {
+    content: "✓";
+    position: absolute;
+    right: 10px;
+    color: #28a745;
+}
+
+/* General styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Card styles */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Table styles */
+.table {
+    font-size: 0.9rem;
+}
+
+.table th {
+    background-color: #f1f3f9;
+    font-weight: 600;
+    color: #495057;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.table td {
+    vertical-align: middle;
+}
+
+.variant-table {
+    font-size: 0.85rem;
+    width: 100%;
+}
+
+.variant-table th,
+.variant-table td {
+    padding: 0.3rem 0.5rem;
+}
+
+/* Color options */
+.color-option {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin: 0 auto 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.color-option:hover {
+    transform: scale(1.1);
+}
+
+.color-option.selected {
+    border-color: #000;
+    box-shadow: 0 0 0 2px #4e73df;
+}
+
+.selected-color-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: #e9ecef;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 0.85rem;
+}
+
+.selected-color-badge .color-preview {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 5px;
+    border: 1px solid #ddd;
+}
+
+/* New styles for color management */
+.color-options-container {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.color-option .delete-color {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+}
+
+.color-option:hover .delete-color {
+    display: flex;
+}
+
+.size-quantity-badge {
+    position: relative;
+    padding-right: 20px;
+}
+
+.size-quantity-badge .quantity-display {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #28a745;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 992px) {
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table th,
+    .table td {
+        white-space: nowrap;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    .btn-group-bulk {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .btn-group-bulk .btn {
+        width: 100%;
+    }
+}
+
+/* Badge styles */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Input styles */
+.form-control,
+.form-select {
+    border-radius: 8px;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Button styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Modal styles */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+/* Image styles */
+.product-img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+/* Compact form elements */
+.compact-form .form-group {
+    margin-bottom: 0.5rem;
+}
+
+/* Scrollable table body */
+.table-scrollable {
+    max-height: 500px;
+    overflow-y: auto;
+}
