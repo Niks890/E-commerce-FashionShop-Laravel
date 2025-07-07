@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
 use Exception;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +13,8 @@ class ChatBotApiController extends Controller
 {
     // Default system prompt
     protected $defaultPrompt = "
-        Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam. Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
+        Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam.
+        Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
 
         ### THÔNG TIN CỬA HÀNG:
         - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
@@ -29,8 +30,11 @@ class ChatBotApiController extends Controller
 
         ### HƯỚNG DẪN PHẢN HỒI:
         1. Khi khách hỏi về sản phẩm:
-        - Khi khách hỏi về sản phẩm hoặc đặt hàng sản phẩm nào mà dữ liệu trong context và cuộc hội thoại là rỗng hoặc chưa có hãy hỏi rõ khách muốn mua gì, hoặc giới thiệu trang shop: <a href='http://127.0.0.1:8000/shop'>Shop</a> để tham khảo.
-        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có, tuyệt đối không được bịa ra mà hãy trả lời là không tìm thấy hoặc hiện chưa có sản phẩm đó
+        - Khi khách hỏi về sản phẩm hoặc đặt hàng sản phẩm nào mà dữ liệu trong context
+            và cuộc hội thoại là rỗng hoặc chưa có hãy hỏi rõ khách muốn mua gì,
+            hoặc giới thiệu trang shop: <a href='http://127.0.0.1:8000/shop'>Shop</a> để tham khảo.
+        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có,
+            tuyệt đối không được bịa ra mà hãy trả lời là không tìm thấy hoặc hiện chưa có sản phẩm đó
         - Cung cấp thông tin chi tiết: chất liệu (material), thương hiệu (brand), mô tả ngắn (short_description), size, màu sắc, giá
         - Khi mô tả sản phẩm, hãy sử dụng thông tin từ short_description và description nếu có
         - Đối với chất liệu, luôn đề cập nếu có thông tin material
@@ -41,19 +45,22 @@ class ChatBotApiController extends Controller
         - Kèm link sản phẩm khi có thể theo định dạng http://127.0.0.1:8000/product/{slug}
 
         2. Tương tác thông minh:
-        - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm, hãy phân tích và so sánh thông tin sản phẩm dựa vào thông tin lưu trong context → So sánh các sản phẩm đã show
+        - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm,
+            hãy phân tích và so sánh thông tin sản phẩm dựa vào thông tin lưu trong context → So sánh các sản phẩm đã show
         - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context.
         - Khi hỏi về size → Dựa vào sản phẩm đã đề cập.
         - Gợi ý combo, phối đồ từ các sản phẩm có sẵn.
 
         3. Khi hỏi về cách đặt hàng:
-        - Hãy hướng dẫn step by step từ bước từ tìm kiếm tên sản phẩm, chọn vào sản phẩm, chọn size và số lượng, nhấn thêm vào giỏ hàng, kiểm tra giỏ hàng và chọn thanh toán, nhập thông tin giao hàng và chọn phương thức thanh toán, nhấn nút thanh toán.
+        - Hãy hướng dẫn step by step từ bước từ tìm kiếm tên sản phẩm,
+        chọn vào sản phẩm, chọn size và số lượng, nhấn thêm vào giỏ hàng, kiểm tra giỏ hàng và chọn thanh toán,
+        nhập thông tin giao hàng và chọn phương thức thanh toán, nhấn nút thanh toán.
 
         4. Khi khách hỏi về đơn hàng
         - Hãy hướng dẫn khách liên hệ cửa hàng qua contact hoặc hotline để được giải đáp.
 
-
-        5. Khi câu trả lời dính từ khoá trong rulebase hãy trả lời một cách tự nhiên là bạn tìm sản phẩm hay thông tin do bắt gặp từ khoá đó.
+        5. Khi câu trả lời dính từ khoá trong rulebase
+        hãy trả lời một cách tự nhiên là bạn tìm sản phẩm hay thông tin do bắt gặp từ khoá đó.
         ### LIÊN KẾT QUAN TRỌNG:
         - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
         - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
@@ -67,6 +74,8 @@ class ChatBotApiController extends Controller
          - Nếu câu hỏi ngoài lề liên quan đến lĩnh vực chính trị, tôn giáo, y tế hãy từ chối và nói là bạn không được đào tạo để trả lời.";
     //  - Nếu câu hỏi không phù hợp phạm vi cửa hàng , tuyệt đối không được bịa câu trả lời
 
+
+
     // Main message handling endpoint
     public function sendMessage(Request $request)
     {
@@ -77,9 +86,16 @@ class ChatBotApiController extends Controller
             $productContextKey = "product_context:$userId";
             $maxMessages = 50;
             $summarizeThreshold = 50;
-
             Log::info('Chatbot request received', ['message' => $userMessage]);
-
+            // Kiểm tra câu hỏi có rơi vào các trường hợp đặc biệt không
+            $specialResponse = $this->handleSpecialCases($userMessage, $userId);
+            if ($specialResponse) {
+                Log::info('Returning special response', $specialResponse);
+                return response()->json([
+                    'reply_data' => $specialResponse,
+                    'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
+                ]);
+            }
             // Handle "more products" request
             $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
             if ($moreProductsResponse) {
@@ -89,21 +105,9 @@ class ChatBotApiController extends Controller
                     'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
                 ]);
             }
-
-            // Check special cases
-            $specialResponse = $this->handleSpecialCases($userMessage, $userId);
-            if ($specialResponse) {
-                Log::info('Returning special response', $specialResponse);
-                return response()->json([
-                    'reply_data' => $specialResponse,
-                    'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
-                ]);
-            }
-
             // Get and process chat history
             $historyRaw = Redis::lrange($historyKey, 0, -1);
             $history = array_map('json_decode', $historyRaw);
-
             // Summarize if needed
             if (count($history) >= $summarizeThreshold) {
                 $toSummarize = array_slice($history, 0, 40);
@@ -122,41 +126,34 @@ class ChatBotApiController extends Controller
                     }
                 }
             }
-
             // Get recent messages
             $recentRaw = Redis::lrange($historyKey, -20, -1);
             $recentHistory = array_map('json_decode', $recentRaw);
-
             // Build system prompt with product context
             $fullSystemPrompt = $this->buildSystemPromptWithProductContext($userId);
-
             // Build chat prompt
             $chatPrompt = $this->buildChatPrompt($recentHistory, $fullSystemPrompt, $userMessage);
-
             // Call AI
             $payload = [
                 'model' => 'gemma3:4b',
                 'prompt' => $chatPrompt,
                 'stream' => false,
+                // 'temperature' => 0.7
             ];
-
             $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
 
             if (!$response->successful()) {
                 throw new Exception('Failed to connect to OLLama: ' . $response->status());
             }
-
             $data = $response->json();
             $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
             $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
             $reply = $this->processContentWithImages($reply);
-
             // Save to history
             Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
             Redis::rpush($historyKey, json_encode(['role' => 'assistant', 'message' => $reply]));
             Redis::ltrim($historyKey, -$maxMessages, -1);
             Redis::expire($historyKey, 60 * 60 * 24);
-
             return response()->json(['reply' => $reply]);
         } catch (Exception $e) {
             Log::error('Chatbot API Error', [
@@ -164,7 +161,6 @@ class ChatBotApiController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'request' => $request->all()
             ]);
-
             return response()->json([
                 'error' => 'Xin lỗi, đã xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
                 'technical_message' => env('APP_DEBUG') ? $e->getMessage() : null,
@@ -343,14 +339,12 @@ class ChatBotApiController extends Controller
         return null;
     }
 
+
+    // Xử lý các trường hợp đặc biệt
     protected function handleSpecialCases(string $message, string $userId): ?array
     {
         $message = mb_strtolower(trim($message));
 
-        // Xử lý câu hỏi về tình trạng tồn kho
-        if (preg_match('/(còn hàng không|hết hàng chưa|cho xem kho hàng|tồn kho|còn size|size nào còn)\s*(.*)/ui', $message, $matches)) {
-            return $this->handleStockInquiry($message, $userId);
-        }
 
         // Check for product keywords first
         $productKeywords = $this->detectProductKeywords($message);
@@ -386,6 +380,11 @@ class ChatBotApiController extends Controller
             } else {
                 return ['type' => 'text', 'content' => "Xin lỗi, hiện tại mình chưa tìm thấy sản phẩm '{$productKeywords['matched_term']}' phù hợp."];
             }
+        }
+
+        // Xử lý câu hỏi về tình trạng tồn kho
+        if (preg_match('/(còn hàng không|hết hàng chưa|cho xem kho hàng|tồn kho|còn size|size nào còn)\s*(.*)/ui', $message, $matches)) {
+            return $this->handleStockInquiry($message, $userId);
         }
 
         // Special cases
@@ -539,14 +538,12 @@ class ChatBotApiController extends Controller
     protected function detectProductKeywords(string $message): array
     {
         $message = mb_strtolower(trim($message));
-
-        // Detect price intent first
+        // Kiểm tra intent về giá
         $priceIntent = $this->detectPriceIntent($message);
         if ($priceIntent) {
             return $priceIntent;
         }
-
-        // Product mapping
+        // Kiểm tra intent danh mục và sản phẩm
         $productMap = [
             'áo sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
             'sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
@@ -557,7 +554,6 @@ class ChatBotApiController extends Controller
             'quần jeans' => ['category' => 'quần jeans', 'keywords' => ['jeans']],
             'áo hoodies' => ['category' => 'áo hoodies', 'keywords' => ['hoodies']],
         ];
-
         // Find exact match
         $sortedKeys = array_keys($productMap);
         usort($sortedKeys, function ($a, $b) {
@@ -573,7 +569,6 @@ class ChatBotApiController extends Controller
                 ];
             }
         }
-
         return [];
     }
 

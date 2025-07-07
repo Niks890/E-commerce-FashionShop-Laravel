@@ -19,7 +19,7 @@
                     </h5>
                     <div class="header-actions">
                         <button type="button" class="btn-clear-history" title="Xóa lịch sử chat">
-                            <i class="fas fa-trash-alt"></i>
+                          <i class="fas fa-broom" style="font-size: 18px;"></i>
                         </button>
                         <button type="button" class="btn-close-chatbot" data-bs-dismiss="modal" aria-label="Close">
                             <i class="fas fa-times"></i>

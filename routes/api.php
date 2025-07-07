@@ -43,7 +43,6 @@ Route::get('product-variant-size/{color}/{product_id}', [ApiController::class, '
 Route::get('product-variant-selected/{size}/{color}/{product_id}', [ApiController::class, 'getSeletedProductVariant'])->name('api.getSeletedProductVariant');
 Route::get('product-discount', [ApiController::class, 'getProductDiscount'])->name('api.getProductDiscount');
 Route::get('brand', [ApiController::class, 'brands'])->name('api.brands');
-
 Route::get('product-variant', [ApiController::class, 'productVariants'])->name('api.productVariants');
 
 

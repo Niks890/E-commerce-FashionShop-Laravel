@@ -17,7 +17,8 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-
+use App\Events\StockUpdated;
+use StockUpdated as GlobalStockUpdated;
 
 class OrderController extends Controller
 {
@@ -514,6 +515,7 @@ class OrderController extends Controller
                     $variant->stock -= $item->quantity;
                     $variant->available_stock -= $item->quantity;
                     $variant->save();
+                    // event(new GlobalStockUpdated($variant->id, $variant->available_stock));
                 }
             }
 

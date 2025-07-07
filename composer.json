@@ -11,6 +11,7 @@
         "google/cloud-dialogflow": "^2.0",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
+        "laravel/reverb": "^1.5",
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.19",
         "laravel/tinker": "^2.8",

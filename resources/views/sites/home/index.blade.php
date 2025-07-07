@@ -174,7 +174,7 @@
     <!-- Product Recently Section Begin -->
     @if (!empty($productRecentInfo) && count($productRecentInfo) > 0)
         <hr class="w-50">
-        <section class="product spad" id="product-recently-section">
+        <section class="product spad " id="product-recently-section">
             <div class="container">
                 <div class="row">
                     <div class="col-lg-12">
@@ -210,7 +210,7 @@
                         @endphp
                         <div class="col-lg-3 col-md-6 col-sm-6 mix">
                             <div class="product__item">
-                                <div class="product__item__pic">
+                                <div class="product__item__pic pulse">
                                     <img src="{{ $itemRecent->image }}" class="set-bg" width="280" height="280"
                                         alt="{{ $itemRecent->product_name }}">
                                     <span
@@ -303,7 +303,7 @@
             </div>
         </section>
         <hr class="w-50">
-        @endif
+    @endif
     <!-- Product Section Recently End -->
 
 
@@ -381,7 +381,7 @@
                                     productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
                                     productItem.innerHTML = `
                                             <div class="product__item" id="product-list-home">
-                                                  <div class="product__item__pic">
+                                                  <div class="product__item__pic pulse">
                                                         <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.name}">
                                                         <span class="label name-ubcf" >${nameDiscount}</span>
                                                         <ul class="product__hover">
@@ -445,13 +445,13 @@
                 </div>
             </div>
         </section>
-         <hr class="w-50">
+        <hr class="w-50">
     @endif
     <!-- RecommendationProduct For UserBase Content Filtering Section End -->
 
 
     <!-- Product Discount Section Begin -->
-    <section class="product spad">
+    <section class="product spad mt-2">
         <div class="container">
             <div class="row">
                 <div class="col-lg-12">
@@ -517,7 +517,7 @@
                                 let productItem = document.createElement('div');
                                 productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix");
                                 productItem.innerHTML = `
-                                            <div class="product__item" id="product-list-home">
+                                            <div class="product__item  pulse" id="product-list-home">
                                                   <div class="product__item__pic">
                                                         <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.name}">
                                                         <span class="label name-discount" >${product.discount.name}</span>
@@ -589,133 +589,6 @@
     <!-- Product Section End -->
     <hr class="w-50">
 
-    {{-- product gốc --}}
-    {{-- <!-- Product Section Begin -->
-    <section class="product spad">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-12">
-                    <ul class="filter__controls">
-                        <li class="active" data-filter="*">Sản Phẩm Bán Chạy</li>
-                        <li data-filter=".new-arrivals">Mới ra mắt</li>
-                        <li data-filter=".hot-sales">Hot Sales</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row product__filter" id="product-client-container">
-            </div>
-            <script>
-                async function fetchProduct() {
-                    try {
-                        let response = await fetch('http://127.0.0.1:8000/api/product-client');
-                        let data = await response.json();
-                        let products = data.data;
-
-                        let container = document.querySelector('#product-client-container');
-                        container.innerHTML = "";
-
-                        products.forEach((product, index) => {
-                            let finalPrice;
-                            let nameDiscount = "";
-
-                            if (product.discount_id != null) {
-                                finalPrice = product.price - (product.price * product.discount.percent_discount);
-                                nameDiscount = product.discount.name;
-                            } else {
-                                finalPrice = product.price ?? 0;
-                                nameDiscount = "New";
-                            }
-
-                            let formattedPrice = new Intl.NumberFormat('vi-VN', {
-                                style: 'currency',
-                                currency: 'VND'
-                            }).format(finalPrice);
-
-                            let totalStock = [];
-                            let addCartOrNone = [];
-                            product['product_variants'].map((variant) => {
-                                totalStock[variant.product_id] = 0;
-                            })
-                            product['product_variants'].forEach((variant) => {
-                                totalStock[variant.product_id] += variant.stock + 0;
-                            });
-                            product['product_variants'].map((variant) => {
-                                if (totalStock[variant.product_id] == 0) {
-                                    addCartOrNone[variant.product_id] = false;
-                                } else {
-                                    addCartOrNone[variant.product_id] = true;
-                                };
-                            })
-
-
-                            let productItem = document.createElement('div');
-                            productItem.classList.add("col-lg-3", "col-md-6", "col-sm-6", "mix", index % 2 === 0 ?
-                                "new-arrivals" : "hot-sales");
-                            productItem.innerHTML = `
-                                        <div class="product__item" id="product-list-home">
-                                              <div class="product__item__pic">
-                                                    <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
-                                                    <span class="label name-discount-section" >${nameDiscount}</span>
-                                                    <ul class="product__hover">
-                                                      <li>
-                                                            <a href="{{ url('add-to-wishlist') }}/${product.id}" class="add-to-wishlist" title="Thêm vào danh sách yêu thích">
-                                                                <img src="{{ asset('client/img/icon/heart.png') }}" alt="">
-                                                            </a>
-                                                    </li>
-
-                                                        <li><a href="javascript:void(0);"><img src="{{ asset('client/img/icon/compare.png') }}" alt=""><span>Compare</span></a></li>
-                                                        <li><a href="{{ url('product') }}/${product.slug}"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a></li>
-                                                    </ul>
-                                             </div>
-                                            <div class="product__item__text">
-                                                <h6>${product.product_name}</h6>
-                                                ` +
-
-                                (addCartOrNone[product.id] > 0 ?
-                                    `<a href="javascript:void(0);" class="add-cart" data-id="${product.id}">+ Add To Cart</a>` :
-                                    `<span class=" badge badge-warning">Hết hàng</span>`)
-
-                                +
-                                `
-                                                <div class="rating">
-                                                    <i class="fa fa-star-o"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                    <i class="fa fa-star-o"></i>
-                                                </div>
-                                                <h5>${formattedPrice}</h5>
-                                                <div class="product__color__select">
-                                                                            <label for="pc-${index * 3 + 1}">
-                                                                                <input type="radio" id="pc-${index * 3 + 1}">
-                                                                            </label>
-                                                                            <label class="active black" for="pc-${index * 3 + 2}">
-                                                                                <input type="radio" id="pc-${index * 3 + 2}">
-                                                                            </label>
-                                                                            <label class="grey" for="pc-${index * 3 + 3}">
-                                                                                <input type="radio" id="pc-${index * 3 + 3}">
-                                                                            </label>
-                                                                        </div>
-                                            </div>
-                                        </div>
-                                    `;
-                            container.appendChild(productItem);
-                            document.querySelectorAll('.name-discount-section').forEach(element => {
-                                if (element.textContent.trim() !== "New") {
-                                    element.classList.add('bg-danger', 'text-white');
-                                }
-                            });
-
-                        });
-                    } catch (error) {
-                        console.error("Lỗi API:", error);
-                    }
-                }
-                fetchProduct();
-            </script>
-        </div>
-    </section>
-    <!-- Product Section End --> --}}
 
 
     <!-- Product Section Begin -->
@@ -801,7 +674,7 @@
 
                             productItem.innerHTML = `
                                 <div class="product__item" id="product-list-home">
-                                    <div class="product__item__pic">
+                                    <div class="product__item__pic pulse">
                                         <img src="${product.image}" class="set-bg" width="280" height="280" alt="${product.product_name}">
                                         <span class="label name-discount-section">${nameDiscount}</span>
                                         <ul class="product__hover">
@@ -1126,4 +999,26 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
+
+    <style>
+        .product__item:hover .product__item__pic {
+            transform: scale(1.01);
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 rgba(249, 0, 0, 0.1);
+            }
+
+            100% {
+                transform: scale(1.03);
+                box-shadow: 0 5px 15px rgba(255, 0, 0, 0.2);
+            }
+        }
+
+        .pulse:hover {
+            animation: pulse 2s infinite;
+        }
+    </style>
 @endsection

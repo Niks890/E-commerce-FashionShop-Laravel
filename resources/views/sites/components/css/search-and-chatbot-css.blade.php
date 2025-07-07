@@ -28,11 +28,12 @@
     }
 
     .btn-clear-history {
-        background: none;
+        background: rgba(255, 255, 255, 0.2);
         border: none;
-        color: #ffffff;
+        color: white;
         font-size: 1rem;
         margin-right: 10px;
+        border-radius: 50%;
         cursor: pointer;
         transition: color 0.2s;
     }

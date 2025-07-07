@@ -53,7 +53,6 @@
 
     @yield('js')
     <script src="{{ asset('client/js/bootstrap.min.js') }}"></script>
-    {{-- <script src="{{ asset('client/js/generate-star.js') }}"></script> --}}
 
 
 </body>
