@@ -122,6 +122,7 @@ Route::group(['prefix' => '/'], function () {
 // Xử lý cart
 Route::group(['prefix' => '/cart'], function () {
     Route::get('/', [CartController::class, 'cart'])->name('sites.cart');
+    // Route::post('/check-stock', [CartController::class, 'checkStock'])->name('sites.checkStock');
     Route::get('/add/{product?}/{quantity?}', [CartController::class, 'add'])->name('sites.add');
     Route::post('/add/{product?}/{quantity?}', [CartController::class, 'add'])->name('sites.addFromDetail');
     Route::get('/update/{id}/{quantity?}', [CartController::class, 'update'])->name('sites.update');

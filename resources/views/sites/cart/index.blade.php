@@ -52,7 +52,8 @@
                             <tbody>
                                 @if (Session::has('cart') && count(Session::get('cart')) > 0)
                                     @foreach (Session::get('cart') as $items)
-                                        <tr class="cart-item" data-id="{{ $items->id }}">
+                                        <tr class="cart-item" data-id="{{ $items->id }}"
+                                            data-variant-id="{{ $items->product_variant_id }}">
                                             <td>
                                                 <input type="checkbox" data-key="{{ $items->key }}"
                                                     class="product-checkbox" name="selected_products[]"
@@ -87,7 +88,8 @@
                                                             type="button">-</button>
                                                         <input type="text" class="text-center product-quantity"
                                                             value="{{ $items->quantity }}" min="1"
-                                                            max="{{ $items->available_stock }}" style="width: 30%"  onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                                                            max="{{ $items->available_stock }}" style="width: 30%"
+                                                            onkeypress="return event.charCode >= 48 && event.charCode <= 57">
                                                         <button class="btn btn-outline-secondary button-increase"
                                                             type="button">+</button>
                                                     </div>
@@ -343,6 +345,7 @@
             });
         });
     </script>
+    {{-- Qty validate --}}
 
     {{-- discount --}}
     <script>
@@ -393,6 +396,7 @@
 
 
 
+    {{-- xử lý nút thanh toán --}}
     <script>
         $(document).ready(function() {
             // Khi bấm nút thanh toán, kiểm tra và lấy danh sách sản phẩm đã chọn
@@ -410,7 +414,7 @@
         });
     </script>
 
-
+    {{-- check mã giảm giá --}}
     <script>
         $(document).ready(function() {
             $('#checkout-form').click(function(e) {
@@ -465,7 +469,7 @@
         }
     </script>
 
-
+    {{--cart total checkbox --}}
     <script>
         $(document).ready(function() {
             //Hàm prop() lấy giá trị element hoặc gán giá trị
@@ -484,8 +488,8 @@
             });
         });
     </script>
-    {{--
-    cart total checkbox --}}
+
+    {{-- xử lý cart total --}}
     <script>
         $(document).ready(function() {
             function updateCartTotalForCheckbox() {
@@ -558,4 +562,227 @@
             });
         });
     </script>
+
+
+    {{-- xử lý live stock --}}
+    {{-- <script>
+        let pollingInterval = null;
+        let isCheckingStock = false;
+
+        function startPollingStock() {
+            console.log("Bắt đầu kiểm tra stock định kỳ");
+            pollingInterval = setInterval(() => {
+                checkStock();
+            }, 10000); // 10 giây
+        }
+
+        function checkStock() {
+            if (isCheckingStock) return;
+
+            console.log("Đang kiểm tra stock...");
+            isCheckingStock = true;
+
+            let variantIds = [];
+            $(".cart-item").each(function() {
+                variantIds.push($(this).data("variant-id"));
+            });
+
+            console.log(variantIds);
+
+            if (variantIds.length === 0) {
+                isCheckingStock = false;
+                return;
+            }
+
+            $.ajax({
+                url: "/cart/check-stock",
+                method: "POST",
+                data: {
+                    variant_ids: variantIds,
+                    _token: $('meta[name="csrf-token"]').attr("content"),
+                },
+                success: function(stocks) {
+                    let hasStockChanged = false;
+
+                    $(".cart-item").each(function() {
+                        let row = $(this);
+                        let variantId = row.data("variant-id");
+                        let availableStock = stocks[variantId];
+                        console.log(availableStock);
+
+                        if (typeof availableStock === "undefined") return;
+
+                        let input = row.find(".product-quantity");
+                        let currentQuantity = parseInt(input.val());
+                        input.attr("max", availableStock);
+
+                        if (currentQuantity > availableStock) {
+                            hasStockChanged = true;
+                            input.val(availableStock);
+                            let productName = row.find(".product__cart__item__text h6").text();
+
+                            if (availableStock === 0) {
+                                alert(
+                                    `Sản phẩm "${productName}" đã hết hàng và sẽ được xóa khỏi giỏ hàng.`
+                                    );
+                                // Xóa sản phẩm khỏi giỏ hàng
+                                row.remove();
+                            } else {
+                                alert(
+                                    `Sản phẩm "${productName}" hiện chỉ còn ${availableStock} sản phẩm trong kho.`
+                                    );
+                            }
+
+                            // Gọi lại hàm cập nhật session nếu stock thay đổi
+                            let productId = row.data("id");
+                            let color = row.find(".color-variant").data("color").replace(" ", "");
+                            let size = row.find(".size-variant").text().split(" ")[1];
+
+                            if (availableStock > 0) {
+                                updateCartSession(productId, color, size, availableStock);
+                            } else {
+                                // Xóa sản phẩm khỏi session
+                                removeFromCartSession(productId, color, size);
+                            }
+                        }
+                    });
+
+                    if (hasStockChanged) {
+                        updateCartTotal();
+                    }
+                },
+                error: function(err) {
+                    console.error("Lỗi polling stock:", err.responseText);
+                },
+                complete: function() {
+                    isCheckingStock = false;
+                }
+            });
+        }
+
+        // Kiểm tra stock trước khi submit form đặt hàng
+        function checkStockBeforeCheckout() {
+            return new Promise((resolve) => {
+                let variantIds = [];
+                let quantities = {};
+
+                $(".cart-item input[type='checkbox']:checked").each(function() {
+                    let row = $(this).closest('.cart-item');
+                    let variantId = row.data("variant-id");
+                    let quantity = parseInt(row.find(".product-quantity").val());
+
+                    variantIds.push(variantId);
+                    quantities[variantId] = quantity;
+                });
+
+                if (variantIds.length === 0) {
+                    resolve({
+                        success: false,
+                        message: 'Không có sản phẩm nào được chọn để thanh toán.'
+                    });
+                    return;
+                }
+
+                $.ajax({
+                    url: "/cart/check-stock",
+                    method: "POST",
+                    data: {
+                        variant_ids: variantIds,
+                        _token: $('meta[name="csrf-token"]').attr("content"),
+                    },
+                    success: function(stocks) {
+                        let errors = [];
+                        let hasError = false;
+
+                        for (let variantId in quantities) {
+                            let requestedQuantity = quantities[variantId];
+                            let availableStock = stocks[variantId];
+
+                            if (typeof availableStock === "undefined" || availableStock <
+                                requestedQuantity) {
+                                let row = $(`[data-variant-id="${variantId}"]`);
+                                let productName = row.find(".product__cart__item__text h6").text();
+
+                                if (availableStock === 0) {
+                                    errors.push(`Sản phẩm "${productName}" đã hết hàng.`);
+                                } else {
+                                    errors.push(
+                                        `Sản phẩm "${productName}" chỉ còn ${availableStock} sản phẩm trong kho.`
+                                    );
+                                }
+                                hasError = true;
+                            }
+                        }
+
+                        if (hasError) {
+                            resolve({
+                                success: false,
+                                message: errors.join('<br>') +
+                                    '<br>Vui lòng cập nhật lại giỏ hàng.'
+                            });
+                        } else {
+                            resolve({
+                                success: true
+                            });
+                        }
+                    },
+                    error: function(err) {
+                        console.error("Lỗi kiểm tra stock:", err.responseText);
+                        resolve({
+                            success: false,
+                            message: 'Lỗi khi kiểm tra tồn kho. Vui lòng thử lại.'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Sự kiện submit form checkout
+        $(document).on('submit', '#checkout-form', function(e) {
+            e.preventDefault();
+
+            let form = $(this);
+            let submitButton = form.find('button[type="submit"]');
+
+            // Disable submit button
+            submitButton.prop('disabled', true).text('Đang kiểm tra...');
+
+            checkStockBeforeCheckout().then(function(result) {
+                if (result.success) {
+                    // Nếu stock đủ, submit form
+                    form.off('submit').submit();
+                } else {
+                    // Nếu có lỗi, hiển thị thông báo
+                    alert(result.message);
+
+                    // Refresh lại trang để cập nhật giỏ hàng
+                    location.reload();
+                }
+
+                // Re-enable submit button
+                submitButton.prop('disabled', false).text('Đặt hàng');
+            });
+        });
+
+        function stopPollingStock() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        // Theo dõi khi user rời tab hoặc quay lại
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === "visible") {
+                startPollingStock();
+            } else {
+                stopPollingStock();
+            }
+        });
+
+        // Bắt đầu khi vào trang
+        if (document.visibilityState === "visible") {
+            startPollingStock();
+        }
+    </script> --}}
 @endsection

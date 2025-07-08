@@ -21,6 +21,19 @@ class CartController extends Controller
     }
 
 
+    // public function checkStock(Request $request)
+    // {
+    //     $variantIds = $request->input('variant_ids', []);
+
+    //     $stocks = ProductVariant::whereIn('id', $variantIds)
+    //         ->pluck('available_stock', 'id');
+
+    //     return response()->json($stocks);
+    // }
+
+
+
+
     // Thêm vào giỏ hàng mặc định lấy theo id sản phẩm
     public function add(Cart $cart, Product $product, $quantity = 1)
     {
