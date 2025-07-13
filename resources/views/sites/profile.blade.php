@@ -1,101 +1,209 @@
 @extends('sites.master')
 @section('title', 'Hồ sơ cá nhân')
-@section('content')
-    @if (Session::has('updateprofile'))
-        <div class="shadow-lg p-2 move-from-top js-div-dissappear" style="width: 21rem; margin-top: 120px; display:flex; text-align:center;">
-            <i
-                class="fas fa-check p-2 bg-success text-white rounded-circle pe-2 mx-2"></i>{{ Session::get('updateprofile') }}
-        </div>
-    @endif
-    <div class="container rounded bg-white">
+
+
+
+<section class="breadcrumb-option">
+    <div class="container">
         <div class="row">
-            <div class="col-md-3 border-right">
-                <div class="d-flex flex-column align-items-center text-center p-3 py-5">
-                    @php
-                    $avatarUrl = asset('client/img/avatar-user.png'); // Ảnh mặc định
-
-                    if (Auth::guard('customer')->check() && Auth::guard('customer')->user() !== null) {
-                        $user = Auth::guard('customer')->user();
-                        $avatar = $user->image;
-
-                        if (!empty($avatar)) {
-                            if (filter_var($avatar, FILTER_VALIDATE_URL)) {
-                                // Nếu ảnh là URL (Google/Facebook)
-                                $avatarUrl = $avatar;
-                            } elseif (file_exists(public_path('client/img/' . $avatar))) {
-                                // Nếu ảnh được lưu trong thư mục client/img và tồn tại
-                                $avatarUrl = asset('client/img/' . $avatar);
-                            }
-                        }
-                    }
-                    @endphp
-
-                <img class="rounded-circle mt-5" width="150px" src="{{ $avatarUrl }}">
-
-                    <span class="font-weight-bold"></span>
-                    <span class="text-black-50"></span>
+            <div class="col-lg-12">
+                <div class="breadcrumb__text">
+                    <h4>Hồ sơ cá nhân</h4>
+                    <div class="breadcrumb__links">
+                        <a href="{{ route('sites.home') }}">Home</a>
+                        <a href="{{ route('user.profile') }}">Hồ sơ cá nhân</a>
+                        <span>Thông tin cá nhân của bạn</span>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-9 border-right">
-                <form action="{{ route('user.update_profile', Auth::guard('customer')->user()->id) }}" method="post">
-                    @csrf @method('PUT')
-                    <div class="p-3 py-5">
-                        <div class="d-flex justify-content-center align-items-center mb-3">
-                            <h4 class="text-center">Hồ sơ cá nhân</h4>
+        </div>
+    </div>
+</section>
+
+@section('content')
+    @if (Session::has('updateprofile'))
+        <div class="alert alert-success alert-dismissible fade show mt-4 shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            {{ Session::get('updateprofile') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <div class="container my-5">
+        <div class="profile-container">
+            <div class="row g-0">
+                <!-- Sidebar -->
+                <div class="col-lg-3">
+                    <div class="profile-sidebar text-center">
+                        @php
+                            $avatarUrl = asset('client/img/avatar-user.png');
+                            if (Auth::guard('customer')->check() && Auth::guard('customer')->user() !== null) {
+                                $user = Auth::guard('customer')->user();
+                                $avatar = $user->image;
+                                if (!empty($avatar)) {
+                                    if (filter_var($avatar, FILTER_VALIDATE_URL)) {
+                                        $avatarUrl = $avatar;
+                                    } elseif (file_exists(public_path('client/img/' . $avatar))) {
+                                        $avatarUrl = asset('client/img/' . $avatar);
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        <img class="profile-avatar mb-3" src="{{ $avatarUrl }}" alt="Avatar">
+                        <h4>{{ Auth::guard('customer')->user()->name }}</h4>
+                        <p class="text-white-50 mb-4">{{ Auth::guard('customer')->user()->email }}</p>
+                    </div>
+                </div>
+
+                <!-- Main Content -->
+                <div class="col-lg-9">
+                    <div class="profile-content">
+                        <div class="profile-header">
+                            <h3 class="fw-bold"><i class="fas fa-user-edit me-2 text-primary"></i> Thông tin cá nhân</h3>
+                            <p class="text-muted">Quản lý thông tin cá nhân của bạn</p>
                         </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label class="labels">Họ và tên</label>
-                                <input type="text" class="form-control" name="name" value="{{ $customer->name }}">
-                                @error('name')
-                                    <small class="text-danger validate-error">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="labels">Email</label>
-                                <input type="text" class="form-control" name="email" value="{{ $customer->email }}">
-                                @error('email')
-                                    <small class="text-danger validate-error">{{ $message }}</small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label class="labels">Số điện thoại</label>
-                                <input type="text" class="form-control" name="phone" value="{{ $customer->phone }}">
-                                @error('phone')
-                                    <small class="text-danger validate-error">{{ $message }}</small>
-                                @enderror
-                            </div>
-                            <div class="col-md-6">
-                                <label class="labels">Địa chỉ</label>
-                                <input type="text" class="form-control" name="address" value="{{ $customer->address }}">
-                                @error('address')
-                                    <small class="text-danger validate-error">{{ $message }}</small>
-                                @enderror
-                            </div>
-                        </div>
-                        <div class="row mt-3 password-edit">
-                            <div class="col-md-6">
-                                <label class="labels">Mật khẩu cũ</label>
-                                <div class="d-flex">
-                                    <input type="text" class="form-control old-password" value="************" readonly>
-                                    <i class="fas fa-edit p-2" id="btn-edit-profile" style="cursor: pointer;"></i>
+
+                        <form action="{{ route('user.update_profile', Auth::guard('customer')->user()->id) }}"
+                            method="post">
+                            @csrf @method('PUT')
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Họ và tên</label>
+                                    <input type="text" class="form-control" name="name" value="{{ $customer->name }}">
+                                    @error('name')
+                                        <small class="text-danger validate-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="text" class="form-control" name="email" value="{{ $customer->email }}"
+                                        readonly>
+                                    @error('email')
+                                        <small class="text-danger validate-error">{{ $message }}</small>
+                                    @enderror
                                 </div>
                             </div>
-                        </div>
-                        <div class="mt-5 text-center">
-                            <input class="btn btn-primary profile-button" type="submit" value="Lưu thông tin">
-                        </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Số điện thoại</label>
+                                    <input type="text" class="form-control" name="phone"
+                                        value="{{ $customer->phone }}">
+                                    @error('phone')
+                                        <small class="text-danger validate-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Địa chỉ</label>
+                                    <input type="text" class="form-control" name="address"
+                                        value="{{ $customer->address }}">
+                                    @error('address')
+                                        <small class="text-danger validate-error">{{ $message }}</small>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="row password-section">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Mật khẩu</label>
+                                    <div class="input-group">
+                                        <input type="password" class="form-control" value="********" readonly>
+                                        <button class="btn btn-outline-secondary password-toggle" type="button"
+                                            id="btn-edit-profile">
+                                            <i class="fas fa-edit"></i> Thay đổi
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-end mt-4">
+                                <button type="submit" class="btn btn-save text-white">
+                                    <i class="fas fa-save me-2"></i> Lưu thông tin
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
 @endsection
-
 @section('css')
     <link rel="stylesheet" href="{{ asset('assets/css/message.css') }}" />
+    <style>
+        .profile-container {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .profile-sidebar {
+            background: linear-gradient(135deg, #656877 0%, #fbfbfb 100%);
+            color: white;
+            padding: 30px 20px;
+            height: 100%;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-content {
+            padding: 30px;
+            background-color: white;
+        }
+
+        .profile-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: #b8b8b8;
+            box-shadow: 0 0 0 0.25rem rgba(118, 75, 162, 0.25);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.3);
+        }
+
+        .password-toggle {
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .password-toggle:hover {
+            color: #764ba2;
+        }
+    </style>
 @endsection
 
 @section('js')
@@ -105,14 +213,27 @@
 
     <script>
         document.getElementById("btn-edit-profile").addEventListener("click", function(e) {
-            if (confirm("Bạn muốn sửa mật khẩu?")) {
-                let container = document.querySelector('.password-edit');
+            if (confirm("Bạn muốn thay đổi mật khẩu?")) {
+                let container = document.querySelector('.password-section');
                 let inputNewPassword = document.createElement('div');
-                inputNewPassword.classList.add('col-md-6');
+                inputNewPassword.classList.add('col-md-6', 'mb-3');
                 inputNewPassword.innerHTML = `
-                                    <label class="labels">Mật khẩu mới</label>
-                                    <input type="text" class="form-control" name="new_password" value="">`;
+                    <label class="form-label">Mật khẩu mới</label>
+                    <input type="password" class="form-control" name="new_password" placeholder="Nhập mật khẩu mới">
+                    <small class="text-muted">Để trống nếu không muốn thay đổi</small>`;
                 container.appendChild(inputNewPassword);
+
+                // Thêm trường xác nhận mật khẩu
+                let inputConfirmPassword = document.createElement('div');
+                inputConfirmPassword.classList.add('col-md-6', 'mb-3');
+                inputConfirmPassword.innerHTML =
+                    `
+                    <label class="form-label">Xác nhận mật khẩu</label>
+                    <input type="password" class="form-control" name="new_password_confirmation" placeholder="Nhập lại mật khẩu mới">`;
+                container.appendChild(inputConfirmPassword);
+
+                // Ẩn nút thay đổi sau khi click
+                this.style.display = 'none';
             }
         });
     </script>

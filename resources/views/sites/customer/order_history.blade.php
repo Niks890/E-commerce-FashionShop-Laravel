@@ -1,6 +1,23 @@
 @extends('sites.master')
 @section('title', 'Lịch sử đơn hàng')
-
+<!-- Breadcrumb Section Begin -->
+<section class="breadcrumb-option">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb__text">
+                    <h4>Lịch sử đơn hàng</h4>
+                    <div class="breadcrumb__links">
+                        <a href="{{ route('sites.home') }}">Home</a>
+                        <a href="{{ route('sites.getHistoryOrder') }}">Lịch sử giao dịch</a>
+                        <span>Lịch sử đơn hàng của bạn</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Breadcrumb Section End -->
 @section('content')
     @if (Session::has('success'))
         <div class="alert alert-success alert-dismissible fade show shadow-lg p-2 move-from-top js-div-dissappear"
@@ -345,7 +362,7 @@
                 success: function(response) {
                     showToast('success', response.message);
                     $("#status" + currentOrderId).text("Đã hủy").removeClass('bg-warning').addClass(
-                    'bg-danger');
+                        'bg-danger');
                     $("#action" + currentOrderId).html(`
                         <div class="action-buttons">
                             <a href="{{ route('sites.showOrderDetailOfCustomer', '') }}/${currentOrderId}"
