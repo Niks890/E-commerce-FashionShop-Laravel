@@ -18,6 +18,8 @@ use Exception;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Events\StockUpdated;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use StockUpdated as GlobalStockUpdated;
 
 class OrderController extends Controller
@@ -439,7 +441,6 @@ class OrderController extends Controller
 
             // Kiểm tra tồn kho và loại bỏ sản phẩm hết hàng
             foreach ($selectedItems as $key => $item) {
-                // Tìm đúng variant của sản phẩm trong bảng variant
                 $variant = ProductVariant::where('product_id', $item->id)
                     ->where('size', trim($item->size))
                     ->where('color', trim($item->color))
@@ -447,26 +448,53 @@ class OrderController extends Controller
                     ->first();
 
                 if (!$variant || $variant->available_stock < $item->quantity) {
-                    // Xóa sản phẩm hết hàng khỏi giỏ
                     unset($cart[$key]);
                     $errors[] = 'Sản phẩm "' . $item->product_name . '" đã hết hàng và đã bị xóa khỏi giỏ hàng.';
                 }
             }
 
-            // Nếu có lỗi, cập nhật lại giỏ hàng và chuyển về trang giỏ
             if (!empty($errors)) {
-                // Cập nhật lại giỏ hàng sau khi loại bỏ các sản phẩm hết hàng
                 session(['cart' => $cart]);
-
-                // Nếu giỏ hàng trống sau khi loại bỏ hết sản phẩm hết hàng
                 if (empty($cart)) {
                     return redirect()->route('sites.cart')->with('error', 'Tất cả sản phẩm đã hết hàng.');
                 }
-
-                // Trả về trang giỏ hàng kèm theo thông báo lỗi
                 return redirect()->route('sites.cart')->with('error', implode('<br>', $errors));
             }
 
+            // Xử lý voucher
+            $voucher = null;
+            $voucherId = session()->get('voucher_id', null);
+
+            if (!empty($voucherId)) {
+                $voucher = Voucher::where('id', $voucherId)
+                    ->where('vouchers_start_date', '<=', now())
+                    ->where('vouchers_end_date', '>=', now())
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$voucher) {
+                    return redirect()->route('sites.cart')->with('error', 'Voucher không hợp lệ hoặc đã hết hạn.');
+                }
+
+                // Kiểm tra số lần sử dụng (chỉ tính các voucher đã dùng thực sự)
+                $usageCount = VoucherUsage::where('voucher_id', $voucher->id)
+                    ->whereNotNull('order_id')
+                    ->count();
+
+                if ($usageCount >= $voucher->vouchers_usage_limit) {
+                    return redirect()->route('sites.cart')->with('error', 'Voucher đã hết lượt sử dụng.');
+                }
+
+                // Kiểm tra xem customer đã sử dụng voucher này chưa (chỉ tính khi đã dùng thực sự)
+                $voucherUsed = VoucherUsage::where('voucher_id', $voucher->id)
+                    ->where('customer_id', $data['customer_id'])
+                    ->whereNotNull('order_id')
+                    ->exists();
+
+                if ($voucherUsed) {
+                    return redirect()->route('sites.cart')->with('error', 'Bạn đã sử dụng voucher này rồi.');
+                }
+            }
 
             // Tạo đơn hàng
             $order = new Order();
@@ -483,13 +511,12 @@ class OrderController extends Controller
             $order->customer_id = $data['customer_id'];
             $order->save();
 
-
             $orderhistories = new OrderStatusHistory();
             $orderhistories->order_id = $order->id;
             $orderhistories->status = 'Chờ xử lý';
             $orderhistories->save();
 
-            // Tạo chi tiết đơn hàng từ các sản phẩm còn lại
+            // Tạo chi tiết đơn hàng
             foreach ($selectedItems as $item) {
                 OrderDetail::create([
                     'order_id' => $order->id,
@@ -502,7 +529,7 @@ class OrderController extends Controller
                 ]);
             }
 
-            // Xử lý trừ đi số lượng sản phẩm trong kho theo số lượng đã được đặt
+            // Trừ số lượng sản phẩm trong kho
             foreach ($selectedItems as $item) {
                 $variant = ProductVariant::where('product_id', $item->id)
                     ->where('size', trim($item->size))
@@ -511,14 +538,44 @@ class OrderController extends Controller
                     ->first();
 
                 if ($variant) {
-                    // trừ stock cả 2 sau khi đặt hàng thành công
                     $variant->stock -= $item->quantity;
                     $variant->available_stock -= $item->quantity;
                     $variant->save();
-                    // event(new GlobalStockUpdated($variant->id, $variant->available_stock));
                 }
             }
 
+            // Xử lý voucher usage
+            if ($voucher) {
+                // Kiểm tra xem đã có record voucher_usage chưa (đã tặng nhưng chưa dùng)
+                $existingVoucherUsage = VoucherUsage::where('voucher_id', $voucher->id)
+                    ->where('customer_id', $data['customer_id'])
+                    ->whereNull('order_id')
+                    ->first();
+
+                if ($existingVoucherUsage) {
+                    // Nếu đã có record (được tặng trước đó), cập nhật
+                    $existingVoucherUsage->update([
+                        'order_id' => $order->id,
+                        'used_at' => now(),
+                    ]);
+                } else {
+                    // Nếu chưa có, tạo mới
+                    VoucherUsage::create([
+                        'voucher_id' => $voucher->id,
+                        'customer_id' => $data['customer_id'],
+                        'order_id' => $order->id,
+                        'used_at' => now(),
+                    ]);
+                }
+
+                // Chỉ trừ số lần sử dụng còn lại nếu đây là lần dùng thực sự đầu tiên
+                if (!$existingVoucherUsage) {
+                    $voucher->vouchers_usage_limit -= 1;
+                    $voucher->save();
+                }
+            }
+
+            // Gửi email xác nhận
             try {
                 Mail::to($order->email)->queue(new OrderConfirmationMail($order));
                 Log::info('Email xác nhận đơn hàng đã được đưa vào queue cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id);
@@ -526,22 +583,23 @@ class OrderController extends Controller
                 Log::error('Lỗi khi gửi email xác nhận đơn hàng cho khách hàng: ' . $order->email . ' với đơn hàng ID: ' . $order->id . '. Lỗi: ' . $mailException->getMessage());
             }
 
-
-            // Xóa giỏ hàng sau khi tạo đơn hàng thành công
-            // session()->forget('cart');
-            // Nếu tất cả sản phẩm trong giỏ đều đã chọn, xóa toàn bộ giỏ hàng
+            // Xóa giỏ hàng
             if (count($selectedItems) === count($cart)) {
                 session()->forget('cart');
             } else {
-                // Cập nhật lại giỏ hàng chỉ giữ lại sản phẩm chưa chọn
                 $cart = array_filter($cart, function ($item) {
                     return empty($item->checked) || !$item->checked;
                 });
                 session(['cart' => $cart]);
             }
-            session()->forget('percent_discount');
 
-            // Lưu thông tin thành công vào session
+            // Xóa session voucher
+            if (session()->has('percent_discount') && session()->has('voucher_id')) {
+                session()->forget('percent_discount');
+                session()->forget('voucher_id');
+            }
+
+            // Lưu thông tin thành công
             Session::put('success_data', [
                 'logo' => 'cod.png',
                 'receiver_name' => $order->receiver_name,
@@ -550,18 +608,12 @@ class OrderController extends Controller
             ]);
 
             DB::commit();
-
             return redirect()->route('sites.success.payment');
         } catch (\Exception $e) {
             DB::rollBack();
-            // Log::error("Đặt hàng thất bại: " . $e->getMessage());
-
-            // Cập nhật lại giỏ hàng nếu có sản phẩm hết hàng đã bị xóa
             session(['cart' => $cart]);
 
-            // Nếu chưa có lỗi nào trước đó, thêm lỗi hệ thống
             if (empty($errors)) {
-                // Thêm lỗi vào mảng $errors
                 $errors[] = 'Đặt hàng thất bại (Do một số sản phẩm bạn chọn mua có thể đã hết hàng) dẫn đến lỗi trong quá trình tạo đơn hàng, bạn vui lòng thử lại!';
             }
             return redirect()->route('sites.cart')->with('error', implode('<br>', $errors));

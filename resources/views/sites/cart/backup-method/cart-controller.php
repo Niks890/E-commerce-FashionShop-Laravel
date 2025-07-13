@@ -1,3 +1,4 @@
+********************Controller************************
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
@@ -238,9 +239,6 @@ class OrderController extends Controller
         return response()->json($stocks);
     }
 }
-
-
-
 
 
 

@@ -13,11 +13,11 @@
                 <div class="d-flex flex-column align-items-center text-center p-3 py-5">
                     @php
                     $avatarUrl = asset('client/img/avatar-user.png'); // Ảnh mặc định
-                
+
                     if (Auth::guard('customer')->check() && Auth::guard('customer')->user() !== null) {
                         $user = Auth::guard('customer')->user();
                         $avatar = $user->image;
-                
+
                         if (!empty($avatar)) {
                             if (filter_var($avatar, FILTER_VALIDATE_URL)) {
                                 // Nếu ảnh là URL (Google/Facebook)
@@ -29,9 +29,9 @@
                         }
                     }
                     @endphp
-                
+
                 <img class="rounded-circle mt-5" width="150px" src="{{ $avatarUrl }}">
-                
+
                     <span class="font-weight-bold"></span>
                     <span class="text-black-50"></span>
                 </div>

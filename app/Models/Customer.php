@@ -52,4 +52,11 @@ class Customer extends Authenticatable
     {
         return $this->hasMany(LikeComment::class);
     }
+
+
+    // In your Customer model
+public function hasVoucher($voucherId)
+{
+    return $this->voucherUsages->pluck('voucher_id')->contains($voucherId);
+}
 }

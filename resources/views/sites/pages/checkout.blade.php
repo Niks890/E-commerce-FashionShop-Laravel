@@ -1,3 +1,22 @@
+{{-- @php
+    dd(Session::get('percent_discount'), Session::get('cart'), Session::get('voucher_id'));
+@endphp --}}
+@php
+    $percentDiscount = Session::get('percent_discount', 0);
+    $voucherId = Session::get('voucher_id');
+    $discountInfo = null;
+
+    if ($percentDiscount > 0 && $voucherId) {
+        $voucher = \App\Models\Voucher::find($voucherId);
+        if ($voucher) {
+            $discountInfo = [
+                'percent' => $percentDiscount * 100,
+                'code' => $voucher->vouchers_code,
+                'max_discount' => $voucher->vouchers_max_discount,
+            ];
+        }
+    }
+@endphp
 @extends('sites.master')
 @section('title', 'Thanh toán')
 @section('content')
@@ -110,23 +129,35 @@
                         <div class="col-lg-5 col-md-6">
                             <div class="checkout__order">
                                 <h4 class="order__title">Đơn hàng của bạn</h4>
+                                @if ($discountInfo)
+                                    <div class="alert alert-success mb-3">
+                                        <strong>Mã giảm giá đã áp dụng:</strong> {{ $discountInfo['code'] }}
+                                        <br>
+                                        <strong>Giảm:</strong> {{ $discountInfo['percent'] }}%
+                                        @if ($discountInfo['max_discount'])
+                                            (tối đa {{ number_format($discountInfo['max_discount'], 0, ',', '.') }} đ)
+                                        @endif
+                                    </div>
+                                @endif
                                 <div class="checkout__order__products">Sản Phẩm<span>Đơn giá</span></div>
                                 @php
                                     $index = 1;
                                     $totalPriceCart = 0;
                                     $vat = 0.1;
                                     $ship = 30000;
-                                    $percentDiscount = Session::get('percent_discount', 0); // Lấy giá trị mặc định nếu không có
+                                    $percentDiscount = Session::get('percent_discount', 0);
+                                    $discountAmount = 0; // Thêm biến để lưu tổng số tiền được giảm
 
                                     if (Session::has('cart') && count(Session::get('cart')) > 0) {
                                         $cart = array_filter(Session::get('cart'), function ($item) {
                                             return !empty($item->checked) && $item->checked;
-                                        }); // Lọc các sản phẩm được chọn (checked = true)
+                                        });
 
                                         foreach ($cart as $items) {
-                                            $discountedPrice =
-                                                $items->price * $items->quantity * (1 - $percentDiscount);
-                                            $totalPriceCart += $discountedPrice;
+                                            $itemTotal = $items->price * $items->quantity;
+                                            $itemDiscount = $itemTotal * $percentDiscount;
+                                            $discountAmount += $itemDiscount; // Cộng dồn số tiền được giảm
+                                            $totalPriceCart += $itemTotal - $itemDiscount;
                                         }
 
                                         if ($totalPriceCart >= 500000) {
@@ -159,11 +190,14 @@
                                         @endif
                                     @endforeach
                                 @endif
-                                <ul class="checkout__total__all">
-                                    <li>Tạm tính:<span>{{ number_format($totalPriceCart, 0, ',', '.') . ' đ' }}</span></li>
-                                    <li>Thuế VAT (10%):<span>{{ number_format($vatPrice, 0, ',', '.') . ' đ' }}</span></li>
-                                    <li>Phí Ship:<span>{{ number_format($ship, 0, ',', '.') . ' đ' }}</span></li>
-                                    <li>Thành tiền:<span>{{ number_format($total, 0, ',', '.') . ' đ' }}</span></li>
+                              <ul class="checkout__total__all">
+                                    @if($discountAmount > 0)
+                                        <li>Giảm giá:<span>-{{ number_format($discountAmount, 0, ',', '.') }} đ</span></li>
+                                    @endif
+                                    <li>Tạm tính:<span>{{ number_format($totalPriceCart, 0, ',', '.') }} đ</span></li>
+                                    <li>Thuế VAT (10%):<span>{{ number_format($vatPrice, 0, ',', '.') }} đ</span></li>
+                                    <li>Phí Ship:<span>{{ number_format($ship, 0, ',', '.') }} đ</span></li>
+                                    <li>Thành tiền:<span>{{ number_format($total, 0, ',', '.') }} đ</span></li>
                                 </ul>
                                 <div class="checkout__input__checkbox">
                                     <label for="COD">
@@ -218,7 +252,6 @@
 
 @section('css')
     <style>
-        /* Thêm vào file CSS của bạn */
         #province-select,
         #district-select,
         #ward-select {

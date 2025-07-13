@@ -13,6 +13,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Staff;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -59,6 +61,58 @@ class ApiController extends Controller
         return $this->apiStatus(null, 404, 0, 'Data not found.');
     }
 
+
+    public function checkVoucher($code)
+    {
+        $customerId = request()->input('customer_id');
+        $voucher = Voucher::where('vouchers_code', $code)->first();
+
+        if (!$voucher) {
+            return response()->json([
+                'status_code' => 404,
+                'message' => 'Voucher not found'
+            ], 404);
+        }
+
+        // Check dates
+        $now = now();
+        if ($now < $voucher->vouchers_start_date || $now > $voucher->vouchers_end_date) {
+            return response()->json([
+                'status_code' => 400,
+                'message' => 'Voucher not valid at this time'
+            ], 400);
+        }
+
+        // Check total usage
+        $usageCount = VoucherUsage::where('voucher_id', $voucher->id)
+            ->whereNotNull('order_id') // Only count actually used vouchers
+            ->count();
+
+        if ($usageCount >= $voucher->vouchers_usage_limit) {
+            return response()->json([
+                'status_code' => 400,
+                'message' => 'Voucher usage limit reached'
+            ], 400);
+        }
+
+        // Check customer usage if logged in
+        $alreadyUsed = false;
+        if ($customerId) {
+            $alreadyUsed = VoucherUsage::where('voucher_id', $voucher->id)
+                ->where('customer_id', $customerId)
+                ->whereNotNull('order_id') // Only mark as used if actually used (has order_id)
+                ->exists();
+        }
+
+        return response()->json([
+            'status_code' => 200,
+            'data' => [
+                ...$voucher->toArray(),
+                'usage_count' => $usageCount,
+                'already_used' => $alreadyUsed
+            ]
+        ]);
+    }
 
     public function categories()
     {

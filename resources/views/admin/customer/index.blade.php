@@ -1,5 +1,7 @@
 {{-- resources/views/admin/customer/index.blade.php --}}
-
+{{-- @php
+    dd($vouchers);
+@endphp --}}
 @extends('admin.master')
 
 @section('title', 'Danh sách khách hàng')
@@ -247,14 +249,14 @@
                         <div class="col-md-6">
                             <label for="voucher_id" class="form-label">Chọn voucher <span
                                     class="text-danger">*</span></label>
-                            <select class="form-select" id="voucher_id" name="voucher_id" required>
-                                <option value="">-- Chọn voucher --</option>
-                                @foreach ($vouchers as $voucher)
-                                    <option value="{{ $voucher->id }}">
-                                        {{ $voucher->vouchers_code }} - {{ $voucher->vouchers_description }}
-                                    </option>
-                                @endforeach
-                            </select>
+                       <select class="form-select" id="voucher_id" name="voucher_id" required>
+                        <option value="">-- Chọn voucher --</option>
+                        @foreach($vouchers as $voucher)
+                            <option value="{{ $voucher->id }}" data-remaining="{{ $voucher->remaining_usage }}">
+                                {{ $voucher->vouchers_code }} (Còn lại: {{ $voucher->remaining_usage }})
+                            </option>
+                        @endforeach
+                    </select>
                         </div>
                     </div>
 

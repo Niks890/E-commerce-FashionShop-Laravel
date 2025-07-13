@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Discount;
+use App\Models\VoucherUsage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -52,6 +53,27 @@ class DiscountController extends Controller
     {
         return abort(404);
     }
+
+    public function history($id)
+{
+    $usages = VoucherUsage::with(['customer', 'order'])
+        ->where('voucher_id', $id)
+        ->orderBy('used_at', 'desc')
+        ->get()
+        ->map(function ($usage) {
+            return [
+                'id' => $usage->id,
+                'customer_name' => $usage->customer ? $usage->customer->name : null,
+                'order_id' => $usage->order_id,
+                'used_at' => $usage->used_at
+            ];
+        });
+
+    return response()->json([
+        'success' => true,
+        'data' => $usages
+    ]);
+}
 
     /**
      * Store a newly created resource in storage.

@@ -7,6 +7,8 @@ use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\OrderStatusHistory;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Exception;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -170,6 +172,42 @@ class CheckoutController extends Controller
                         return redirect()->route('sites.cart')->with('error', implode('<br>', $errors));
                     }
 
+
+                    // Xử lý voucher
+                    $voucher = null;
+                    $voucherId = session()->get('voucher_id', null);
+
+                    if (!empty($voucherId)) {
+                        $voucher = Voucher::where('id', $voucherId)
+                            ->where('vouchers_start_date', '<=', now())
+                            ->where('vouchers_end_date', '>=', now())
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$voucher) {
+                            return redirect()->route('sites.cart')->with('error', 'Voucher không hợp lệ hoặc đã hết hạn.');
+                        }
+
+                        // Kiểm tra số lần sử dụng (chỉ tính các voucher đã dùng thực sự)
+                        $usageCount = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->whereNotNull('order_id')
+                            ->count();
+
+                        if ($usageCount >= $voucher->vouchers_usage_limit) {
+                            return redirect()->route('sites.cart')->with('error', 'Voucher đã hết lượt sử dụng.');
+                        }
+
+                        // Kiểm tra xem customer đã sử dụng voucher này chưa (chỉ tính khi đã dùng thực sự)
+                        $voucherUsed = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->where('customer_id', $data['customer_id'])
+                            ->whereNotNull('order_id')
+                            ->exists();
+
+                        if ($voucherUsed) {
+                            return redirect()->route('sites.cart')->with('error', 'Bạn đã sử dụng voucher này rồi.');
+                        }
+                    }
+
                     // Tạo đơn hàng lưu vào db
                     $order = new Order();
                     $order->address = $data['address'];
@@ -230,6 +268,36 @@ class CheckoutController extends Controller
                             $variant->save();
                         }
                     }
+                    // Xử lý voucher usage
+                    if ($voucher) {
+                        // Kiểm tra xem đã có record voucher_usage chưa (đã tặng nhưng chưa dùng)
+                        $existingVoucherUsage = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->where('customer_id', $data['customer_id'])
+                            ->whereNull('order_id')
+                            ->first();
+
+                        if ($existingVoucherUsage) {
+                            // Nếu đã có record (được tặng trước đó), cập nhật
+                            $existingVoucherUsage->update([
+                                'order_id' => $order->id,
+                                'used_at' => now(),
+                            ]);
+                        } else {
+                            // Nếu chưa có, tạo mới
+                            VoucherUsage::create([
+                                'voucher_id' => $voucher->id,
+                                'customer_id' => $data['customer_id'],
+                                'order_id' => $order->id,
+                                'used_at' => now(),
+                            ]);
+                        }
+
+                        // Chỉ trừ số lần sử dụng còn lại nếu đây là lần dùng thực sự đầu tiên
+                        if (!$existingVoucherUsage) {
+                            $voucher->vouchers_usage_limit -= 1;
+                            $voucher->save();
+                        }
+                    }
 
                     try {
                         Mail::to($order->email)->queue(new OrderConfirmationMail($order));
@@ -239,7 +307,10 @@ class CheckoutController extends Controller
                     }
 
 
-                    session()->forget('percent_discount');
+                    if (session()->has('percent_discount') && session()->has('voucher_id')) {
+                        session()->forget('percent_discount');
+                        session()->forget('voucher_id');
+                    }
                     Session::forget('order_data'); // Xóa session sau khi lưu vào db
 
                     // Lưu thông tin hiển thị thanh toán thành công
@@ -365,6 +436,42 @@ class CheckoutController extends Controller
 
                 // DB::beginTransaction();
                 try {
+
+                    // Xử lý voucher
+                    $voucher = null;
+                    $voucherId = session()->get('voucher_id', null);
+
+                    if (!empty($voucherId)) {
+                        $voucher = Voucher::where('id', $voucherId)
+                            ->where('vouchers_start_date', '<=', now())
+                            ->where('vouchers_end_date', '>=', now())
+                            ->lockForUpdate()
+                            ->first();
+
+                        if (!$voucher) {
+                            return redirect()->route('sites.cart')->with('error', 'Voucher không hợp lệ hoặc đã hết hạn.');
+                        }
+
+                        // Kiểm tra số lần sử dụng (chỉ tính các voucher đã dùng thực sự)
+                        $usageCount = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->whereNotNull('order_id')
+                            ->count();
+
+                        if ($usageCount >= $voucher->vouchers_usage_limit) {
+                            return redirect()->route('sites.cart')->with('error', 'Voucher đã hết lượt sử dụng.');
+                        }
+
+                        // Kiểm tra xem customer đã sử dụng voucher này chưa (chỉ tính khi đã dùng thực sự)
+                        $voucherUsed = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->where('customer_id', $data['customer_id'])
+                            ->whereNotNull('order_id')
+                            ->exists();
+
+                        if ($voucherUsed) {
+                            return redirect()->route('sites.cart')->with('error', 'Bạn đã sử dụng voucher này rồi.');
+                        }
+                    }
+
                     // Tạo đơn hàng
                     $order = new Order();
                     $order->address = $data['address'];
@@ -412,7 +519,42 @@ class CheckoutController extends Controller
                         ]);
                     }
 
-                    session()->forget('percent_discount');
+
+                    // Xử lý voucher usage
+                    if ($voucher) {
+                        // Kiểm tra xem đã có record voucher_usage chưa (đã tặng nhưng chưa dùng)
+                        $existingVoucherUsage = VoucherUsage::where('voucher_id', $voucher->id)
+                            ->where('customer_id', $data['customer_id'])
+                            ->whereNull('order_id')
+                            ->first();
+
+                        if ($existingVoucherUsage) {
+                            // Nếu đã có record (được tặng trước đó), cập nhật
+                            $existingVoucherUsage->update([
+                                'order_id' => $order->id,
+                                'used_at' => now(),
+                            ]);
+                        } else {
+                            // Nếu chưa có, tạo mới
+                            VoucherUsage::create([
+                                'voucher_id' => $voucher->id,
+                                'customer_id' => $data['customer_id'],
+                                'order_id' => $order->id,
+                                'used_at' => now(),
+                            ]);
+                        }
+
+                        // Chỉ trừ số lần sử dụng còn lại nếu đây là lần dùng thực sự đầu tiên
+                        if (!$existingVoucherUsage) {
+                            $voucher->vouchers_usage_limit -= 1;
+                            $voucher->save();
+                        }
+                    }
+
+                    if (session()->has('percent_discount') && session()->has('voucher_id')) {
+                        session()->forget('percent_discount');
+                        session()->forget('voucher_id');
+                    }
                     Session::forget('order_data');
 
                     try {
@@ -466,7 +608,7 @@ class CheckoutController extends Controller
         }
     }
 
-    // Xử lý thanh toán Momo (Persimistic Lock)
+    // Xử lý thanh toán Momo (Persimistic Lock) ko dùng đc do chưa xử lý trường hợp mã lỗi thanh toán
     // public function momoReturn(Request $request)
     // {
     //     $partnerCode = $request->partnerCode;
@@ -596,7 +738,7 @@ class CheckoutController extends Controller
     // }
 
 
-
+    // zalopay cần hosting mới dùng đc
     public function checkoutZaloPay(Request $request)
     {
         Session::put('order_data', $request->all());

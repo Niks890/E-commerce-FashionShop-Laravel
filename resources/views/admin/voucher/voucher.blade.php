@@ -170,6 +170,44 @@
         </div>
     </div>
 
+
+    <!-- Modal lịch sử sử dụng voucher -->
+    <div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="historyModalLabel">
+                        <i class="fas fa-history me-2"></i> Lịch sử sử dụng voucher
+                    </h5>
+                    <button type="button" class="btn-close text-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle w-100">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="p-3 text-start">ID</th>
+                                    <th class="p-3 text-start">Khách hàng</th>
+                                    <th class="p-3 text-start">Đơn hàng</th>
+                                    <th class="p-3 text-start">Thời gian sử dụng</th>
+                                </tr>
+                            </thead>
+                            <tbody id="voucherHistoryBody">
+                                <!-- Dữ liệu lịch sử sẽ được load ở đây -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-center bg-light py-3">
+                    <button type="button" class="btn btn-outline-secondary px-4 py-2" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i> Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('js')
@@ -255,6 +293,10 @@
                             <button type="button" class="btn btn-sm btn-info btn-detail" data-id="${voucher.id}" title="Xem chi tiết">
                                 <i class="fas fa-eye"></i>
                             </button>
+                            <!-- Thêm nút xem lịch sử -->
+                            <button type="button" class="btn btn-sm btn-warning btn-history" data-id="${voucher.id}" title="Xem lịch sử sử dụng">
+                                <i class="fas fa-history"></i>
+                            </button>
                             <button type="button" class="btn btn-sm btn-primary btn-edit" data-id="${voucher.id}" title="Chỉnh sửa">
                                 <i class="fas fa-edit"></i>
                             </button>
@@ -262,7 +304,7 @@
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
-                    </td>
+                 </td>
                 `;
                 tableBody.appendChild(row);
             });
@@ -380,6 +422,66 @@
                     }
                 };
             });
+
+
+            // History Button
+            document.querySelectorAll('.btn-history').forEach(button => {
+                button.onclick = async (e) => {
+                    const id = parseInt(e.currentTarget.dataset.id);
+                    try {
+                        // Gọi API để lấy lịch sử sử dụng voucher
+                        const response = await fetch(`/admin/voucher/${id}/history`, {
+                            headers: {
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            }
+                        });
+
+                        const result = await response.json();
+
+                        if (response.ok && result.success) {
+                            const historyBody = document.getElementById('voucherHistoryBody');
+                            historyBody.innerHTML = '';
+
+                            if (result.data.length === 0) {
+                                historyBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-gray-500">
+                                Chưa có lịch sử sử dụng voucher này
+                            </td>
+                        </tr>
+                    `;
+                            } else {
+                                result.data.forEach(usage => {
+                                    const row = document.createElement('tr');
+                                    row.innerHTML = `
+                            <td class="p-3">${usage.id}</td>
+                            <td class="p-3">${usage.customer_name || 'Khách vãng lai'}</td>
+                            <td class="p-3">
+                                <a href="/cart/order/${usage.order_id}" target="_blank" class="text-primary">
+                                    Đơn hàng #${usage.order_id}
+                                </a>
+                            </td>
+                            <td class="p-3">${new Date(usage.used_at).toLocaleString('vi-VN')}</td>
+                        `;
+                                    historyBody.appendChild(row);
+                                });
+                            }
+
+                            // Hiển thị modal
+                            const historyModal = new bootstrap.Modal(document.getElementById(
+                                'historyModal'));
+                            historyModal.show();
+                        } else {
+                            showMessage('error', result.message || 'Không thể tải lịch sử sử dụng');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showMessage('error', 'Có lỗi xảy ra khi tải lịch sử sử dụng');
+                    }
+                };
+            });
         }
 
         // Event listener for "Add new" button
@@ -391,72 +493,7 @@
             discountModal.show();
         };
 
-        // Event listener for form submission (Add/Edit)
-        // document.getElementById('discountForm').onsubmit = (e) => {
-        //     e.preventDefault();
 
-        //     const id = document.getElementById('voucherId').value;
-        //     const vouchers_code = document.getElementById('vouchers_code').value.trim();
-        //     const name = document.getElementById('name').value.trim();
-        //     const percent_discount = parseFloat(document.getElementById('percent_discount').value) / 100;
-        //     const max_discount = parseFloat(document.getElementById('max_discount').value);
-        //     const min_order_amount = parseFloat(document.getElementById('min_order_amount').value);
-        //     const available_uses = parseInt(document.getElementById('available_uses').value);
-        //     const start_date = document.getElementById('start_date').value;
-        //     const end_date = document.getElementById('end_date').value;
-
-        //     // Validation
-        //     if (!vouchers_code || !name || isNaN(percent_discount) || isNaN(max_discount) ||
-        //         isNaN(min_order_amount) || isNaN(available_uses) || !start_date || !end_date) {
-        //         showMessage('error', 'Vui lòng điền đầy đủ và hợp lệ các trường!');
-        //         return;
-        //     }
-
-        //     if (new Date(start_date) >= new Date(end_date)) {
-        //         showMessage('error', 'Ngày kết thúc phải sau ngày bắt đầu!');
-        //         return;
-        //     }
-
-        //     if (id) {
-        //         // Edit existing voucher
-        //         const index = vouchers.findIndex(v => v.id === parseInt(id));
-        //         if (index !== -1) {
-        //             vouchers[index] = {
-        //                 ...vouchers[index],
-        //                 code: vouchers_code,
-        //                 description: name,
-        //                 percent_discount,
-        //                 max_discount,
-        //                 min_order_amount,
-        //                 available_uses,
-        //                 start_date,
-        //                 end_date
-        //             };
-        //             showMessage('success', 'Cập nhật voucher thành công!');
-        //         } else {
-        //             showMessage('error', 'Không tìm thấy voucher để cập nhật!');
-        //         }
-        //     } else {
-        //         // Add new voucher
-        //         const newId = vouchers.length > 0 ? Math.max(...vouchers.map(v => v.id)) + 1 : 1;
-        //         vouchers.push({
-        //             id: newId,
-        //             code: vouchers_code,
-        //             description: name,
-        //             percent_discount,
-        //             max_discount,
-        //             min_order_amount,
-        //             available_uses,
-        //             start_date,
-        //             end_date
-        //         });
-        //         showMessage('success', 'Thêm voucher mới thành công!');
-        //     }
-
-        //     filterAndSearchVouchers();
-        //     const discountModal = bootstrap.Modal.getInstance(document.getElementById('discountModal'));
-        //     discountModal.hide();
-        // };
 
         // Event listener for form submission (Add/Edit) - FIX CHÍNH
         document.getElementById('discountForm').onsubmit = async (e) => {
@@ -626,6 +663,18 @@
 
 @section('css')
     <style>
+        .btn-warning {
+            background-color: #ffc107;
+            border-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+            border-color: #d39e00;
+            color: #212529;
+        }
+
         .card {
             border-radius: 0.75rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);

@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiController;
 use App\Http\Controllers\BlogCommentController;
 use App\Http\Controllers\CloudinaryUploadController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RevenueController;
@@ -32,8 +33,8 @@ use Illuminate\Support\Facades\Route;
 // });
 Route::get('discount', [ApiController::class, 'discounts'])->name('api.discounts');
 Route::get('discount/{id}', [ApiController::class, 'discount'])->name('api.discount');
-Route::get('discount-code/{code}', [ApiController::class, 'getDiscountByCode'])->name('api.getDiscountByCode');
-
+// Route::get('discount-code/{code}', [ApiController::class, 'getDiscountByCode'])->name('api.getDiscountByCode');
+Route::get('/vouchers/check/{code}', [ApiController::class, 'checkVoucher'])->name('api.vouchers.check');
 Route::get('category', [ApiController::class, 'categories'])->name('api.categories');
 // Route::get('/categories/{id}/products', [App\Http\Controllers\CategoryController::class, 'apiProducts']);
 Route::get('product', [ApiController::class, 'products'])->name('api.products');

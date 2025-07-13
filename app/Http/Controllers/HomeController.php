@@ -12,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use App\Models\ProductRecent;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
 
@@ -234,7 +236,7 @@ class HomeController extends Controller
             case 'price_desc':
                 $query->orderBy('price', 'desc');
                 break;
-           case 'best_selling':
+            case 'best_selling':
                 $query->leftJoin('order_details as order_d', 'products.id', '=', 'order_d.product_id')
                     ->select('products.*', DB::raw('SUM(order_d.quantity) as total_sold'))
                     ->whereNotNull('order_d.product_id')
@@ -428,4 +430,36 @@ class HomeController extends Controller
     {
         return view('sites.success.payment');
     }
+
+
+
+
+ public function coupon()
+{
+    $customerId = Auth::guard('customer')->id();
+
+    // Lấy danh sách voucher đã sử dụng
+    $usedVouchers = VoucherUsage::with('voucher')
+        ->where('customer_id', $customerId)
+        ->whereNotNull('used_at')
+        ->orderBy('used_at', 'desc')
+        ->paginate(10);
+
+    // Lấy ID các voucher đã sử dụng
+    $usedVoucherIds = VoucherUsage::where('customer_id', $customerId)
+        ->whereNotNull('used_at')
+        ->pluck('voucher_id')
+        ->toArray();
+
+    // Lấy danh sách voucher có thể sử dụng (loại trừ các voucher đã dùng)
+    $availableVouchers = Voucher::where('vouchers_start_date', '<=', now())
+        ->where('vouchers_end_date', '>=', now())
+        ->where('vouchers_usage_limit', '>', 0)
+        ->whereNotIn('id', $usedVoucherIds) // Loại bỏ voucher đã dùng
+        ->orderBy('vouchers_percent_discount', 'desc')
+        ->limit(4)
+        ->get();
+
+    return view('sites.customer.coupon', compact('usedVouchers', 'availableVouchers'));
+}
 }

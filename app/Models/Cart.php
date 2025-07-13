@@ -40,7 +40,7 @@ class Cart
                 'size' => $productVariant->size,
                 'stock' => $productVariant->stock,
                 'available_stock' => $productVariant->available_stock,
-                'checked' => false
+                'checked' => false,
             ];
             $this->items[$key] = (object)$items;
         }

@@ -26,6 +26,8 @@ class CustomerController extends Controller
         return view('sites.login');
     }
 
+
+
     public function post_login(Request $request)
     {
         $request->validate([
@@ -45,17 +47,25 @@ class CustomerController extends Controller
         ];
 
         if (Auth::guard('customer')->attempt($credentials)) {
-            // $customerId = Auth::guard('customer')->id();
-            // // Gọi hàm lưu giỏ hàng từ session vào DB
-            // $cart = new Cart();
-            // $cart->saveToDatabase($customerId);
-            // $cartItems = $cart->getCartItemsOfCustomer($customerId);
-            // dd($cartItems);
+            // Xử lý redirect sau khi đăng nhập thành công
+            $redirectUrl = $request->session()->get('redirect_url', route('sites.home'));
+            $action = $request->session()->get('login_action');
+
+            // Xóa session sau khi lấy
+            $request->session()->forget(['redirect_url', 'login_action']);
+
+            // Nếu là action apply voucher
+            if ($action === 'apply_voucher') {
+                return redirect($redirectUrl)->with('message', 'Vui lòng nhập lại mã giảm giá sau khi đăng nhập');
+            }
+
+            // Nếu có session auth từ giỏ hàng
             if (Session::has('auth')) {
                 Session::forget('auth');
                 return redirect()->route('sites.cart');
             }
-            return redirect()->route('sites.home')->with('success', 'Đăng nhập thành công!');
+
+            return redirect($redirectUrl)->with('success', 'Đăng nhập thành công!');
         }
 
         return back()->withErrors(['login' => 'Email, Username hoặc mật khẩu không đúng.'])->withInput();
@@ -213,7 +223,7 @@ class CustomerController extends Controller
             ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
             ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->where('o.id', $order->id)
-            ->select('o.*', 'c.name as customer_name', 'p.product_name as product_name', 'p.image','p.sku', 'pv.size', 'pv.color', 'od.quantity', 'od.price', 'od.code')
+            ->select('o.*', 'c.name as customer_name', 'p.product_name as product_name', 'p.image', 'p.sku', 'pv.size', 'pv.color', 'od.quantity', 'od.price', 'od.code')
             ->get();
 
         return view('sites.customer.order_detail', compact('orderDetail'));
@@ -276,7 +286,6 @@ class CustomerController extends Controller
         $query = Customer::query();
 
         // Eager load mối quan hệ voucherUsages và lồng voucher bên trong
-        // Điều này giúp bạn lấy tất cả voucher đã tặng cho mỗi khách hàng
         $query->with(['voucherUsages.voucher']);
 
         // Đếm số đơn hàng và voucher cho mỗi khách hàng
@@ -301,7 +310,7 @@ class CustomerController extends Controller
             $query->whereDate('created_at', '<=', $request->get('to_date'));
         }
 
-        // Lọc theo số đơn hàng (giữ nguyên)
+        // Lọc theo số đơn hàng
         if ($request->filled('order_count')) {
             $orderCount = $request->get('order_count');
 
@@ -323,7 +332,7 @@ class CustomerController extends Controller
             }
         }
 
-        // Lọc theo voucher đã tặng: Đã sửa lại để dùng `voucherUsages_count`
+        // Lọc theo voucher đã tặng
         if ($request->filled('voucher_status')) {
             $voucherStatus = $request->get('voucher_status');
 
@@ -334,8 +343,7 @@ class CustomerController extends Controller
             }
         }
 
-
-        // Sắp xếp theo số đơn hàng (giữ nguyên)
+        // Sắp xếp theo số đơn hàng
         if ($request->filled('order_sort')) {
             $orderSort = $request->get('order_sort');
 
@@ -350,25 +358,49 @@ class CustomerController extends Controller
 
         $customers = $query->paginate(5);
 
-        // Load danh sách voucher có sẵn (giữ nguyên)
-        $vouchers = Voucher::where('vouchers_start_date', '<=', now())->where('vouchers_end_date', '>=', now())->get();
+        // Load danh sách voucher có sẵn và tính số lần còn lại có thể sử dụng
+        $vouchers = Voucher::where('vouchers_start_date', '<=', now())
+            ->where('vouchers_end_date', '>=', now())
+            ->where('vouchers_usage_limit', '>', 0)
+            ->get()
+            ->map(function ($voucher) {
+                $voucher->remaining_usage = $voucher->vouchers_usage_limit - $voucher->voucher_usages()->count();
+                return $voucher;
+            })
+            ->filter(function ($voucher) {
+                return $voucher->remaining_usage > 0;
+            });
 
         return view('admin.customer.index', compact('customers', 'vouchers'));
     }
-
 
     public function sendVoucher(Request $request)
     {
         $request->validate([
             'customer_id' => 'required|exists:customers,id',
             'voucher_id' => 'required|exists:vouchers,id',
-            'message' => 'nullable|string|max:500', // Thêm validation cho lời nhắn
+            'message' => 'nullable|string|max:500',
         ]);
 
         try {
             $customer = Customer::findOrFail($request->customer_id);
             $voucher = Voucher::findOrFail($request->voucher_id);
             $expiryDate = $voucher->vouchers_end_date;
+
+
+
+
+            // Kiểm tra xem khách hàng đã nhận voucher này chưa
+            $alreadyReceived = $customer->voucherUsages()
+                ->where('voucher_id', $voucher->id)
+                ->exists();
+
+            if ($alreadyReceived) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Khách hàng đã nhận voucher này trước đó'
+                ]);
+            }
 
             VoucherUsage::create([
                 'customer_id' => $customer->id,
@@ -377,18 +409,19 @@ class CustomerController extends Controller
                 'used_at' => null,
             ]);
 
+
             // Gửi email thông tin voucher cho khách hàng
             Mail::to($customer->email)->send(new VoucherMail($customer, $voucher, $request->input('message'), $expiryDate));
+
             return response()->json([
                 'success' => true,
-                'message' => 'Đã tặng và gửi email voucher thành công'
+                'message' => 'Đã gửi email voucher thành công'
             ]);
         } catch (\Exception $e) {
-            // Log lỗi để dễ dàng debug
             Log::error('Lỗi khi gửi voucher: ' . $e->getMessage(), [
                 'customer_id' => $request->customer_id,
                 'voucher_id' => $request->voucher_id,
-                'trace' => $e->getTraceAsString(), // Thêm trace để debug chi tiết hơn
+                'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([

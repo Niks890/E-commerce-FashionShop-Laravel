@@ -62,7 +62,7 @@ Route::group(['prefix' => '/'], function () {
     Route::get('/cart', [HomeController::class, 'cart'])->name('sites.cart');
     Route::get('/aboutUs', [HomeController::class, 'aboutUs'])->name('sites.aboutUs');
     Route::get('/blog-detail/{slug}', [HomeController::class, 'blogDetail'])->name('sites.blogDetail');
-
+    Route::get('/coupon', [HomeController::class, 'coupon'])->name('sites.coupon');
     // xử lý gửi email
     Route::get('/contact', [HomeController::class, 'contact'])->name('sites.contact');
     // Route::get('/contact-success', [ContactController::class, 'contactSuccess'])->name('contact.contactSuccess');
@@ -123,6 +123,7 @@ Route::group(['prefix' => '/'], function () {
 Route::group(['prefix' => '/cart'], function () {
     Route::get('/', [CartController::class, 'cart'])->name('sites.cart');
     // Route::post('/check-stock', [CartController::class, 'checkStock'])->name('sites.checkStock');
+    Route::post('/check-stock', [CartController::class, 'checkStock'])->name('cart.check-stock');
     Route::get('/add/{product?}/{quantity?}', [CartController::class, 'add'])->name('sites.add');
     Route::post('/add/{product?}/{quantity?}', [CartController::class, 'add'])->name('sites.addFromDetail');
     Route::get('/update/{id}/{quantity?}', [CartController::class, 'update'])->name('sites.update');
@@ -171,6 +172,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             'comment' => CommentController::class
         ]
     );
+    Route::get('/voucher/{id}/history', [DiscountController::class, 'history'])->name('admin.voucher.history')->middleware('can:salers');
     Route::get('/products/{product}/variants', [ProductController::class, 'getVariants']);
     Route::post('/products/update-stock', [ProductController::class, 'updateStock']);
     Route::get('/categories/{category}/products-modal', [CategoryController::class, 'showProductsInModal'])->name('category.products.modal');
@@ -237,6 +239,7 @@ Route::post('/inventory/{id}/reject', [InventoryController::class, 'reject'])
 
 Route::post('/password/send-otp', [ForgotPasswordController::class, 'sendOtp'])->name('password.send_otp');
 Route::post('/password/verify-otp', [ForgotPasswordController::class, 'verifyOtp'])->name('password.verify_otp');
+
 // Route::group(['prefix' => 'blogcomments'], function() {
 //     // Lưu bình luận mới
 //     Route::post('/', [BlogCommentController::class, 'store'])->name('blogcomments.store');

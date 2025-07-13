@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class CartController extends Controller
@@ -17,10 +19,79 @@ class CartController extends Controller
 
     public function checkout()
     {
+
+        // Kiểm tra đăng nhập
+        if (!Auth::guard('customer')->check()) {
+            return redirect()->route('user.login')->with('redirect_url', url()->current());
+        }
+
+        // Kiểm tra giỏ hàng
+        if (!Session::has('cart') || count(Session::get('cart')) === 0) {
+            return redirect()->route('sites.cart')->with('error', 'Giỏ hàng của bạn đang trống!');
+        }
+
+        // Kiểm tra stock trước khi hiển thị trang thanh toán
+        $stockCheck = $this->checkStockBeforeCheckout();
+        if (!$stockCheck['success']) {
+            return redirect()->route('sites.cart')->with('error', $stockCheck['message']);
+        }
+
         return view('sites.pages.checkout');
     }
 
 
+    private function checkStockBeforeCheckout()
+    {
+        $cart = Session::get('cart');
+        $variantIds = [];
+        $errors = [];
+        $hasError = false;
+
+        // Lấy danh sách variant IDs
+        foreach ($cart as $item) {
+            $variantIds[] = $item->product_variant_id;
+        }
+
+        // Kiểm tra stock từ database
+        $variants = ProductVariant::whereIn('id', $variantIds)->get();
+
+        foreach ($cart as $key => $item) {
+            $variant = $variants->firstWhere('id', $item->product_variant_id);
+
+            if (!$variant) {
+                $errors[] = "Sản phẩm {$item->name} không tồn tại";
+                unset($cart[$key]);
+                $hasError = true;
+                continue;
+            }
+
+            if ($variant->available_stock < $item->available_stock) {
+                if ($variant->available_stock == 0) {
+                    $errors[] = "Sản phẩm {$item->name} đã hết hàng";
+                    unset($cart[$key]);
+                } else {
+                    $errors[] = "Sản phẩm {$item->name} chỉ còn {$variant->available_stock} sản phẩm. Đã cập nhật số lượng.";
+                    $item->available_stock = $variant->available_stock;
+                }
+                $hasError = true;
+            }
+        }
+
+        // Cập nhật lại session nếu có thay đổi
+        if ($hasError) {
+            Session::put('cart', $cart);
+
+            return [
+                'success' => false,
+                'message' => implode('<br>', $errors)
+            ];
+        }
+
+        return ['success' => true];
+    }
+
+
+    // live stock js
     // public function checkStock(Request $request)
     // {
     //     $variantIds = $request->input('variant_ids', []);
@@ -177,20 +248,35 @@ class CartController extends Controller
         return response()->json(['message' => 'Giỏ hàng đã được cập nhật!']);
     }
 
+
+
     public function createPercentDiscountSession(Request $request)
     {
-        // Kiểm tra dữ liệu đầu vào
-        if (!$request->has('percent_discount')) {
-            return response()->json(['message' => 'Thiếu dữ liệu!'], 400);
+        try {
+            $percentDiscount = $request->input('percent_discount', 0);
+            $voucherId = $request->input('voucher_id');
+
+            // Lưu vào session
+            Session::put('percent_discount', $percentDiscount);
+
+            if ($voucherId) {
+                Session::put('voucher_id', $voucherId);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Session updated successfully',
+                'data' => [
+                    'percent_discount' => $percentDiscount,
+                    'voucher_id' => $voucherId
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to update session: ' . $e->getMessage()
+            ], 500);
         }
-
-        // Lưu giá trị percent_discount vào session
-        Session::put('percent_discount', (floatval($request->percent_discount)));
-
-        return response()->json([
-            'message' => 'percent_discount được cập nhật!',
-            'data' => Session::get('percent_discount')
-        ]);
     }
 
     public function updateCheckStatus(Request $request)
@@ -204,5 +290,21 @@ class CartController extends Controller
             session(['cart' => $cart]);
         }
         return response()->json(['message' => 'Cập nhật thành công!', 'cart' => session('cart')]);
+    }
+
+    // kiểm tra stock khi click thanh toán
+    public function checkStock(Request $request)
+    {
+        $variantIds = $request->input('variant_ids');
+        $stocks = [];
+
+        foreach ($variantIds as $variantId) {
+            $variant = ProductVariant::find($variantId);
+            if ($variant) {
+                $stocks[$variantId] = $variant->available_stock;
+            }
+        }
+
+        return response()->json($stocks);
     }
 }
