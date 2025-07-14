@@ -42,7 +42,7 @@ class ChatBotApiController extends Controller
         - Sử dụng link hãy gửi kèm thẻ <a> để truy cập thay vì text
         - Khi người dùng hỏi còn hàng không chỉ trả lời những size và màu có available_stock lớn hơn 0
         - So sánh, tư vấn dựa trên sản phẩm đã biết
-        - Kèm link sản phẩm khi có thể theo định dạng http://127.0.0.1:8000/product/{slug}
+        - Khi khách hỏi tư vấn chi tiết hay hỏi rõ thông tin sản phẩm hãy gửi kèm link sản phẩm theo định dạng http://127.0.0.1:8000/product/{slug}
 
 
         2. Tương tác thông minh:
@@ -106,6 +106,16 @@ class ChatBotApiController extends Controller
                     'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
                 ]);
             }
+
+
+            // $followUpResponse = $this->handleFollowUpQuestions($userMessage, $userId);
+            // if ($followUpResponse) {
+            //     Log::info('Returning follow-up product detail', $followUpResponse);
+            //     return response()->json([
+            //         'reply_data' => $followUpResponse,
+            //         'reply' => $followUpResponse['content'] ?? ''
+            //     ]);
+            // }
             // Get and process chat history
             $historyRaw = Redis::lrange($historyKey, 0, -1);
             $history = array_map('json_decode', $historyRaw);
@@ -1043,19 +1053,6 @@ class ChatBotApiController extends Controller
         return number_format($price, 0, ',', '.') . 'đ';
     }
 
-    // protected function processContentWithImages(string $content): string
-    // {
-    //     $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/i';
-
-    //     $processedContent = preg_replace_callback($imagePattern, function ($matches) {
-    //         $imageUrl = $matches[0];
-    //         return "<img src='{$imageUrl}' class='img-test' alt='Hình ảnh' style='max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;'>";
-    //     }, $content);
-
-    //     return $processedContent;
-    // }
-
-
     protected function processContentWithImages(string $content): string
     {
         // Xử lý các URL ảnh đã bị mã hóa HTML
@@ -1095,5 +1092,28 @@ class ChatBotApiController extends Controller
                 'message' => 'Lỗi khi xóa lịch sử: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+
+    protected function formatProductDetailResponse($product)
+    {
+        $imageTag = '';
+        if (!empty($product->image)) {
+            $imageTag = "<div class='text-center mb-2'><img src='{$product->image}' alt='Ảnh sản phẩm' class='img-fluid rounded border' style='max-width: 300px; object-fit: contain;'></div>";
+        }
+        $content = $imageTag
+            . "<b>{$product->name}</b><br>"
+            . (!empty($product->brand) ? "Thương hiệu: {$product->brand}<br>" : "")
+            . (!empty($product->material) ? "Chất liệu: {$product->material}<br>" : "")
+            . (!empty($product->short_description) ? "{$product->short_description}<br>" : "")
+            . (!empty($product->description) ? "{$product->description}<br>" : "")
+            . (!empty($product->stock_summary) ? "Tình trạng: {$product->stock_summary}<br>" : "")
+            . ($product->link ? "<a href='{$product->link}' target='_blank'>Xem chi tiết sản phẩm</a>" : "");
+        return [
+            'type' => 'product_detail',
+            'content' => $content,
+            'image_url' => $product->image ?? null,
+            'link' => $product->link ?? null,
+        ];
     }
 }

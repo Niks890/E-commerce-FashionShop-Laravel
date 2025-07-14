@@ -93,7 +93,8 @@ Route::group(['prefix' => '/'], function () {
     // Xử lý chatbot
     // Route::post('/get-product-info/webhook', [DialogflowController::class, 'getProductInfo'])->name('dialogflow.getProductInfo');
 
-
+    // Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
+    // Route::get('/shop/filter', [HomeController::class, 'filterAjax'])->name('shop.filter');
     // Xử lý đơn hàng
     Route::get('/order-history', [CustomerController::class, 'getHistoryOrderOfCustomer'])->name('sites.getHistoryOrder')->middleware('customer');
     Route::get('/order-detail/{order}', [CustomerController::class, 'showOrderDetailOfCustomer'])->name('sites.showOrderDetailOfCustomer')->middleware('customer');

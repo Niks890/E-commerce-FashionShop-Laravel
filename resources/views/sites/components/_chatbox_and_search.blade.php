@@ -19,7 +19,7 @@
                     </h5>
                     <div class="header-actions">
                         <button type="button" class="btn-clear-history" title="Xóa lịch sử chat">
-                          <i class="fas fa-broom" style="font-size: 18px;"></i>
+                            <i class="fas fa-broom" style="font-size: 18px;"></i>
                         </button>
                         <button type="button" class="btn-close-chatbot" data-bs-dismiss="modal" aria-label="Close">
                             <i class="fas fa-times"></i>
@@ -28,52 +28,7 @@
                 </div>
                 <div class="modal-body" id="chatbox-messages">
                     <!-- Welcome Message -->
-                    <div class="welcome-message fade-in">
-                        <div class="bot-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-
-                        <h4>Chào mừng bạn đến với TFashionShop!</h4>
-                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản
-                            phẩm...)!</p>
-                        <strong style="color: red; font-weight: bold; font-size: 14px;">(*Chatbot có thể phản hồi thông
-                            tin chưa chính xác! Mọi thông tin chỉ mang tính chất tham
-                            khảo!*)</strong>
-                    </div>
-
-
-                    <!-- Topic Guide -->
-                    <div class="topic-guide">
-                        <h5>
-                            <i class="fas fa-compass"></i>
-                            Hãy chọn một chủ đề
-                        </h5>
-                        <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
-                    </div>
-
-
-                    <div class="quick-replies">
-                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
-                            <i class="fas fa-tshirt"></i>
-                            Áo thun
-                        </button>
-                        <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
-                            <i class="fas fa-user-tie"></i>
-                            Áo sơ mi
-                        </button>
-                        <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
-                            <i class="fas fa-tags"></i>
-                            Sản phẩm giá mềm
-                        </button>
-                        <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
-                            <i class="fas fa-tags"></i>
-                            Sản phẩm khuyến mãi
-                        </button>
-                        <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
-                            <i class="fas fa-ruler"></i>
-                            Hướng dẫn chọn size
-                        </button>
-                    </div>
+                    <!-- Welcome message sẽ được render lại bằng JS -->
                 </div>
                 <div class="modal-footer">
                     <div class="input-container w-100">
@@ -119,7 +74,6 @@
 @section('js')
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-
             const chatboxIcon = document.getElementById("chatbox-icon");
             const chatboxMessages = document.getElementById("chatbox-messages");
             const chatboxInput = document.getElementById("chatbox-input");
@@ -127,42 +81,101 @@
             const closeChatbot = document.querySelector(".btn-close-chatbot");
             const modalElement = document.getElementById("chatbox-modal");
             const modal = new bootstrap.Modal(modalElement);
+            const clearHistoryBtn = document.querySelector('.btn-clear-history');
 
-            document.addEventListener("click", function(event) {
-                if (event.target.closest(".quick-reply-btn")) {
-                    const button = event.target.closest(".quick-reply-btn");
-                    const message = button.getAttribute("data-message");
+            // --- LocalStorage Chat History functions ---
+            function getChatHistory() {
+                const history = localStorage.getItem('chat_history');
+                return history ? JSON.parse(history) : [];
+            }
 
-                    if (message) {
-                        // Thêm hiệu ứng click
-                        button.style.transform = "scale(0.95)";
-                        setTimeout(() => {
-                            button.style.transform = "";
-                        }, 150);
+            function saveMessageToHistory(role, message) {
+                const history = getChatHistory();
+                history.push({
+                    role,
+                    message,
+                    time: Date.now()
+                });
+                localStorage.setItem('chat_history', JSON.stringify(history));
+            }
 
-                        // Gọi hàm sendMessage với nội dung từ button
-                        if (typeof sendMessage === 'function' && typeof chatboxInput !== 'undefined') {
-                            chatboxInput.value = message;
-                            sendMessage();
-                        } else {
-                            // Demo: hiển thị message được chọn
-                            // console.log("Message selected:", message);
-                            alert("Đã chọn: " + message);
-                        }
-                    }
+            function clearChatHistory() {
+                localStorage.removeItem('chat_history');
+            }
+
+            function renderChatHistory() {
+                chatboxMessages.innerHTML = '';
+                const history = getChatHistory();
+                if (history.length === 0) {
+                    // Welcome message + quick replies như mặc định
+                    chatboxMessages.innerHTML = `
+            <div class="welcome-message fade-in">
+                <div class="bot-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h4>Chào mừng bạn đến với TFashionShop!</h4>
+                <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản phẩm...)!</p>
+                <strong style="color: red; font-weight: bold; font-size: 14px;">(*Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin chỉ mang tính chất tham khảo!*)</strong>
+            </div>
+            <div class="topic-guide">
+                <h5><i class="fas fa-compass"></i> Hãy chọn một chủ đề</h5>
+                <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
+            </div>
+            <div class="quick-replies">
+                <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
+                    <i class="fas fa-tshirt"></i> Áo thun
+                </button>
+                <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
+                    <i class="fas fa-user-tie"></i> Áo sơ mi
+                </button>
+                <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
+                    <i class="fas fa-tags"></i> Sản phẩm giá mềm
+                </button>
+                <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
+                    <i class="fas fa-tags"></i> Sản phẩm khuyến mãi
+                </button>
+                <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
+                    <i class="fas fa-ruler"></i> Hướng dẫn chọn size
+                </button>
+            </div>
+            `;
+                    initQuickReplyButtons();
+                    return;
                 }
-            });
+                history.forEach(item => {
+                    if (item.role === 'user') {
+                        const userMessageContainer = document.createElement("div");
+                        userMessageContainer.className = "message-container d-flex justify-content-end";
+                        userMessageContainer.innerHTML = `
+                    <div class="user-message">
+                        ${escapeHtml(item.message)}
+                    </div>
+                `;
+                        chatboxMessages.appendChild(userMessageContainer);
+                    } else {
+                        const botMessageContainer = document.createElement("div");
+                        botMessageContainer.className = "message-container bot-message-container slide-up";
+                        botMessageContainer.innerHTML = `
+                    <div class="bot-avatar"><i class="fas fa-robot"></i></div>
+                    <div class="bot-message"><div>${item.message}</div></div>
+                `;
+                        chatboxMessages.appendChild(botMessageContainer);
+                    }
+                });
+            }
 
+            // --- Sự kiện mở chatbox: load lại lịch sử chat ---
             chatboxIcon.addEventListener("click", () => {
                 modal.show();
-                // Focus on input when modal opens
                 setTimeout(() => {
                     chatboxInput.focus();
+                    renderChatHistory();
+                    scrollToBottom();
                 }, 300);
             });
 
+            // --- Gửi tin nhắn ---
             chatboxSend.addEventListener("click", sendMessage);
-
             chatboxInput.addEventListener("keypress", function(event) {
                 if (event.key === "Enter" && !event.shiftKey) {
                     event.preventDefault();
@@ -170,39 +183,24 @@
                 }
             });
 
-            if (closeChatbot) {
-                closeChatbot.addEventListener("click", () => {
-                    modal.hide();
-                });
-            }
-
-            // Auto-scroll to bottom
-            function scrollToBottom() {
-                setTimeout(() => {
-                    chatboxMessages.scrollTop = chatboxMessages.scrollHeight;
-                }, 100);
-            }
-
-
             function sendMessage() {
                 let message = chatboxInput.value.trim();
                 if (message === "") return;
 
                 // Remove welcome message if it exists
                 const welcomeMessage = chatboxMessages.querySelector('.welcome-message');
-                if (welcomeMessage) {
-                    welcomeMessage.remove();
-                }
+                if (welcomeMessage) welcomeMessage.remove();
 
                 // Add user message
                 const userMessageContainer = document.createElement("div");
                 userMessageContainer.className = "message-container d-flex justify-content-end";
                 userMessageContainer.innerHTML = `
-                    <div class="user-message">
-                        ${escapeHtml(message)}
-                    </div>
-                `;
+            <div class="user-message">
+                ${escapeHtml(message)}
+            </div>
+        `;
                 chatboxMessages.appendChild(userMessageContainer);
+                saveMessageToHistory('user', message);
 
                 chatboxInput.value = "";
                 scrollToBottom();
@@ -212,25 +210,25 @@
                 typingContainer.className = "message-container bot-message-container";
                 typingContainer.id = "typing-indicator";
                 typingContainer.innerHTML = `
-                    <div class="bot-avatar">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <div class="typing-indicator">
-                        <span style="color: #6b7280; font-size: 0.9rem;">Đang phản hồi</span>
-                        <div class="typing-dots">
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                            <div class="typing-dot"></div>
-                        </div>
-                    </div>
-                `;
+            <div class="bot-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="typing-indicator">
+                <span style="color: #6b7280; font-size: 0.9rem;">Đang phản hồi</span>
+                <div class="typing-dots">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        `;
                 chatboxMessages.appendChild(typingContainer);
                 scrollToBottom();
+
                 fetch("/chat/send", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            // Đảm bảo meta tag CSRF token đã được render trong HTML của bạn
                             "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.getAttribute(
                                 'content') || ''
                         },
@@ -238,34 +236,43 @@
                             message: message
                         })
                     })
-                    .then(async res => { // Sử dụng async để có thể dùng await
+                    .then(async res => {
                         if (!res.ok) {
-                            // Nếu status code là 5xx (server error)
                             if (res.status >= 500) {
                                 const errorData = await res.json();
                                 throw new Error(errorData.reply ||
                                     'Server đang gặp sự cố. Vui lòng thử lại sau.');
                             }
-                            // Xử lý các lỗi khác (4xx)
                             const errorText = await res.text();
                             throw new Error(errorText);
                         }
                         return res.json();
                     })
+                    // In the sendMessage function, modify the response handling:
                     .then(response => {
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();
 
-                        // Kiểm tra xem phản hồi có phải là dữ liệu cấu trúc (như danh sách sản phẩm) hay là tin nhắn văn bản thông thường
+                        let replyMsg = '';
+                        let replyData = null;
+
+                        // Prioritize reply_data if available
                         if (response.reply_data) {
-                            appendBotMessage(response.reply_data);
+                            replyData = response.reply_data;
+                            replyMsg = typeof response.reply_data === "string" ?
+                                response.reply_data :
+                                (response.reply_data.content || '');
                         } else if (response.reply) {
-                            appendBotMessage(response.reply);
+                            replyData = response.reply;
+                            replyMsg = response.reply;
                         } else {
-                            appendBotMessage(
-                                "Xin lỗi, tôi không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.");
+                            replyData =
+                                "Xin lỗi, tôi không thể trả lời câu hỏi này lúc này. Vui lòng thử lại sau.";
+                            replyMsg = replyData;
                         }
 
+                        appendBotMessage(replyData);
+                        saveMessageToHistory('assistant', replyData);
                         scrollToBottom();
                     })
                     .catch(error => {
@@ -273,108 +280,86 @@
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();
 
-                        // appendBotMessage(
-                        //     "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại. (Lỗi: " +
-                        //     error.message + ")");
                         appendBotMessage(
+                            "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại sau.");
+                        saveMessageToHistory('assistant',
                             "Đã xảy ra lỗi khi kết nối. Vui lòng kiểm tra kết nối internet và thử lại sau.");
                         scrollToBottom();
                     });
+
             }
 
-
-
-
             function appendBotMessage(data) {
-                // console.log('Raw data received:', data);
-
                 const botMessageContainer = document.createElement("div");
                 botMessageContainer.className = "message-container bot-message-container slide-up";
-
                 const avatar = document.createElement("div");
                 avatar.className = "bot-avatar";
                 avatar.innerHTML = '<i class="fas fa-robot"></i>';
-
                 const messageWrapper = document.createElement("div");
                 messageWrapper.className = "bot-message";
-
                 const messageContent = document.createElement("div");
-
-                // Xử lý mọi trường hợp
                 if (typeof data === 'string') {
                     messageContent.innerHTML = data.replace(/\n/g, '<br>');
                 } else if (typeof data === 'object') {
-                    // Trường hợp response từ handleSpecialCases với ảnh size
                     if (data.type === 'text_with_image' && data.image_url) {
                         messageContent.innerHTML = `
-                    <div>${data.content.replace(/\n/g, '<br>')}</div>
-                    <div class="mt-2 text-center">
-                        <img src="${data.image_url}" alt="Bảng size áo"
-                            class="img-fluid rounded border shadow-sm"
-                            style="max-width: 100%; max-height: 300px; object-fit: contain;">
-                    </div>
-                    <div class="mt-2">
-                        <a href="http://127.0.0.1:8000/size-guide" target="_blank"
-                        class="text-primary text-decoration-none">
-                        <i class="fas fa-external-link-alt"></i> Xem hướng dẫn chọn size chi tiết
-                        </a>
-                    </div>
-            `;
-                    }
-                    // Trường hợp response từ handleSpecialCases thông thường
-                    else if (data.content) {
+                <div>${data.content.replace(/\n/g, '<br>')}</div>
+                <div class="mt-2 text-center">
+                    <img src="${data.image_url}" alt="Bảng size áo"
+                        class="img-fluid rounded border shadow-sm"
+                        style="max-width: 100%; max-height: 300px; object-fit: contain;">
+                </div>
+                <div class="mt-2">
+                    <a href="http://127.0.0.1:8000/size-guide" target="_blank"
+                    class="text-primary text-decoration-none">
+                    <i class="fas fa-external-link-alt"></i> Xem hướng dẫn chọn size chi tiết
+                    </a>
+                </div>
+                `;
+                    } else if (data.content) {
                         messageContent.innerHTML = data.content.replace(/\n/g, '<br>');
                     } else if (data.type === 'product_list') {
-                        // console.log(data);
                         let html = `<strong>${data.intro_message}</strong><br><br>`;
                         data.products.forEach(product => {
                             let priceHtml = `<span class="product-price">${product.price}</span>`;
                             let discountBadge = '';
-
                             if (product.has_discount) {
                                 priceHtml = `
-                                <span class="product-price text-danger fw-bold">${product.price}</span>
-                                <span class=" text-muted ms-2" style="text-decoration:  line-through;">${product.original_price}</span>
-                            `;
-
+                        <span class="product-price text-danger fw-bold">${product.price}</span>
+                        <span class=" text-muted ms-2" style="text-decoration:  line-through;">${product.original_price}</span>
+                        `;
                                 discountBadge = `
-                                <div class="mt-1">
-                                    <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
-                                </div>
-                            `;
+                        <div class="mt-1">
+                            <span class="badge bg-danger">Giảm ${product.discount_percent * 100}%</span>
+                        </div>
+                        `;
                             }
-
                             html += `
-                                <div class="product-card mb-3 p-2 border rounded">
-                                    <div class="d-flex align-items-center">
-                                        <a href="${product.link}" target="_blank" class="text-decoration-none text-dark">
-                                            <img src="${product.image_url}" alt="${escapeHtml(product.name)}"
-                                                class="product-image rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
-                                        </a>
-                                        <div class="product-info flex-grow-1">
-                                            <a href="${product.link}" target="_blank"
-                                            class="product-name text-decoration-none text-primary fw-bold d-block mb-1">
-                                            ${escapeHtml(product.name)}
-                                            </a>
-                                            <div class="price-container">
-                                                ${priceHtml}
-                                                ${discountBadge}
-                                            </div>
-                                        </div>
+                        <div class="product-card mb-3 p-2 border rounded">
+                            <div class="d-flex align-items-center">
+                                <a href="${product.link}" target="_blank" class="text-decoration-none text-dark">
+                                    <img src="${product.image_url}" alt="${escapeHtml(product.name)}"
+                                        class="product-image rounded me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                                </a>
+                                <div class="product-info flex-grow-1">
+                                    <a href="${product.link}" target="_blank"
+                                    class="product-name text-decoration-none text-primary fw-bold d-block mb-1">
+                                    ${escapeHtml(product.name)}
+                                    </a>
+                                    <div class="price-container">
+                                        ${priceHtml}
+                                        ${discountBadge}
                                     </div>
-                                </div>`;
+                                </div>
+                            </div>
+                        </div>`;
                         });
                         html += `<div class="mt-2">${data.outro_message}</div>`;
                         messageContent.innerHTML = html;
-                    }
-
-                    // Fallback cho các trường hợp khác
-                    else {
-                        console.error('Unsupported data format:', data);
+                    } else {
                         messageContent.innerHTML = "Xin lỗi, có lỗi xảy ra khi xử lý tin nhắn.";
                     }
                 }
-
                 messageWrapper.appendChild(messageContent);
                 botMessageContainer.appendChild(avatar);
                 botMessageContainer.appendChild(messageWrapper);
@@ -382,22 +367,12 @@
                 scrollToBottom();
             }
 
-
-            // Typing effect
-            function typeText(element, text, index = 0) {
-                if (index < text.length) {
-                    element.textContent += text.charAt(index);
-                    setTimeout(() => typeText(element, text, index + 1), 30);
-                }
+            function scrollToBottom() {
+                setTimeout(() => {
+                    chatboxMessages.scrollTop = chatboxMessages.scrollHeight;
+                }, 100);
             }
 
-            // Check if URL is image
-            function isImageUrl(url) {
-                return /^https?:\/\/.+\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url) ||
-                    /cloudinary\.com\/.+/i.test(url);
-            }
-
-            // Escape HTML
             function escapeHtml(text) {
                 return text.replace(/[&<>"']/g, function(m) {
                     return {
@@ -410,14 +385,26 @@
                 });
             }
 
-            setTimeout(() => {
-                if (chatboxMessages.querySelector('.welcome-message')) {}
-            }, 3000);
+            // --- Xử lý quick reply ---
+            function initQuickReplyButtons() {
+                document.querySelectorAll('.quick-reply-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const message = this.getAttribute('data-message');
+                        chatboxInput.value = message;
+                        sendMessage();
+                    });
+                });
+            }
 
 
-            const clearHistoryBtn = document.querySelector('.btn-clear-history');
+            // --- Đóng chatbox ---
+            if (closeChatbot) {
+                closeChatbot.addEventListener("click", () => {
+                    modal.hide();
+                });
+            }
 
-            // Thay thế phần xử lý sự kiện clearHistoryBtn
+            // --- Xóa lịch sử ---
             clearHistoryBtn.addEventListener('click', function() {
                 if (confirm('Bạn có chắc chắn muốn xóa toàn bộ lịch sử chat?')) {
                     fetch('/chat/clear-history', {
@@ -431,42 +418,9 @@
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                // Xóa nội dung chat hiện tại
-                                chatboxMessages.innerHTML = `
-                    <div class="welcome-message fade-in">
-                        <div class="bot-icon">
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <h4>Lịch sử chat đã được xóa</h4>
-                        <p>Bạn có thể bắt đầu cuộc trò chuyện mới!</p>
-                    </div>
-                    <div class="topic-guide">
-                        <h5><i class="fas fa-compass"></i> Hãy chọn một chủ đề</h5>
-                        <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
-                    </div>
-                    <div class="quick-replies">
-                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
-                            <i class="fas fa-tshirt"></i> Áo thun
-                        </button>
-                        <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
-                            <i class="fas fa-user-tie"></i> Áo sơ mi
-                        </button>
-                        <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
-                            <i class="fas fa-tags"></i> Sản phẩm giá mềm
-                        </button>
-                        <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
-                            <i class="fas fa-tags"></i> Sản phẩm khuyến mãi
-                        </button>
-                        <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
-                            <i class="fas fa-ruler"></i> Hướng dẫn chọn size
-                        </button>
-                    </div>
-                `;
-
-                                // Thêm hiệu ứng thông báo
+                                clearChatHistory();
+                                renderChatHistory();
                                 showToast('Lịch sử chat đã được xóa thành công');
-
-                                // Khởi tạo lại sự kiện cho các nút quick-reply
                                 initQuickReplyButtons();
                             } else {
                                 showToast('Có lỗi xảy ra khi xóa lịch sử', 'error');
@@ -479,17 +433,15 @@
                 }
             });
 
-            // Hàm hiển thị thông báo toast
+            // --- Toast notification ---
             function showToast(message, type = 'success') {
                 const toast = document.createElement('div');
                 toast.className = `toast-notification ${type}`;
                 toast.textContent = message;
                 document.body.appendChild(toast);
-
                 setTimeout(() => {
                     toast.classList.add('show');
                 }, 10);
-
                 setTimeout(() => {
                     toast.classList.remove('show');
                     setTimeout(() => {
@@ -498,16 +450,8 @@
                 }, 3000);
             }
 
-            // Hàm khởi tạo lại sự kiện cho nút quick-reply
-            function initQuickReplyButtons() {
-                document.querySelectorAll('.quick-reply-btn').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const message = this.getAttribute('data-message');
-                        chatboxInput.value = message;
-                        sendMessage();
-                    });
-                });
-            }
+            // Tự động render welcome khi load lần đầu
+            renderChatHistory();
         });
     </script>
 
@@ -528,7 +472,6 @@
         // Tìm kiếm sản phẩm bằng AJAX
         $("#search-box").on("input", function(e) {
             let query = $("#search-box").val();
-            // console.log(query);
             if (query.length > 1) {
                 $.ajax({
                     url: "http://127.0.0.1:8000/api/search",
@@ -538,29 +481,25 @@
                     },
                     success: function(data) {
                         let results = $("#search-results");
-                        // console.log(results);
                         results.empty();
-
                         if (data.results.length > 0) {
                             data.results.forEach(function(item) {
-                                // console.log(item);
                                 let price = Intl.NumberFormat('vi-VN').format(item.price);
                                 if (item.discount_id != null) {
                                     price = Intl.NumberFormat('vi-VN').format(item.price - (item
                                         .price * item.discount.percent_discount));
                                 }
                                 results.append(`
-                                        <li class="list-group-item d-flex align-items-center p-3 border-bottom"
-                                                style="cursor: pointer;"
-                                                onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
-                                                onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
-                                            <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
-                                            <img src="${item.image}" width="50" height="50" alt="">
-                                            ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
-                                            </a>
-                                        </li>
-
-                                `);
+                                    <li class="list-group-item d-flex align-items-center p-3 border-bottom"
+                                            style="cursor: pointer;"
+                                            onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
+                                            onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
+                                        <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
+                                        <img src="${item.image}" width="50" height="50" alt="">
+                                        ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+                                        </a>
+                                    </li>
+                            `);
                             });
                         } else {
                             results.append("<li>Không tìm thấy kết quả</li>");
@@ -570,14 +509,10 @@
             }
         });
 
-
-
-        // phải search thử ở http://127.0.0.1:8000/api/search?q="....." => get ở http://127.0.0.1:8000/api/suggest-content-based thì mới thấy
-        // Lấy gợi ý sản phẩm
+        // Gợi ý sản phẩm
         $.get("http://127.0.0.1:8000/api/suggest-content-based", function(data) {
             let suggestions = $("#suggestion-list");
             suggestions.empty();
-
             if (data.length > 0) {
                 data.forEach(function(item) {
                     let price = Intl.NumberFormat('vi-VN').format(item.price);
@@ -585,13 +520,13 @@
                         price = item.price - (item.price * item.discount.percent_discount);
                     }
                     let listItem = `
-                        <li class="list-group-item d-flex align-items-center p-3 border-bottom">
-                            <a href="/product/${item.slug}" class="fw-medium text-decoration-none text-dark">
-                                <img src="${item.image}" width="50" height="50" alt="">
-                                ${item.product_name} | <p class="d-inline">Giá:</p> ${Intl.NumberFormat('vi-VN').format(price)} đ
-                            </a>
-                        </li>
-                    `;
+                    <li class="list-group-item d-flex align-items-center p-3 border-bottom">
+                        <a href="/product/${item.slug}" class="fw-medium text-decoration-none text-dark">
+                            <img src="${item.image}" width="50" height="50" alt="">
+                            ${item.product_name} | <p class="d-inline">Giá:</p> ${Intl.NumberFormat('vi-VN').format(price)} đ
+                        </a>
+                    </li>
+                `;
                     suggestions.append(listItem);
                 });
             } else {
@@ -600,7 +535,7 @@
         });
 
         $(".dropdown-btn").click(function(event) {
-            event.stopPropagation(); // Ngăn chặn sự kiện lan ra ngoài
+            event.stopPropagation();
             $(".dropdown-content").toggle();
         });
 
@@ -610,4 +545,5 @@
     </script>
 
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
+    <script src="{{ asset('client/js/chatbot-localstorage.js') }}"></script>
 @endsection
