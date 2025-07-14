@@ -168,38 +168,7 @@
                                     <div id="collapseOne" class="collapse show" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <div class="shop__sidebar__categories">
-                                                <ul class="nice-scroll">
-                                                    <div class="shop__sidebar__categories">
-                                                        <ul class="nice-scroll" id="category-list"></ul>
-                                                    </div>
-                                                    <script>
-                                                        async function fetchCategories() {
-                                                            try {
-                                                                let response = await fetch('http://127.0.0.1:8000/api/category');
-                                                                let data = await response.json();
-                                                                let categories = data.data;
-
-                                                                let categoryList = document.getElementById('category-list');
-                                                                categoryList.innerHTML = "";
-
-                                                                categories.forEach(category => {
-                                                                    let listItem = document.createElement('li');
-                                                                    let currentParams = new URLSearchParams(window.location.search);
-                                                                    currentParams.set('category', category.category_name);
-                                                                    currentParams.set('page', 1);
-                                                                    let newUrl = '/shop?' + currentParams.toString();
-
-                                                                    listItem.innerHTML =
-                                                                        `<a class="category__item text-dark" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
-                                                                    categoryList.appendChild(listItem);
-                                                                });
-                                                            } catch (error) {
-                                                                console.error("Lỗi API:", error);
-                                                            }
-                                                        }
-                                                        fetchCategories();
-                                                    </script>
-                                                </ul>
+                                                <ul class="nice-scroll" id="category-list"></ul>
                                             </div>
                                         </div>
                                     </div>
@@ -211,35 +180,7 @@
                                     <div id="collapseTwo" class="collapse show" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <div class="shop__sidebar__brand">
-                                                <ul id="brand-list">
-                                                    <script>
-                                                        async function fetchBrand() {
-                                                            try {
-                                                                let response = await fetch('http://127.0.0.1:8000/api/brand');
-                                                                let data = await response.json();
-                                                                let brands = data.data;
-
-                                                                let brandList = document.getElementById('brand-list');
-                                                                brandList.innerHTML = "";
-
-                                                                brands.forEach(brand => {
-                                                                    let listItem = document.createElement('li');
-                                                                    let currentParams = new URLSearchParams(window.location.search);
-                                                                    currentParams.set('brand', brand.brand);
-                                                                    currentParams.set('page', 1);
-                                                                    let newUrl = '/shop?' + currentParams.toString();
-
-                                                                    listItem.innerHTML =
-                                                                        `<a class="brand__item text-dark" href="${newUrl}" data-brand="${brand.brand}">${brand.brand}</a>`;
-                                                                    brandList.appendChild(listItem);
-                                                                });
-                                                            } catch (error) {
-                                                                console.error("Lỗi API:", error);
-                                                            }
-                                                        }
-                                                        fetchBrand();
-                                                    </script>
-                                                </ul>
+                                                <ul id="brand-list"></ul>
                                             </div>
                                         </div>
                                     </div>
@@ -270,29 +211,6 @@
                                                 </ul>
                                             </div>
                                         </div>
-                                        <script>
-                                            let priceItems = document.querySelectorAll('.price__item');
-                                            priceItems.forEach(item => {
-                                                item.addEventListener('click', function(e) {
-                                                    e.preventDefault();
-                                                    let priceText = this.textContent;
-                                                    let priceParam = priceText.replaceAll(' ', '').replace('Trên', '').replace(/\./g,
-                                                        '');
-                                                    if (priceText.includes('Dưới')) {
-                                                        priceParam = '0-' + priceParam.replace('Dưới', '');
-                                                    } else if (priceText.includes('Trên')) {
-                                                        // Giữ nguyên priceParam đã được xử lý
-                                                    }
-
-                                                    let currentParams = new URLSearchParams(window.location.search);
-                                                    currentParams.set('price', priceParam);
-                                                    currentParams.set('page', 1);
-                                                    let newUrl = '/shop?' + currentParams.toString();
-
-                                                    window.location.href = newUrl;
-                                                });
-                                            });
-                                        </script>
                                     </div>
                                 </div>
                                 <div class="card">
@@ -346,9 +264,9 @@
 
                                 <div class="card">
                                     <div class="card-heading">
-                                        <a data-toggle="collapse" data-target="#collapseFive">Khuyến mãi</a>
+                                        <a data-toggle="collapse" data-target="#collapseSix">Khuyến mãi</a>
                                     </div>
-                                    <div id="collapseFive" class="collapse show" data-parent="#accordionExample">
+                                    <div id="collapseSix" class="collapse show" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <div class="shop__sidebar__promotion">
                                                 <ul>
@@ -365,9 +283,9 @@
                                 </div>
                                 <div class="card">
                                     <div class="card-heading">
-                                        <a data-toggle="collapse" data-target="#collapseSix">Tags</a>
+                                        <a data-toggle="collapse" data-target="#collapseSeven">Tags</a>
                                     </div>
-                                    <div id="collapseSix" class="collapse show" data-parent="#accordionExample">
+                                    <div id="collapseSeven" class="collapse show" data-parent="#accordionExample">
                                         <div class="card-body">
                                             <div class="shop__sidebar__tags">
                                                 <a class="tag-item" href="javascript:void(0)">Sơ Mi</a>
@@ -381,20 +299,6 @@
                                                 <a class="tag-item" href="javascript:void(0)">dài</a>
                                                 <a class="tag-item" href="javascript:void(0)">dry-ex</a>
                                             </div>
-                                            <script>
-                                                let tagItems = document.querySelectorAll('.tag-item');
-                                                tagItems.forEach(item => {
-                                                    item.addEventListener('click', function(e) {
-                                                        e.preventDefault();
-                                                        let tag = this.textContent.trim().replace(' ', '-');
-                                                        let currentParams = new URLSearchParams(window.location.search);
-                                                        currentParams.set('tag', tag);
-                                                        currentParams.set('page', 1);
-                                                        let newUrl = '/shop?' + currentParams.toString();
-                                                        window.location.href = newUrl;
-                                                    });
-                                                });
-                                            </script>
                                         </div>
                                     </div>
                                 </div>
@@ -436,7 +340,7 @@
 
                             <div class="col-lg-4 col-md-6 col-sm-6">
                                 <div class="product__item" id="product-list-shop">
-                                    <div class="product__item__pic">
+                                    <div class="product__item__pic ">
                                         <img class="product__item__pic set-bg" width="280" height="250"
                                             src="{{ $items->image }}" alt="{{ $items->product_name }}">
                                         <span class="label name-discount-shop">{{ $discountName }}</span>
@@ -591,27 +495,21 @@
     </div>
 
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
-
-    <script>
-        document.querySelectorAll('.name-discount-shop').forEach(element => {
-            if (element.textContent.trim() !== "New") {
-                element.classList.add('bg-danger', 'text-white');
-            }
-        });
-    </script>
 @endsection
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
     <style>
-        /* Style mới cho bộ lọc */
+        /* Bộ lọc chính */
         .filter-bar {
             background-color: #f8f9fa;
             padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
         }
 
+        /* Active filters */
         .active-filters {
             display: flex;
             flex-wrap: wrap;
@@ -623,6 +521,7 @@
             font-weight: 600;
             color: #495057;
             margin-right: 8px;
+            font-size: 14px;
         }
 
         .filter-badge {
@@ -632,7 +531,7 @@
             color: #495057;
             padding: 5px 12px;
             border-radius: 20px;
-            font-size: 14px;
+            font-size: 13px;
             transition: all 0.2s;
         }
 
@@ -655,7 +554,7 @@
             display: inline-flex;
             align-items: center;
             color: #dc3545;
-            font-size: 14px;
+            font-size: 13px;
             margin-left: 10px;
             text-decoration: none;
         }
@@ -668,6 +567,7 @@
             text-decoration: underline;
         }
 
+        /* Sort options */
         .sort-options .input-group {
             max-width: 250px;
             margin-left: auto;
@@ -675,84 +575,225 @@
 
         .sort-options .input-group-text {
             background-color: #f8f9fa;
+            border-right: none;
         }
 
-        /* Style cho phân trang */
-        .product__pagination {
-            display: flex;
-            justify-content: center;
-            margin-top: 30px;
-            gap: 5px;
+        .sort-options .form-select {
+            border-left: none;
+            cursor: pointer;
         }
 
-        .product__pagination a {
-            display: inline-block;
-            padding: 5px 12px;
-            border: 1px solid #ddd;
+        /* Sidebar filter sections */
+        .shop__sidebar {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .card {
+            border: none;
+            margin-bottom: 15px;
+            background: transparent;
+        }
+
+        .card-heading {
+            padding: 0;
+            background: transparent;
+        }
+
+        .card-heading a {
+            display: block;
+            padding: 10px 0;
+            font-size: 15px;
+            font-weight: 700;
+            color: #111;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .card-heading a:after {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: "FontAwesome";
+            content: "\f107";
+            font-size: 14px;
+        }
+
+        .card-heading a[aria-expanded="true"]:after {
+            content: "\f106";
+        }
+
+        .card-body {
+            padding: 5px 0 0 0;
+        }
+
+        /* Price filter */
+        .shop__sidebar__price ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .shop__sidebar__price li {
+            margin-bottom: 8px;
+        }
+
+        .price__item {
+            display: block;
+            padding: 8px 12px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
             color: #333;
             text-decoration: none;
-            border-radius: 3px;
+            transition: all 0.2s ease;
+            border: 1px solid #e0e0e0;
+            font-size: 13px;
         }
 
-        .product__pagination a:hover {
-            background-color: #f0f0f0;
+        .price__item:hover {
+            background-color: #e9ecef;
+            border-color: #d0d0d0;
+            color: #e53637;
         }
 
-        .product__pagination a.active {
-            background-color: #007bff;
+        /* Size filter */
+        .shop__sidebar__sizes ul {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .shop__sidebar__sizes li a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: 1px solid #e0e0e0;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .shop__sidebar__sizes li a:hover,
+        .shop__sidebar__sizes li a.active {
+            background-color: #e53637;
             color: white;
-            border-color: #007bff;
+            border-color: #e53637;
         }
 
-        .product__pagination a.disabled {
-            color: #aaa;
-            cursor: not-allowed;
-        }
-
-        .product__pagination .dots {
-            padding: 5px 10px;
-        }
-
-        /* Style cho bộ lọc màu sắc */
+        /* Color filter */
         .shop__sidebar__colors ul {
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             list-style: none;
             padding: 0;
+            margin: 0;
         }
 
-        .shop__sidebar__colors li {
-            margin-bottom: 5px;
-        }
-
-        .color-item {
-            display: inline-block;
-            width: 25px;
-            height: 25px;
-            border-radius: 50%;
-            border: 1px solid #ddd;
-            transition: transform 0.2s;
-        }
-
-        .color-item:hover {
-            transform: scale(1.2);
-        }
-
-        /* Style cho bộ lọc khuyến mãi */
-        .promotion-item {
+        .shop__sidebar__colors li a {
             display: block;
-            padding: 5px 10px;
-            color: #dc3545;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.2s;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 1px #e0e0e0;
+            transition: all 0.3s;
+            position: relative;
         }
 
-        .promotion-item:hover {
-            background-color: #f8d7da;
+        .shop__sidebar__colors li a:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 2px #e53637;
+        }
+
+        /* Promotion filter */
+        .shop__sidebar__promotion ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .shop__sidebar__promotion li a {
+            display: block;
+            padding: 6px 12px;
+            background-color: #f8f9fa;
+            color: #e53637;
             text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-weight: 600;
+            font-size: 13px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .shop__sidebar__promotion li a:hover {
+            background-color: #e53637;
+            color: white;
+        }
+
+        /* Tags filter */
+        .shop__sidebar__tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .tag-item {
+            display: inline-block;
+            padding: 4px 10px;
+            background-color: #f8f9fa;
+            color: #111;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 12px;
+            transition: all 0.3s;
+            border: 1px solid #e0e0e0;
+        }
+
+        .tag-item:hover {
+            background-color: #e53637;
+            color: white;
+            border-color: #e53637;
+        }
+
+        /* Search box in sidebar */
+        .shop__sidebar__search {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .shop__sidebar__search input {
+            width: 100%;
+            height: 40px;
+            padding: 0 15px;
+            border: 1px solid #e1e1e1;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #111;
+        }
+
+        .shop__sidebar__search button {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            width: 40px;
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            color: #111;
         }
     </style>
 @endsection
@@ -760,79 +801,174 @@
 @section('js')
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
     <script>
-        $(document).ready(function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize all async functions
+            fetchCategories();
+            fetchBrands();
+            setupPriceFilters();
+            setupTagFilters();
+            setupSearch();
 
-
-            // gắn sự kiện click vao nút tìm kiếm do bên đây ko ăn js
-            $('.search-btn').click(function() {
-                $('.js-modal').addClass("open");
-            });
-
-            $('.js-modal-close').click(function() {
-                $('.js-modal').removeClass("open");
-            });
-
-            // Tìm kiếm sản phẩm bằng AJAX
-            $("#search-box").on("input", function(e) {
-                let query = $("#search-box").val();
-                // console.log(query);
-                if (query.length > 1) {
-                    $.ajax({
-                        url: "http://127.0.0.1:8000/api/search",
-                        type: "GET",
-                        data: {
-                            q: query
-                        },
-                        success: function(data) {
-                            let results = $("#search-results");
-                            // console.log(results);
-                            results.empty();
-
-                            if (data.results.length > 0) {
-                                data.results.forEach(function(item) {
-                                    // console.log(item);
-                                    let price = Intl.NumberFormat('vi-VN').format(item
-                                        .price);
-                                    if (item.discount_id != null) {
-                                        price = Intl.NumberFormat('vi-VN').format(item
-                                            .price - (item
-                                                .price * item.discount
-                                                .percent_discount));
-                                    }
-                                    results.append(`
-                                        <li class="list-group-item d-flex align-items-center p-3 border-bottom"
-                                                style="cursor: pointer;"
-                                                onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
-                                                onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
-                                            <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
-                                            <img src="${item.image}" width="50" height="50" alt="">
-                                            ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
-                                            </a>
-                                        </li>
-
-                                `);
-                                });
-                            } else {
-                                results.append("<li>Không tìm thấy kết quả</li>");
-                            }
-                        }
-                    });
+            // Highlight discount labels
+            document.querySelectorAll('.name-discount-shop').forEach(element => {
+                if (element.textContent.trim() !== "New") {
+                    element.classList.add('bg-danger', 'text-white');
                 }
             });
 
-
-            $('#sortSelect').change(function() {
-                let sortBy = $(this).val();
-                let url = new URL(window.location.href);
+            // Handle sort select change
+            document.getElementById('sortSelect').addEventListener('change', function() {
+                const sortBy = this.value;
+                const url = new URL(window.location.href);
                 url.searchParams.set('sort_by', sortBy);
                 url.searchParams.delete('page');
                 window.location.href = url.toString() + '#product-list-shop';
             });
-
-
-
         });
 
+        // Async function to fetch categories
+        async function fetchCategories() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/category');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const categories = data.data;
 
+                const categoryList = document.getElementById('category-list');
+                categoryList.innerHTML = "";
+
+                categories.forEach(category => {
+                    const listItem = document.createElement('li');
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.set('category', category.category_name);
+                    currentParams.set('page', 1);
+                    const newUrl = '/shop?' + currentParams.toString();
+
+                    listItem.innerHTML =
+                        `<a class="category__item text-dark" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
+                    categoryList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                // Display error to user if needed
+            }
+        }
+
+        // Async function to fetch brands
+        async function fetchBrands() {
+            try {
+                const response = await fetch('http://127.0.0.1:8000/api/brand');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                const brands = data.data;
+
+                const brandList = document.getElementById('brand-list');
+                brandList.innerHTML = "";
+
+                brands.forEach(brand => {
+                    const listItem = document.createElement('li');
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.set('brand', brand.brand);
+                    currentParams.set('page', 1);
+                    const newUrl = '/shop?' + currentParams.toString();
+
+                    listItem.innerHTML =
+                        `<a class="brand__item text-dark" href="${newUrl}" data-brand="${brand.brand}">${brand.brand}</a>`;
+                    brandList.appendChild(listItem);
+                });
+            } catch (error) {
+                console.error("Error fetching brands:", error);
+                // Display error to user if needed
+            }
+        }
+
+        // Setup price filters
+        function setupPriceFilters() {
+            const priceItems = document.querySelectorAll('.price__item');
+            priceItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const priceText = this.textContent;
+                    let priceParam = priceText.replaceAll(' ', '').replace('Trên', '').replace(/\./g, '');
+                    if (priceText.includes('Dưới')) {
+                        priceParam = '0-' + priceParam.replace('Dưới', '');
+                    }
+
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.set('price', priceParam);
+                    currentParams.set('page', 1);
+                    const newUrl = '/shop?' + currentParams.toString();
+
+                    window.location.href = newUrl;
+                });
+            });
+        }
+
+        // Setup tag filters
+        function setupTagFilters() {
+            const tagItems = document.querySelectorAll('.tag-item');
+            tagItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const tag = this.textContent.trim().replace(' ', '-');
+                    const currentParams = new URLSearchParams(window.location.search);
+                    currentParams.set('tag', tag);
+                    currentParams.set('page', 1);
+                    const newUrl = '/shop?' + currentParams.toString();
+                    window.location.href = newUrl;
+                });
+            });
+        }
+
+        // Setup search functionality
+        function setupSearch() {
+            const searchBox = document.getElementById('search-box');
+            if (searchBox) {
+                searchBox.addEventListener('input', async function(e) {
+                    const query = this.value;
+                    if (query.length > 1) {
+                        try {
+                            const response = await fetch(
+                                `http://127.0.0.1:8000/api/search?q=${encodeURIComponent(query)}`);
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok');
+                            }
+                            const data = await response.json();
+                            const results = document.getElementById('search-results');
+                            results.innerHTML = '';
+
+                            if (data.results.length > 0) {
+                                data.results.forEach(function(item) {
+                                    let price = new Intl.NumberFormat('vi-VN').format(item.price);
+                                    if (item.discount_id != null) {
+                                        price = new Intl.NumberFormat('vi-VN').format(item.price - (item
+                                            .price * item.discount.percent_discount));
+                                    }
+                                    const resultItem = document.createElement('li');
+                                    resultItem.className =
+                                        'list-group-item d-flex align-items-center p-3 border-bottom';
+                                    resultItem.style.cssText = 'cursor: pointer;';
+                                    resultItem.innerHTML = `
+                                        <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
+                                            <img src="${item.image}" width="50" height="50" alt="">
+                                            ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+                                        </a>
+                                    `;
+                                    results.appendChild(resultItem);
+                                });
+                            } else {
+                                results.innerHTML = "<li class='list-group-item'>Không tìm thấy kết quả</li>";
+                            }
+                        } catch (error) {
+                            console.error("Error searching:", error);
+                        }
+                    }
+                });
+            }
+        }
     </script>
 @endsection

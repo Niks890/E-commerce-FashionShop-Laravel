@@ -59,7 +59,7 @@ class SendVoucherToTopCustomers extends Command
                 // Kiểm tra xem khách hàng đã có voucher này chưa
                 $existingVoucher = VoucherUsage::where('customer_id', $customer->id)
                     ->where('voucher_id', $voucher->id)
-                    ->first();
+                    ->exists();
 
                 if ($existingVoucher) {
                     $this->info("Khách hàng ID {$customer->id} đã nhận voucher này trước đây. Bỏ qua...");
@@ -73,11 +73,6 @@ class SendVoucherToTopCustomers extends Command
                     'order_id' => null,
                     'used_at' => null,
                 ]);
-
-                // Giảm số lượng voucher nếu có giới hạn
-                // if ($voucher->vouchers_usage_limit > 0) {
-                //     $voucher->decrement('vouchers_usage_limit');
-                // }
 
                 // Gửi email
                 $message = "Chúc mừng bạn là một trong những khách hàng thân thiết nhất của chúng tôi! Đây là voucher đặc biệt dành riêng cho bạn.";

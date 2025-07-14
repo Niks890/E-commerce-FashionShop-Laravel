@@ -116,8 +116,14 @@ class ApiController extends Controller
 
     public function categories()
     {
-        // $categories = Category::orderBy('id', 'ASC')->get();
-        $categories = Category::withCount('products')->get();
+        $categories = Category::where('status', 1)
+            ->withCount(['products' => function($query) {
+                $query->where('status', 1);
+            }])
+            ->having('products_count', '>', 0)
+            ->orderBy('id', 'ASC')
+            ->get();
+
         return $this->apiStatus($categories, 200, $categories->count(), 'ok');
     }
 
