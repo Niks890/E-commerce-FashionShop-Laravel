@@ -86,6 +86,41 @@
     </div>
     {{ $data->links() }}
 
+
+
+    <!-- Modal hiển thị sản phẩm -->
+<div class="modal fade" id="productsModal" tabindex="-1" aria-labelledby="productsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productsModalLabel">Danh sách sản phẩm</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Ảnh sản phẩm</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Giá</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productsTableBody">
+                            <!-- Nội dung sản phẩm sẽ được load bằng AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('css')
@@ -121,11 +156,68 @@
         }
     </style>
 @endsection
-
 @section('js')
     @if (Session::has('success') || Session::has('error'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
+
+    <script>
+        $(document).ready(function() {
+            // Xử lý khi click vào nút xem sản phẩm
+            $('.btn-view-products').click(function() {
+                var categoryId = $(this).data('id');
+
+                // Hiển thị modal
+                var modal = new bootstrap.Modal(document.getElementById('productsModal'));
+                modal.show();
+
+                // Load dữ liệu sản phẩm bằng AJAX
+                $.ajax({
+                    url: '/admin/category/' + categoryId + '/products',
+                    type: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            // Cập nhật tiêu đề modal
+                            $('#productsModalLabel').text('Sản phẩm thuộc danh mục: ' + response.data.category_name);
+
+                            // Xóa nội dung cũ
+                            $('#productsTableBody').empty();
+
+                            // Thêm sản phẩm vào bảng
+                            if (response.data.products.length > 0) {
+                                $.each(response.data.products, function(index, product) {
+                                    var statusText = product.status == 1 ? 'Hiển thị' : 'Ẩn';
+                                    $('#productsTableBody').append(
+                                        '<tr>' +
+                                        '<td>' + product.id + '</td>' +
+                                        '<td><img src="' + product.image + '" alt="' + product.product_name + '" width="50"></td>' +
+                                        '<td>' + product.product_name + '</td>' +
+                                        '<td>' + formatPrice(product.price) + '</td>' +
+                                        '<td>' + statusText + '</td>' +
+                                        '</tr>'
+                                    );
+                                });
+                            } else {
+                                $('#productsTableBody').append(
+                                    '<tr><td colspan="4" class="text-center">Không có sản phẩm nào trong danh mục này</td></tr>'
+                                );
+                            }
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        alert('Có lỗi xảy ra khi tải dữ liệu sản phẩm');
+                    }
+                });
+            });
+
+            // Hàm định dạng giá
+            function formatPrice(price) {
+                return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+            }
+        });
+    </script>
 @endsection
 @else
 {{ abort(403, 'Bạn không có quyền truy cập trang này!') }}

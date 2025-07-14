@@ -44,6 +44,7 @@ class ChatBotApiController extends Controller
         - So sánh, tư vấn dựa trên sản phẩm đã biết
         - Kèm link sản phẩm khi có thể theo định dạng http://127.0.0.1:8000/product/{slug}
 
+
         2. Tương tác thông minh:
         - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm,
             hãy phân tích và so sánh thông tin sản phẩm dựa vào thông tin lưu trong context → So sánh các sản phẩm đã show
@@ -148,6 +149,7 @@ class ChatBotApiController extends Controller
             $data = $response->json();
             $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
             $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
+            Log::info('Chatbot response received', ['reply' => $reply]);
             $reply = $this->processContentWithImages($reply);
             // Save to history
             Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
@@ -1041,13 +1043,31 @@ class ChatBotApiController extends Controller
         return number_format($price, 0, ',', '.') . 'đ';
     }
 
+    // protected function processContentWithImages(string $content): string
+    // {
+    //     $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/i';
+
+    //     $processedContent = preg_replace_callback($imagePattern, function ($matches) {
+    //         $imageUrl = $matches[0];
+    //         return "<img src='{$imageUrl}' class='img-test' alt='Hình ảnh' style='max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;'>";
+    //     }, $content);
+
+    //     return $processedContent;
+    // }
+
+
     protected function processContentWithImages(string $content): string
     {
-        $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp))/i';
+        // Xử lý các URL ảnh đã bị mã hóa HTML
+        $content = html_entity_decode($content);
 
+        // Pattern để tìm URL ảnh
+        $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|avif))/i';
+
+        // Thay thế URL ảnh bằng thẻ img
         $processedContent = preg_replace_callback($imagePattern, function ($matches) {
-            $imageUrl = $matches[0];
-            return "<img src='{$imageUrl}' alt='Hình ảnh' style='max-width: 100%; height: auto; border-radius: 8px; margin: 10px 0;'>";
+            $imageUrl = htmlspecialchars($matches[0], ENT_QUOTES);
+            return "<img src='{$imageUrl}' alt='Hình ảnh sản phẩm' style='max-width: 300px; height: auto; border-radius: 8px; margin: 10px 0; display: block;'>";
         }, $content);
 
         return $processedContent;

@@ -18,40 +18,44 @@ class CategoryController extends Controller
     }
 
 
-    // public function showProducts($id)
-    // {
-    //     try {
-    //         $category = Category::with('products')->find($id);
+    /**
+     * Display products of the specified category.
+     */
+    public function showProducts($id)
+    {
+        try {
+            $category = Category::with('products')->find($id);
 
-    //         if (!$category) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Category not found'
-    //             ], 404);
-    //         }
+            if (!$category) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy danh mục'
+                ], 404);
+            }
 
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => [
-    //                 'category_name' => $category->category_name,
-    //                 'products' => $category->products->map(function ($product) {
-    //                     return [
-    //                         'id' => $product->id,
-    //                         'name' => $product->product_name, // Kiểm tra tên column đúng là product_name hay name
-    //                         'price' => $product->price,
-    //                         'status' => $product->status
-    //                     ];
-    //                 })
-    //             ]
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Server error',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'category_name' => $category->category_name,
+                    'products' => $category->products->map(function ($product) {
+                        return [
+                            'id' => $product->id,
+                            'image' => $product->image,
+                            'product_name' => $product->product_name,
+                            'price' => $product->price,
+                            'status' => $product->status
+                        ];
+                    })
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Show the form for creating a new resource.

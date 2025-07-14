@@ -172,6 +172,8 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
             'comment' => CommentController::class
         ]
     );
+    Route::get('/category/{id}/products', [CategoryController::class, 'showProducts'])
+    ->name('category.products');
     Route::get('/voucher/{id}/history', [DiscountController::class, 'history'])->name('admin.voucher.history')->middleware('can:salers');
     Route::get('/products/{product}/variants', [ProductController::class, 'getVariants']);
     Route::post('/products/update-stock', [ProductController::class, 'updateStock']);
