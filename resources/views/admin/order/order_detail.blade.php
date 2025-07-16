@@ -1,4 +1,5 @@
-@can('salers')
+{{-- @can('salers') --}}
+{{-- quyền can quá mủ --}}
 @extends('admin.master')
 @section('title', "Đơn hàng #".$data[0]->id)
 
@@ -140,13 +141,14 @@
     @endif
 
     <div class="container my-5">
-        <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
-            <h2 class="fw-bold text-primary">Chi tiết Đơn hàng #{{ $data[0]->id }}</h2>
-            <a href="{{ route('order.invoice', $data[0]->id) }}" class="btn btn-pdf shadow-sm" title="Xuất hóa đơn PDF">
-                <i class="fa fa-file-pdf me-2"></i> Xuất hóa đơn PDF
-            </a>
-        </div>
-
+        @can('salers')
+            <div class="d-flex justify-content-between align-items-center mb-5 flex-wrap gap-3">
+                <h2 class="fw-bold text-primary">Chi tiết Đơn hàng #{{ $data[0]->id }}</h2>
+                <a href="{{ route('order.invoice', $data[0]->id) }}" class="btn btn-pdf shadow-sm" title="Xuất hóa đơn PDF">
+                    <i class="fa fa-file-pdf me-2"></i> Xuất hóa đơn PDF
+                </a>
+            </div>
+        @endcan
         <div class="row g-4">
             <div class="col-lg-6 col-md-12">
                 <div class="card-custom">
@@ -214,7 +216,7 @@
                             <td>{{ $item->size }} - {{ $item->color }}</td>
                             <td class="text-nowrap">{{ number_format($item->price, 0, ',', '.') }} đ</td>
                             <td>
-                                <span class="badge-status">{{ $item->status }}</span>
+                                <span class="badge-status text-nowrap">{{ $item->status }}</span>
                             </td>
                             <td class="text-nowrap">{{ number_format($itemTotal, 0, ',', '.') }} đ</td>
                         </tr>
@@ -250,5 +252,8 @@
             </div>
         </div>
     </div>
+{{-- @else
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+@endcan --}}
 @endsection
-@endcan
+

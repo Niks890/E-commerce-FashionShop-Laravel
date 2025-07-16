@@ -179,9 +179,13 @@
                                         <span class="rating-text">({{ count($commentCustomers) }} đánh giá)</span>
                                     </div>
 
-                                    <div class="sales-info">
+
+
+                                    <div class="sales-info d-flex">
                                         <i class="fas fa-check-circle"></i>
                                         <span>Đã bán {{ $totalSale }} sản phẩm</span>
+                                        <i class="fas fa-share text-dark" style="cursor: pointer;" data-bs-toggle="modal"
+                                            data-bs-target="#shareModal"></i>
                                     </div>
                                 </div>
                             </div>
@@ -705,7 +709,46 @@
         </section>
     @endif
     <!-- Product Section Recently End -->
-    <!-- Custom Styles -->
+
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content mt-auto" style="right: 30%; height: 70%; width: 70%;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="shareModalLabel">Chia sẻ sản phẩm</h5>
+                    <button type="button" class="btn-close border-0 bg-transparent" data-bs-dismiss="modal"
+                        aria-label="Close">X</button>
+                </div>
+                <div class="modal-body text-center">
+                    <div class="mb-4">
+                        <div id="qrcode" class="mx-auto" style="width: 200px; height: 200px;"></div>
+                    </div>
+                    <div class="input-group mb-3">
+                        {{-- <input type="text" class="form-control" id="shareLink" readonly
+                            value="{{ url()->current() }}"> --}}
+                        @php
+                            $shareLink = route('product.share.redirect', ['hash' => $encodedId]);
+                        @endphp
+                        <input type="text" id="shareLinkInput" class="form-control" value="{{ $shareLink }}"
+                            readonly>
+                        <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                    <div class="social-share mt-3">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
+                            target="_blank" class="btn btn-primary me-2">
+                            <i class="fab fa-facebook-f"></i> Facebook
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}&text={{ urlencode($productDetail->product_name) }}"
+                            target="_blank" class="btn btn-info">
+                            <i class="fab fa-twitter"></i> Twitter
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 @section('css')
@@ -717,12 +760,48 @@
     <link rel="stylesheet" href="{{ asset('client/css/stock.css') }}">
 @endsection
 @section('js')
-    <!-- Thêm này nếu chưa có -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.3/js/lightbox.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
     @if (Session::has('success'))
         <script src="{{ asset('assets/js/message.js') }}"></script>
     @endif
+
+    {{-- Xử lý modal chia sẻ --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const shareModal = document.getElementById('shareModal');
+
+            // Khi modal hiển thị, tạo QR code
+            shareModal.addEventListener('shown.bs.modal', function() {
+                // Xóa QR code cũ nếu có
+                document.getElementById('qrcode').innerHTML = '';
+                const link_qr = document.getElementById('shareLinkInput').value;
+                // console.log(link_qr);
+
+                // Tạo QR code mới
+                new QRCode(document.getElementById('qrcode'), {
+                    text: link_qr,
+                    width: 200,
+                    height: 200,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            });
+
+            // Xử lý nút copy link
+            document.getElementById('copyLinkBtn').addEventListener('click', function(e) {
+                // console.log(e.target);
+                const shareLink = document.getElementById('shareLinkInput');
+                shareLink.select();
+                document.execCommand('copy');
+
+                // Hiển thị thông báo
+                showToast('Đã sao chép liên kết vào clipboard!');
+            });
+        });
+    </script>
 
     {{-- xử lý thông báo và ảnh, stock --}}
     <script>

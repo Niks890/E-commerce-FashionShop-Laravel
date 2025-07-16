@@ -229,7 +229,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title" id="cancelOrderModalLabel">Xác nhận hủy đơn hàng</h5>
-                    <button type="button" class="btn-close-modal bg-danger border-0 text-white fw-bold"
+                    <button type="button" class="btn-close-modal bg-danger border-0 bg-transparent text-white fw-bold"
                         data-bs-dismiss="modal" aria-label="Close">X</button>
                 </div>
                 <div class="modal-body">

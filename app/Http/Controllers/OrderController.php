@@ -20,7 +20,11 @@ use Illuminate\Support\Facades\Mail;
 use App\Events\StockUpdated;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
+use Hashids\Hashids;
 use StockUpdated as GlobalStockUpdated;
+
+use Endroid\QrCode\QrCode;
+use Endroid\QrCode\Writer\PngWriter;
 
 class OrderController extends Controller
 {
@@ -364,16 +368,13 @@ class OrderController extends Controller
     }
 
 
-
-
-
     public function exportInvoice($id)
     {
         $orderDetail = DB::table('orders as o')
             ->join('customers as c', 'o.customer_id', '=', 'c.id')
             ->join('order_details as od', 'o.id', '=', 'od.order_id')
-            ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id') // Thay đổi JOIN này
-            ->join('products as p', 'p.id', '=', 'pv.product_id') // Lấy sản phẩm từ product_variants
+            ->join('product_variants as pv', 'pv.id', '=', 'od.product_variant_id')
+            ->join('products as p', 'p.id', '=', 'pv.product_id')
             ->where('o.id', $id)
             ->select(
                 'o.*',
@@ -395,8 +396,47 @@ class OrderController extends Controller
             return redirect()->back()->with('error', 'Đơn hàng không tồn tại!');
         }
 
-        $pdf = Pdf::loadView('sites.export.pdf.invoice', compact('orderDetail'));
+        // Tạo mã hash cho link chia sẻ
+        $hashids = new Hashids(env('HASHIDS_SALT'), env('HASHIDS_LENGTH'));
+        $expiryTime = now()->addDays(1)->timestamp;
+        $encodedId = $hashids->encode($orderDetail[0]->id, $expiryTime);
+
+        // Tạo link chia sẻ
+        $shareLink = url('/order/order-detail/' . $encodedId);
+
+        // Tạo QR Code (phiên bản mới)
+        $qrCode = new QrCode($shareLink);
+
+        $writer = new PngWriter();
+        $qrResult = $writer->write($qrCode);
+
+        // Chuyển đổi QR code thành base64
+        $qrCodeBase64 = base64_encode($qrResult->getString());
+        $qrCodeDataUri = 'data:image/png;base64,' . $qrCodeBase64;
+
+        $pdf = Pdf::loadView('sites.export.pdf.invoice', compact('orderDetail', 'encodedId', 'qrCodeDataUri', 'shareLink'));
         return $pdf->download('invoice_order_' . $id . '.pdf');
+    }
+
+    public function handleShareOrder($hash)
+    {
+        $hashids = new Hashids(env('HASHIDS_SALT'), env('HASHIDS_LENGTH'));
+        $decoded = $hashids->decode($hash);
+
+        if (empty($decoded) || count($decoded) < 2) {
+            abort(404, 'Link không hợp lệ hoặc đã hết hạn.');
+        }
+
+        $orderId = $decoded[0];
+        $expiryTimestamp = $decoded[1];
+
+        // Kiểm tra thời gian hết hạn
+        if (time() > $expiryTimestamp) {
+            abort(404, 'Link chia sẻ đã hết hạn.');
+        }
+
+        // return redirect()->route('sites.showOrderDetailOfCustomer', ['order' => $orderId]);
+        return redirect()->route('order.show', ['order' => $orderId]);
     }
 
 

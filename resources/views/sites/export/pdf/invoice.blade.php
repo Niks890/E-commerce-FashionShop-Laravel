@@ -10,84 +10,69 @@
             font-family: DejaVu Sans, sans-serif;
             background: #f9f9f9;
             margin: 0;
-            padding: 15px;
-            /* Reduced padding */
-            font-size: 10px;
-            /* Reduced font size */
+            padding: 10px;
+            font-size: 8px;
+            position: relative;
         }
 
         .invoice-box {
-            max-width: 800px;
+            max-width: 600px;
             margin: auto;
-            padding: 15px;
-            /* Reduced padding */
+            padding: 10px;
             border: 1px solid #eee;
             background: #fff;
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
-            /* Lighter shadow */
-            border-radius: 6px;
-            /* Slightly smaller border radius */
+            border-radius: 4px;
+            position: relative;
         }
 
         .header-title {
             text-align: center;
-            font-size: 20px;
-            /* Reduced title size */
+            font-size: 14px;
             font-weight: bold;
-            margin-bottom: 10px;
-            /* Reduced margin */
+            margin-bottom: 8px;
             color: #333;
         }
 
         .info-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            /* Reduced margin */
+            margin-top: 10px;
         }
 
         .info-box {
             width: 50%;
             background: #fdfdfd;
-            padding: 12px;
-            /* Reduced padding */
-            border-radius: 6px;
+            padding: 8px;
+            border-radius: 4px;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            /* Lighter shadow */
             vertical-align: top;
             border: 1px solid #eee;
         }
 
         .info-box:first-child {
-            padding-right: 10px;
-            /* Reduced space between info boxes */
+            padding-right: 8px;
         }
 
         .info-box h4 {
-            margin-bottom: 8px;
-            /* Reduced margin */
+            margin-bottom: 6px;
             text-transform: uppercase;
-            font-size: 12px;
-            /* Reduced font size for heading */
+            font-size: 9px;
             color: #555;
             border-bottom: 1px solid #eee;
-            padding-bottom: 6px;
-            /* Reduced padding */
+            padding-bottom: 4px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            /* Reduced margin */
-            font-size: 9.5px;
-            /* Reduced font size for table data */
+            margin-top: 10px;
+            font-size: 7px;
         }
 
         th,
         td {
-            padding: 6px 8px;
-            /* Reduced padding */
+            padding: 4px 6px;
             border-bottom: 1px solid #eee;
             text-align: left;
         }
@@ -106,16 +91,13 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 30px;
-            /* Reduced space before signatures */
         }
 
         .signature-box {
             width: 50%;
             text-align: center;
             padding-top: 30px;
-            /* Reduced padding */
             padding-bottom: 50px;
-            /* Reduced padding */
             vertical-align: top;
         }
 
@@ -127,16 +109,13 @@
         .summary-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
-            /* Reduced margin */
-            font-size: 10px;
-            /* Reduced font size */
+            margin-top: 10px;
+            font-size: 8px;
             border: 1px solid #eee;
         }
 
         .summary-table td {
-            padding: 6px 8px;
-            /* Reduced padding */
+            padding: 4px 6px;
             border-bottom: 1px solid #eee;
         }
 
@@ -145,27 +124,88 @@
         }
 
         .summary-table strong {
-            font-size: 12px;
-            /* Reduced font size for total */
+            font-size: 9px;
             color: #333;
         }
 
         .product-image {
-            width: 50px;
-            /* Reduced image size */
+            width: 35px;
             height: auto;
-            border-radius: 3px;
-            /* Slightly smaller border radius */
+            border-radius: 2px;
             vertical-align: middle;
+        }
+
+        /* QR code style đã được chỉnh sửa */
+        .qr-code-container {
+            position: absolute;
+            top: 10px;
+            /* Điều chỉnh lại vị trí top */
+            right: 10px;
+            background: white;
+            padding: 4px;
+            /* Giảm padding */
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            text-align: center;
+            width: 60px;
+            /* Giảm width */
+            height: 60px;
+            /* Thêm height cố định */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .qr-code-image {
+            width: 50px;
+            /* Giảm kích thước ảnh */
+            height: 50px;
+            display: block;
+        }
+
+        .qr-code-text {
+            margin-top: 2px;
+            font-size: 5px;
+            /* Giảm font size */
+            color: #666;
+            line-height: 1;
+            font-weight: 500;
+        }
+
+        .header-section {
+            position: relative;
+            padding-right: 75px;
+            /* Giảm padding để QR code gọn hơn */
+            min-height: 70px;
+            /* Điều chỉnh lại min-height */
+            padding-top: 5px;
+            /* Thêm padding top */
+        }
+
+        .return-date {
+            margin-top: 20px;
+            text-align: center;
+            color: #555;
         }
     </style>
 </head>
 
 <body>
     <div class="invoice-box">
-        <div class="header-title">HÓA ĐƠN MUA HÀNG</div>
-        <p style="text-align: center; margin-bottom: 15px; color: #666;"><strong>Ngày in hóa đơn:</strong>
-            {{ now()->format('d/m/Y H:i') }}</p>
+        <div class="header-section">
+            <div class="header-title">HÓA ĐƠN MUA HÀNG</div>
+            <p style="text-align: center; margin-bottom: 10px; color: #666; font-size: 7px;"><strong>Ngày in hóa
+                    đơn:</strong>
+                {{ now()->format('d/m/Y H:i') }}</p>
+
+            <!-- QR Code được tạo từ server -->
+            <div class="qr-code-container">
+                <img src="{{ $qrCodeDataUri }}" class="qr-code-image" alt="QR Code">
+                <p class="qr-code-text">Quét mã QR</p>
+            </div>
+        </div>
 
         <table class="info-table">
             <tr>
@@ -192,8 +232,8 @@
             </tr>
         </table>
 
-
-        <h3 style="text-align: center; margin-top: 25px; margin-bottom: 10px; color: #333;">CHI TIẾT ĐƠN HÀNG</h3>
+        <h3 style="text-align: center; margin-top: 15px; margin-bottom: 8px; color: #333; font-size: 10px;">CHI TIẾT ĐƠN
+            HÀNG</h3>
         <table>
             <thead>
                 <tr>
@@ -264,10 +304,11 @@
                 <td class="text-right"><strong>{{ number_format($total, 0, ',', '.') }} đ</strong></td>
             </tr>
         </table>
+
         <div class="return-date">
-            <p class="font-italic font-weight-bold">Ngày đặt hàng:
+            <p class="font-italic font-weight-bold" style="font-size: 7px;">Ngày đặt hàng:
                 {{ \Carbon\Carbon::parse($orderDetail[0]->created_at)->format('d/m/Y H:i') }}</p>
-            <strong class="font-italic font-weight-bold">Ngày giao dự kiến:
+            <strong class="font-italic font-weight-bold" style="font-size: 7px;">Ngày giao dự kiến:
                 {{ \Carbon\Carbon::parse($orderDetail[0]->created_at)->addDays(3)->format('d/m/Y') }}</strong>
         </div>
 
@@ -284,8 +325,9 @@
                 </td>
             </tr>
         </table>
-        <p style="text-align: center; margin-top: 15px; color: #666; font-style: italic;">Cảm ơn quý khách đã mua hàng
-            tại TST Fashion!</p>
+        <p style="text-align: center; margin-top: 15px; color: #666; font-style: italic;">
+            Cảm ơn quý khách đã mua hàng tại TST Fashion!
+        </p>
     </div>
 </body>
 

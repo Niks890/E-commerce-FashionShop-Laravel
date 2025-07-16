@@ -12,11 +12,11 @@
 <div class="container py-4">
     <h3 class="text-center mb-4 text-primary fw-bold">Chi Tiết Đơn Hàng #{{$orderDetail[0]->id}}</h3>
 
-    <div class="text-end mb-3">
+    {{-- <div class="text-end mb-3">
         <a href="{{ route('order.invoice', $orderDetail[0]->id) }}" class="btn btn-outline-danger">
             <i class="fa fa-file-pdf me-1"></i> Xuất hóa đơn PDF
         </a>
-    </div>
+    </div> --}}
 
     <div class="row g-4">
         <!-- Thông tin khách hàng -->

@@ -14,6 +14,7 @@ use App\Models\ProductRecent;
 use App\Models\ProductVariant;
 use App\Models\Voucher;
 use App\Models\VoucherUsage;
+use Hashids\Hashids;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\Paginator;
 
@@ -332,6 +333,9 @@ class HomeController extends Controller
         return view('sites.pages.checkout');
     }
 
+
+
+
     public function productDetail(ProductRecent $productRecent, Product $productDetail, $slug)
     {
         $productDetail = Product::where('slug', $slug)
@@ -344,6 +348,11 @@ class HomeController extends Controller
                 'ProductVariants.ImageVariants'
             ])
             ->firstOrFail();
+
+        $hashids = new Hashids(env('HASHIDS_SALT'), env('HASHIDS_LENGTH'));
+        $expiryTime = now()->addDays(1)->timestamp; // Link hết hạn sau 1 ngày
+        $encodedId = $hashids->encode($productDetail->id, $expiryTime);
+
         $prices = $productDetail->ProductVariants->pluck('price');
         // Lấy danh sách size của sản phẩm
         $sizes = $productDetail->ProductVariants->pluck('size')->unique();
@@ -432,7 +441,34 @@ class HomeController extends Controller
                 1 => $productDetail->comments()->where('star', 1)->count(),
             ];
         }
-        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale', 'productRecentInfo', 'ratingCounts'));
+        return view('sites.product.product_detail', compact('productDetail', 'sizes', 'colors', 'commentCustomers', 'starAvg', 'totalSale', 'productRecentInfo', 'ratingCounts', 'encodedId'));
+    }
+
+
+    public function handleShareLink($hash)
+    {
+        $hashids = new Hashids(env('HASHIDS_SALT'), env('HASHIDS_LENGTH'));
+        $decoded = $hashids->decode($hash);
+
+        if (empty($decoded) || count($decoded) < 2) {
+            abort(404, 'Link không hợp lệ hoặc đã hết hạn.');
+        }
+
+        $productId = $decoded[0];
+        $expiryTimestamp = $decoded[1];
+
+        // Kiểm tra thời gian hết hạn
+        if (time() > $expiryTimestamp) {
+            abort(404, 'Link chia sẻ đã hết hạn.');
+        }
+
+        $product = Product::find($productId, ['slug']);
+
+        if (!$product) {
+            abort(404, 'Sản phẩm không tồn tại.');
+        }
+
+        return redirect()->route('sites.productDetail', ['slug' => $product->slug]);
     }
 
     public function successPayment()
@@ -443,32 +479,32 @@ class HomeController extends Controller
 
 
 
- public function coupon()
-{
-    $customerId = Auth::guard('customer')->id();
+    public function coupon()
+    {
+        $customerId = Auth::guard('customer')->id();
 
-    // Lấy danh sách voucher đã sử dụng
-    $usedVouchers = VoucherUsage::with('voucher')
-        ->where('customer_id', $customerId)
-        ->whereNotNull('used_at')
-        ->orderBy('used_at', 'desc')
-        ->paginate(10);
+        // Lấy danh sách voucher đã sử dụng
+        $usedVouchers = VoucherUsage::with('voucher')
+            ->where('customer_id', $customerId)
+            ->whereNotNull('used_at')
+            ->orderBy('used_at', 'desc')
+            ->paginate(10);
 
-    // Lấy ID các voucher đã sử dụng
-    $usedVoucherIds = VoucherUsage::where('customer_id', $customerId)
-        ->whereNotNull('used_at')
-        ->pluck('voucher_id')
-        ->toArray();
+        // Lấy ID các voucher đã sử dụng
+        $usedVoucherIds = VoucherUsage::where('customer_id', $customerId)
+            ->whereNotNull('used_at')
+            ->pluck('voucher_id')
+            ->toArray();
 
-    // Lấy danh sách voucher có thể sử dụng (loại trừ các voucher đã dùng)
-    $availableVouchers = Voucher::where('vouchers_start_date', '<=', now())
-        ->where('vouchers_end_date', '>=', now())
-        ->where('vouchers_usage_limit', '>', 0)
-        ->whereNotIn('id', $usedVoucherIds) // Loại bỏ voucher đã dùng
-        ->orderBy('vouchers_percent_discount', 'desc')
-        ->limit(4)
-        ->get();
+        // Lấy danh sách voucher có thể sử dụng (loại trừ các voucher đã dùng)
+        $availableVouchers = Voucher::where('vouchers_start_date', '<=', now())
+            ->where('vouchers_end_date', '>=', now())
+            ->where('vouchers_usage_limit', '>', 0)
+            ->whereNotIn('id', $usedVoucherIds) // Loại bỏ voucher đã dùng
+            ->orderBy('vouchers_percent_discount', 'desc')
+            ->limit(4)
+            ->get();
 
-    return view('sites.customer.coupon', compact('usedVouchers', 'availableVouchers'));
-}
+        return view('sites.customer.coupon', compact('usedVouchers', 'availableVouchers'));
+    }
 }

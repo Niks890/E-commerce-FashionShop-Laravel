@@ -1227,3 +1227,23 @@
     position: relative;
     opacity: 1;
 }
+
+/* Share Modal Styles */
+#qrcode {
+    margin: 0 auto;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.social-share a {
+    margin: 0 5px;
+}
+
+#copyLinkBtn {
+    transition: all 0.3s;
+}
+
+#copyLinkBtn:hover {
+    background-color: #f8f9fa;
+}

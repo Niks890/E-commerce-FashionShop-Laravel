@@ -1,3 +1,4 @@
+@can('warehouse workers')
 @extends('admin.master')
 @section('title', 'Quản lý nhập hàng')
 @section('content')
@@ -970,4 +971,8 @@
             return parseFloat(amount).toLocaleString('vi-VN') + " đ";
         }
     </script>
+@else
+{{ abort(403, 'Bạn không có quyền truy cập trang này!') }}
+@endcan
 @endsection
+

@@ -82,6 +82,7 @@ Route::group(['prefix' => '/'], function () {
     Route::post('/contact/send', [ContactController::class, 'sendContact'])->name('contact.send');
     Route::get('/blog', [HomeController::class, 'blog'])->name('sites.blog');
     Route::get('/product/{slug}', [HomeController::class, 'productDetail'])->name('sites.productDetail');
+    Route::get('/share/{hash}', [HomeController::class, 'handleShareLink'])->name('product.share.redirect');
 
 
     // Xử lý danh sách yêu thích
@@ -103,6 +104,7 @@ Route::group(['prefix' => '/'], function () {
     // Xuất hoá đơn PDF
     Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice');
     Route::get('/order-tracking/{id}', [OrderController::class, 'orderTracking'])->name('order.orderTracking');
+    Route::get('/order/order-detail/{hash}', [OrderController::class, 'handleShareOrder'])->name('order.share');
     // Xử lý thanh toán
     // Route::get('/checkout', [HomeController::class, 'checkout'])->name('sites.checkout')->middleware('auth:customer');
     Route::post('/payment', [CheckoutController::class, 'checkout'])->name('payment.checkout');
