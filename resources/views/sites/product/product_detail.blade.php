@@ -184,8 +184,8 @@
                                     <div class="sales-info d-flex">
                                         <i class="fas fa-check-circle"></i>
                                         <span>Đã bán {{ $totalSale }} sản phẩm</span>
-                                        <i class="fas fa-share text-dark" style="cursor: pointer;" data-bs-toggle="modal"
-                                            data-bs-target="#shareModal"></i>
+                                        <i class="fas fa-share text-dark" style="cursor: pointer; margin-left: 12px;" data-bs-toggle="modal"
+                                            data-bs-target="#shareModal">Chia sẻ ngay </i>
                                     </div>
                                 </div>
                             </div>
@@ -266,8 +266,6 @@
                             <div class="purchase-section mb-4">
                                 <div class="quantity">
                                     <div class="pro-qty">
-                                        {{-- <input class="quantity-input" type="text" name="quantity" value="1"
-                                            min="1" max="{{ $productDetail->available_stock }}"> --}}
                                         <input class="quantity-input" type="number" name="quantity" value="1"
                                             min="1" max="{{ $productDetail->available_stock }}"
                                             onkeypress="return event.charCode >= 48 && event.charCode <= 57">
@@ -724,8 +722,7 @@
                         <div id="qrcode" class="mx-auto" style="width: 200px; height: 200px;"></div>
                     </div>
                     <div class="input-group mb-3">
-                        {{-- <input type="text" class="form-control" id="shareLink" readonly
-                            value="{{ url()->current() }}"> --}}
+
                         @php
                             $shareLink = route('product.share.redirect', ['hash' => $encodedId]);
                         @endphp

@@ -13,7 +13,7 @@ class ChatBotApiController extends Controller
 {
     // Default system prompt
     protected $defaultPrompt = "
-        Bạn là một trợ lý chatbot thông minh cho TST Fashion Shop - cửa hàng thời trang online tại Việt Nam.
+        Bạn là một trợ lý chatbot thông minh cho TFashion Shop - cửa hàng thời trang online tại Việt Nam.
         Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
 
         ### THÔNG TIN CỬA HÀNG:
@@ -144,14 +144,14 @@ class ChatBotApiController extends Controller
             $fullSystemPrompt = $this->buildSystemPromptWithProductContext($userId);
             // Build chat prompt
             $chatPrompt = $this->buildChatPrompt($recentHistory, $fullSystemPrompt, $userMessage);
-            // Call AI
+            // Call AI GEMMA3
             $payload = [
-                'model' => 'gemma3:4b',
+                'model' => env('GEMMA_MODEL'),
                 'prompt' => $chatPrompt,
-                'stream' => false,
-                // 'temperature' => 0.7
+                'stream' => env('GEMMA_STREAM'),
+                // 'temperature' => env('GEMMA_TEMPERATURE')
             ];
-            $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
+            $response = Http::timeout(60)->post(env('OLLAMA_API_URL'), $payload);
 
             if (!$response->successful()) {
                 throw new Exception('Failed to connect to OLLama: ' . $response->status());
@@ -787,7 +787,7 @@ class ChatBotApiController extends Controller
             'stream' => false,
         ];
 
-        $response = Http::timeout(60)->post('http://localhost:11434/api/generate', $payload);
+        $response = Http::timeout(60)->post(env('OLLAMA_API_URL'), $payload);
 
         if (!$response->successful()) {
             return '';
