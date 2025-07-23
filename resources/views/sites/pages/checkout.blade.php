@@ -107,9 +107,6 @@
                                         <input type="text" name="email" required>
                                     </div>
                                 </div>
-                                {{-- <small class="text-success"
-                                    style="margin-left: 12px; margin-top: -12px; margin-bottom: 12px;">(Bạn vui lòng nhập
-                                    đúng địa chỉ email và sđt để có thể dễ dàng xử lý vấn đề liên quan đến đơn hàng)</small> --}}
                             </div>
                             <div class="checkout__input">
                                 <p>Ghi chú<span></span></p>
@@ -117,7 +114,7 @@
                                 {{-- Changed required to optional for notes --}}
                             </div>
                             <div class="checkout__input__checkbox">
-                                <a href="{{ route('admin.login') }}">Tạo tài khoản mua hàng?</a>
+                                <a href="{{ route('user.login') }}">Tạo tài khoản mua hàng?</a>
                                 <p>Tạo tài khoản ngay để nhận những ưu đãi khi mua hàng tại TFashionShop!</p>
                             </div>
                             <div class="mt-3">

@@ -53,7 +53,7 @@ Route::group(['prefix' => '/'], function () {
         Route::get('/register', [CustomerController::class, 'register'])->name('user.register');
         Route::post('/register', [CustomerController::class, 'post_register'])->name('user.post_register');
         Route::get('/profile', [CustomerController::class, 'profile'])->name('user.profile')->middleware('auth:customer');
-        Route::put('/profile/{customer}/update', [CustomerController::class, 'update_profile'])->name('user.update_profile');
+        Route::put('/profile/{customer}/update', [CustomerController::class, 'update_profile'])->name('user.update_profile')->middleware('auth:customer');
         Route::post('/check-login', [CustomerController::class, 'checkLogin'])->name('user.checkLogin');
     });
 
@@ -62,23 +62,9 @@ Route::group(['prefix' => '/'], function () {
     Route::get('/cart', [HomeController::class, 'cart'])->name('sites.cart');
     Route::get('/aboutUs', [HomeController::class, 'aboutUs'])->name('sites.aboutUs');
     Route::get('/blog-detail/{slug}', [HomeController::class, 'blogDetail'])->name('sites.blogDetail');
-    Route::get('/coupon', [HomeController::class, 'coupon'])->name('sites.coupon');
+    Route::get('/coupon', [HomeController::class, 'coupon'])->name('sites.coupon')->middleware('auth:customer');
     // xử lý gửi email
     Route::get('/contact', [HomeController::class, 'contact'])->name('sites.contact');
-    // Route::get('/contact-success', [ContactController::class, 'contactSuccess'])->name('contact.contactSuccess');
-    // Route::get('/test-mail', function () {
-    //     $data = ['name' => 'Test User', 'email' => 'minhminh@gmail.com', 'message' => 'This is a test message'];
-
-    //     Mail::raw("Tên người gửi: {$data['name']}\nĐịa chỉ Email: {$data['email']}\nNội dung: {$data['message']}", function($message) use ($data) {
-    //         $message->from('raucuquasachnhom@gmail.com', $data['name'])
-    //                 ->to('raucuquasachnhom@gmail.com', 'TST Fashion Shop')
-    //                 ->subject('Test Email');
-    //     });
-
-    //     return 'Gửi email thành công!';
-    // });
-
-
     Route::post('/contact/send', [ContactController::class, 'sendContact'])->name('contact.send');
     Route::get('/blog', [HomeController::class, 'blog'])->name('sites.blog');
     Route::get('/product/{slug}', [HomeController::class, 'productDetail'])->name('sites.productDetail');
@@ -102,18 +88,17 @@ Route::group(['prefix' => '/'], function () {
     Route::put('/cancel-order{id}', [CustomerController::class, 'cancelOrder'])->name('sites.cancelOrder')->middleware('customer');
 
     // Xuất hoá đơn PDF
-    Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice');
-    Route::get('/order-tracking/{id}', [OrderController::class, 'orderTracking'])->name('order.orderTracking');
-    Route::get('/order/order-detail/{hash}', [OrderController::class, 'handleShareOrder'])->name('order.share');
+    Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice')->middleware('auth:customer');
+    Route::get('/order-tracking/{id}', [OrderController::class, 'orderTracking'])->name('order.orderTracking')->middleware('customer');
+    Route::get('/order/order-detail/{hash}', [OrderController::class, 'handleShareOrder'])->name('order.share')->middleware('customer');
     // Xử lý thanh toán
     // Route::get('/checkout', [HomeController::class, 'checkout'])->name('sites.checkout')->middleware('auth:customer');
-    Route::post('/payment', [CheckoutController::class, 'checkout'])->name('payment.checkout');
+    Route::post('/payment', [CheckoutController::class, 'checkout'])->name('payment.checkout')->middleware('customer');
     Route::get('/payment/success', [HomeController::class, 'successPayment'])->name('sites.success.payment')->middleware('customer');
     // Routes xử lý callback từ các cổng thanh toán
     Route::get('/vnpay-return', [CheckoutController::class, 'vnpayReturn'])->name('payment.vnpay.return');
     Route::get('/momo-return', [CheckoutController::class, 'momoReturn'])->name('payment.momo.return');
     Route::get('/zalopay-return', [CheckoutController::class, 'zalopayReturn'])->name('payment.zalopay.return');
-
     // xử lý đánh giá đơn hàng
     Route::resources(
         [
@@ -176,7 +161,7 @@ Route::group(['prefix' => 'admin', 'middleware' => 'auth'], function () {
         ]
     );
     Route::get('/category/{id}/products', [CategoryController::class, 'showProducts'])
-    ->name('category.products');
+        ->name('category.products');
     Route::get('/voucher/{id}/history', [DiscountController::class, 'history'])->name('admin.voucher.history')->middleware('can:salers');
     Route::get('/products/{product}/variants', [ProductController::class, 'getVariants']);
     Route::post('/products/update-stock', [ProductController::class, 'updateStock']);

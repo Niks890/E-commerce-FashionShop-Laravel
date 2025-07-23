@@ -15,7 +15,8 @@
     }
 @endphp
 
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', $productDetail->product_name)
 @section('content')
     @if (Session::has('error'))

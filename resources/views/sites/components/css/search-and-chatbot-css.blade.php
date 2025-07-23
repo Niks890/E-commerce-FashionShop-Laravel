@@ -1,8 +1,8 @@
 <style>
     .toast-notification {
         position: fixed;
-        bottom: 20px;
-        left: 50%;
+        bottom: 70%;
+        left: 75%;
         transform: translateX(-50%);
         padding: 12px 24px;
         background-color: #28a745;
@@ -11,7 +11,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         opacity: 0;
         transition: opacity 0.3s ease;
-        z-index: 1100;
+        z-index: 9999;
     }
 
     .toast-notification.show {
@@ -734,5 +734,15 @@
         margin: 0;
         opacity: 0.9;
         font-size: 14px;
+    }
+
+    #chatbox-input:disabled {
+        background-color: #f3f4f6;
+        cursor: not-allowed;
+    }
+
+    #chatbox-send:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 </style>

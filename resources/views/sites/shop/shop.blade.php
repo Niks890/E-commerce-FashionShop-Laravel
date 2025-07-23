@@ -1,4 +1,5 @@
-@extends('sites.master')
+{{-- @include('sites.components._chatbox_and_search') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Cửa Hàng')
 @section('content')
     @php
@@ -802,6 +803,10 @@
     <script src="{{ asset('client/js/cart-add.js') }}"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+
+            // if(@json($products->count()) == 0){
+            //     console.log("Khoong co san pham nao");
+            // }
             // Initialize all async functions
             fetchCategories();
             fetchBrands();

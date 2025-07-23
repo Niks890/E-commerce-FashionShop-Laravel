@@ -28,7 +28,6 @@
                 </div>
                 <div class="modal-body" id="chatbox-messages">
                     <!-- Welcome Message -->
-                    <!-- Welcome message sẽ được render lại bằng JS -->
                 </div>
                 <div class="modal-footer">
                     <div class="input-container w-100">
@@ -165,8 +164,9 @@
             }
 
             // --- Sự kiện mở chatbox: load lại lịch sử chat ---
-            chatboxIcon.addEventListener("click", () => {
+            chatboxIcon.addEventListener("click", (e) => {
                 modal.show();
+                // console.log('Chatbox opened', e.target);
                 setTimeout(() => {
                     chatboxInput.focus();
                     renderChatHistory();
@@ -183,9 +183,24 @@
                 }
             });
 
+            // Thêm biến flag ở đầu script
+            let isWaitingForResponse = false;
+
             function sendMessage() {
+
+                if (isWaitingForResponse) {
+                    showToast('Vui lòng đợi phản hồi trước khi gửi tin nhắn mới', 'warning');
+                    return;
+                }
                 let message = chatboxInput.value.trim();
                 if (message === "") return;
+
+                // Đặt cờ đang chờ phản hồi
+                isWaitingForResponse = true;
+
+                // Disable nút gửi và input
+                chatboxInput.disabled = true;
+                chatboxSend.disabled = true;
 
                 // Remove welcome message if it exists
                 const welcomeMessage = chatboxMessages.querySelector('.welcome-message');
@@ -250,6 +265,11 @@
                     })
                     // In the sendMessage function, modify the response handling:
                     .then(response => {
+
+                        isWaitingForResponse = false;
+                        chatboxInput.disabled = false;
+                        chatboxSend.disabled = false;
+                        chatboxInput.focus();
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();
 
@@ -276,6 +296,11 @@
                         scrollToBottom();
                     })
                     .catch(error => {
+
+                        isWaitingForResponse = false;
+                        chatboxInput.disabled = false;
+                        chatboxSend.disabled = false;
+                        chatboxInput.focus();
                         console.error('Chat API Error:', error);
                         const typingIndicator = document.getElementById("typing-indicator");
                         if (typingIndicator) typingIndicator.remove();

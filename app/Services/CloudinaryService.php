@@ -7,32 +7,25 @@ use Illuminate\Support\Facades\Http;
 class CloudinaryService
 {
 
-
     public function uploadImage($filePath, $folder = null)
     {
         $url = "https://api.cloudinary.com/v1_1/" . env('CLOUDINARY_CLOUD_NAME') . "/image/upload";
-
         $postData = [
             'upload_preset' => env('CLOUDINARY_UPLOAD_PRESET'),
         ];
-
         if ($folder) {
             $postData['folder'] = $folder;
         }
-
         $response = Http::attach(
             'file',
             file_get_contents($filePath),
             'file'
         )->post($url, $postData);
-
         $responseData = $response->json();
-
         if ($response->successful() && isset($responseData['public_id'])) {
             $imageUrl = $responseData['secure_url'] ?? (
                 "https://res.cloudinary.com/" . env('CLOUDINARY_CLOUD_NAME') . "/image/upload/" . $responseData['public_id']
             );
-
             return [
                 'url' => $imageUrl
             ];
@@ -43,7 +36,6 @@ class CloudinaryService
             ];
         }
     }
-
 
 
 

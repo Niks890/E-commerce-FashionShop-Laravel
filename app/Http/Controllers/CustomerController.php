@@ -23,9 +23,19 @@ class CustomerController extends Controller
 {
     public function login()
     {
-        return view('sites.login');
-    }
+          // Kiểm tra nếu người dùng đã đăng nhập
+        if (Auth::guard('customer')->check()) {
+            $currentUser = Auth::guard('customer')->user();
 
+            // Truyền thông tin người dùng hiện tại sang view
+            return view('sites.login', [
+                'isLoggedIn' => true,
+                'currentUser' => $currentUser
+            ]);
+        }
+
+    return view('sites.login', ['isLoggedIn' => false]);
+    }
 
 
     public function post_login(Request $request)

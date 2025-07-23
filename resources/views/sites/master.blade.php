@@ -35,7 +35,11 @@
 <body>
 
     @include('sites.components._header')
-    @include('sites.components._chatbox_and_search')
+    {{-- Kiểm soát view chatbot --}}
+    @unless (isset($hideChatbox) && $hideChatbox)
+        @include('sites.components._chatbox_and_search')
+    @endunless
+    {{-- @include('sites.components._chatbox_and_search') --}}
     @yield('content')
     @include('sites.components._footer')
 

@@ -273,17 +273,17 @@
 @media (max-width: 768px) {
     .cart-items {
         width: calc(100vw - 30px);
-        right: 15px;
+        /* Bỏ dòng right: 15px để cart-items vẫn căn trái */
         bottom: 90px;
     }
 
     .cart-icon {
-        right: 15px;
+        /* Bỏ dòng right: 15px để icon vẫn ở bên trái */
         bottom: 20px;
-        left: auto; /* tránh xung đột left khi responsive */
+        left: 15px; /* Chỉ điều chỉnh khoảng cách từ trái, không chuyển sang phải */
+        /* left: auto; - Bỏ dòng này */
     }
 }
-
 
 .toast {
     min-width: 250px;

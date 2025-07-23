@@ -180,6 +180,60 @@
         </div>
     </div>
 
+    @if (isset($isLoggedIn) && $isLoggedIn && isset($currentUser))
+        <div class="modal fade show" id="logoutConfirmModal" tabindex="-1" role="dialog"
+            aria-labelledby="logoutConfirmModalLabel" style="display: block; padding-right: 15px;" aria-modal="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="logoutConfirmModalLabel">Xác nhận</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                            onclick="closeModal()">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        Bạn đã đăng nhập với tên <strong>{{ $currentUser->name }}</strong>, cần đăng xuất trước khi
+                        đăng nhập làm người dùng khác.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy bỏ</button>
+                        <form action="{{ route('user.logout') }}" method="GET">
+                            <button type="submit" class="btn btn-primary">Đăng xuất</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show" id="backdrop" style="display: block;"></div>
+
+        <script>
+            function closeModal() {
+                document.getElementById('logoutConfirmModal').style.display = 'none';
+                document.getElementById('backdrop').style.display = 'none';
+                // Hoặc chuyển hướng về trang chủ nếu muốn
+                window.location.href = "{{ route('sites.home') }}";
+            }
+        </script>
+
+        <style>
+            .modal-backdrop {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1040;
+                width: 100vw;
+                height: 100vh;
+                background-color: #000;
+                opacity: 0.5;
+            }
+
+            .modal {
+                z-index: 1050;
+            }
+        </style>
+    @endif
+
 </body>
 <script>
     // =================== PASSWORD TOGGLE FUNCTIONALITY ===================

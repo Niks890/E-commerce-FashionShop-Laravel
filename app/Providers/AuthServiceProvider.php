@@ -19,18 +19,16 @@ class AuthServiceProvider extends ServiceProvider
     protected $policies = [
         // 'App\Models\Model' => 'App\Policies\ModelPolicy',
     ];
+            // $this->registerPolicies();
+        // Gate::define('customers', function () {
+        //     return Auth::guard('customer')->check();
+        // });
 
     /**
      * Register any authentication / authorization services.
      */
     public function boot(): void
     {
-        // $this->registerPolicies();
-        // Gate::define('customers', function () {
-        //     return Auth::guard('customer')->check();
-        // });
-
-
         Gate::define('managers', function (User $user) {
             return in_array('admin', $user->roles()) || in_array('manage', $user->roles()) ? true : false;
         });

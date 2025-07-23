@@ -44,7 +44,7 @@ class ClearExpiredProductDiscounts extends Command
             return Command::SUCCESS;
         }
 
-        // Tìm tất cả sản phẩm đang liên kết với các khuyến mãi này
+        // Tìm tất cả sản phẩm đang liên kết với các khuyến mãi
         // và cập nhật discount_id của chúng thành NULL
         $updatedRows = Product::whereIn('discount_id', $expiredOrInactiveDiscountIds)
                                 ->update(['discount_id' => null]);

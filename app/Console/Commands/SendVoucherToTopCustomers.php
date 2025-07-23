@@ -105,9 +105,9 @@ class SendVoucherToTopCustomers extends Command
     protected function findSuitableVoucher()
     {
         return Voucher::where('vouchers_end_date', '>', Carbon::now())
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->where('vouchers_usage_limit', '>', 0)
-                      ->orWhereNull('vouchers_usage_limit');
+                    ->orWhereNull('vouchers_usage_limit');
             })
             ->orderBy('vouchers_end_date', 'asc') // Ưu tiên voucher sắp hết hạn
             ->first();

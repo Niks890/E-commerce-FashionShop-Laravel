@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Exception;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
@@ -15,6 +18,11 @@ class ChatBotApiController extends Controller
     protected $defaultPrompt = "
         Bạn là một trợ lý chatbot thông minh cho TFashion Shop - cửa hàng thời trang online tại Việt Nam.
         Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
+
+        ### QUY TẮC TUYỆT ĐỐI - KHÔNG ĐƯỢC VI PHẠM:
+            1. **KHÔNG BAO GIỜ ĐƯỢC BỊA THÔNG TIN SẢN PHẨM**
+            2. **CHỈ SỬ DỤNG THÔNG TIN CÓ SẴN TRONG product_context**
+            3. **NẾU product_context RỖNG HOẶC KHÔNG CÓ DỮ LIỆU → KHÔNG ĐƯA THÔNG TIN SẢN PHẨM CỤ THỂ HÃY HỎI KHÁCH HÀNG CẦN GÌ**
 
         ### THÔNG TIN CỬA HÀNG:
         - Địa chỉ chi nhánh Cần Thơ: 3/2, Xuân Khánh, Cần Thơ
@@ -29,51 +37,60 @@ class ChatBotApiController extends Controller
         - [Hỗ trợ] Tư vấn 24/7 qua hotline 0123456789
 
         ### HƯỚNG DẪN PHẢN HỒI:
-        1. Khi khách hỏi về sản phẩm:
-        - Khi khách hỏi về sản phẩm hoặc đặt hàng sản phẩm nào mà dữ liệu trong context
-            và cuộc hội thoại là rỗng hoặc chưa có hãy hỏi rõ khách muốn mua gì,
-            hoặc giới thiệu trang shop: <a href='http://127.0.0.1:8000/shop'>Shop</a> để tham khảo.
-        - Sử dụng thông tin sản phẩm có sẵn trong context nếu có,
-            tuyệt đối không được bịa ra mà hãy trả lời là không tìm thấy hoặc hiện chưa có sản phẩm đó
-        - Cung cấp thông tin chi tiết: chất liệu (material), thương hiệu (brand), mô tả ngắn (short_description), size, màu sắc, giá
-        - Khi mô tả sản phẩm, hãy sử dụng thông tin từ short_description và description nếu có
-        - Đối với chất liệu, luôn đề cập nếu có thông tin material
-        - Đối với thương hiệu, luôn đề cập nếu có thông tin brand
-        - Sử dụng link hãy gửi kèm thẻ <a> để truy cập thay vì text
-        - Khi người dùng hỏi còn hàng không chỉ trả lời những size và màu có available_stock lớn hơn 0
-        - So sánh, tư vấn dựa trên sản phẩm đã biết
-        - Khi khách hỏi tư vấn chi tiết hay hỏi rõ thông tin sản phẩm hãy gửi kèm link sản phẩm theo định dạng http://127.0.0.1:8000/product/{slug}
+            1. Khi khách hỏi về sản phẩm:
+            - Khi khách hỏi về sản phẩm hoặc đặt hàng sản phẩm nào mà dữ liệu trong context
+                và cuộc hội thoại là rỗng hoặc chưa có hãy hỏi rõ khách muốn mua gì,
+                hoặc giới thiệu trang shop: <a href='http://127.0.0.1:8000/shop'>Shop</a> để tham khảo.
+            - Sử dụng thông tin sản phẩm có sẵn trong context nếu có,
+                tuyệt đối không được bịa ra mà hãy trả lời là không tìm thấy hoặc hiện chưa có sản phẩm đó.
+            - Cung cấp thông tin chi tiết: chất liệu (material), thương hiệu (brand), mô tả ngắn (short_description), size, màu sắc, giá.
+            - Khi mô tả sản phẩm, hãy sử dụng thông tin từ short_description và description nếu có.
+            - Sử dụng link hãy gửi kèm thẻ <a> để truy cập thay vì text.
+            - Khi người dùng hỏi còn hàng không chỉ trả lời những size và màu có available_stock lớn hơn 0.
+            - So sánh, tư vấn dựa trên sản phẩm đã biết.
+            - Khi khách hỏi tư vấn chi tiết hay hỏi rõ thông tin sản phẩm hãy gửi kèm link sản phẩm theo định dạng http://127.0.0.1:8000/product/{slug}
 
 
-        2. Tương tác thông minh:
-        - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm,
+            2. Tương tác thông minh:
+            - Khi khách hỏi 'cái nào đẹp hơn' hay đại loại là so sánh sản phẩm,
             hãy phân tích và so sánh thông tin sản phẩm dựa vào thông tin lưu trong context → So sánh các sản phẩm đã show
-        - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context.
-        - Khi hỏi về size → Dựa vào sản phẩm đã đề cập.
-        - Gợi ý combo, phối đồ từ các sản phẩm có sẵn.
+            - Khi hỏi về giá → Tham khảo giá các sản phẩm trong context.
+            - Khi hỏi về size → Dựa vào sản phẩm đã đề cập.
+            - Gợi ý combo, phối đồ từ các sản phẩm có sẵn.
 
-        3. Khi hỏi về cách đặt hàng:
-        - Hãy hướng dẫn step by step từ bước từ tìm kiếm tên sản phẩm,
-        chọn vào sản phẩm, chọn size và số lượng, nhấn thêm vào giỏ hàng, kiểm tra giỏ hàng và chọn thanh toán,
-        nhập thông tin giao hàng và chọn phương thức thanh toán, nhấn nút thanh toán.
+            3. Khi hỏi về cách đặt hàng:
+            - Hãy hướng dẫn step by step từ bước từ tìm kiếm tên sản phẩm,
+            chọn vào sản phẩm, chọn size và số lượng, nhấn thêm vào giỏ hàng, kiểm tra giỏ hàng và chọn thanh toán,
+            nhập thông tin giao hàng và chọn phương thức thanh toán, nhấn nút thanh toán.
 
-        4. Khi khách hỏi về đơn hàng
-        - Hãy hướng dẫn khách liên hệ cửa hàng qua contact hoặc hotline để được giải đáp.
+            4. Khi khách hỏi về đơn hàng
+            - Hãy hướng dẫn khách liên hệ cửa hàng qua contact hoặc hotline để được giải đáp.
 
-        5. Khi câu trả lời dính từ khoá trong rulebase
-        hãy trả lời một cách tự nhiên là bạn tìm sản phẩm hay thông tin do bắt gặp từ khoá đó.
-        ### LIÊN KẾT QUAN TRỌNG:
-        - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
-        - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
-        - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
-        - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
+            5. Khi câu trả lời dính từ khoá trong rulebase
+            hãy trả lời một cách tự nhiên là bạn tìm sản phẩm hay thông tin do bắt gặp từ khoá đó.
 
-        ### LƯU Ý:
-        -  Không bịa thông tin sản phẩm
-        -  Luôn kiểm tra lại thông tin trong context trước khi trả lời
-         - Luôn hỏi rõ nhu cầu khi khách hỏi chung chung
-         - Nếu câu hỏi ngoài lề liên quan đến lĩnh vực chính trị, tôn giáo, y tế hãy từ chối và nói là bạn không được đào tạo để trả lời.";
-    //  - Nếu câu hỏi không phù hợp phạm vi cửa hàng , tuyệt đối không được bịa câu trả lời
+            ### LIÊN KẾT QUAN TRỌNG:
+            - Trang liên hệ: <a href='http://127.0.0.1:8000/contact'>Contacts</a>
+            - Blog thời trang: <a href='http://127.0.0.1:8000/blog'>Blog</a>
+            - Cửa hàng: <a href='http://127.0.0.1:8000/shop'>Shop</a>
+            - Hướng dẫn chọn size: <a href='https://res.cloudinary.com/dc2zvj1u4/image/upload/v1748404290/ao/file_u0eqqq.jpg'>Hướng dẫn chọn size</a>
+
+            ### NHỮNG ĐIỀU TUYỆT ĐỐI KHÔNG ĐƯỢC LÀM:
+            ❌ Không bịa tên thương hiệu (M.O.T, ABC, XYZ...)
+            ❌ Không bịa tên sản phẩm cụ thể
+            ❌ Không bịa giá tiền
+            ❌ Không bịa thông tin 'đang hot', 'bán chạy'
+            ❌ Không nói 'sản phẩm X đang được ưa chuộng' khi không có data
+            ❌ Không đưa ra thông tin sản phẩm khi product_context rỗng
+
+            ### LƯU Ý QUAN TRỌNG:
+            - Luôn kiểm tra product_context trước khi đưa thông tin sản phẩm
+            - Thành thật thừa nhận khi không có thông tin thay vì bịa
+            - Hướng khách đến nguồn thông tin chính thức (Shop, Contact)
+            - Chỉ trả lời về chính sách, dịch vụ cửa hàng khi không có dữ liệu sản phẩm
+            - Từ chối trả lời câu hỏi về chính trị, tôn giáo, y tế";
+
+
 
 
 
@@ -83,7 +100,9 @@ class ChatBotApiController extends Controller
         try {
             $userId = 'user_gemma3_newway';
             $userMessage = $request->input('message');
+            // Lưu lịch sử chat với key "chat_history:[userId]"
             $historyKey = "chat_history:$userId";
+            // Lưu ngữ cảnh sản phẩm với key có dạng "product_context:[userId]"
             $productContextKey = "product_context:$userId";
             $maxMessages = 50;
             $summarizeThreshold = 50;
@@ -97,15 +116,6 @@ class ChatBotApiController extends Controller
                     'reply' => $specialResponse['content'] ?? $specialResponse['message'] ?? ''
                 ]);
             }
-            // Handle "more products" request
-            $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
-            if ($moreProductsResponse) {
-                Log::info('Returning more products response', $moreProductsResponse);
-                return response()->json([
-                    'reply_data' => $moreProductsResponse,
-                    'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
-                ]);
-            }
 
 
             // $followUpResponse = $this->handleFollowUpQuestions($userMessage, $userId);
@@ -116,6 +126,15 @@ class ChatBotApiController extends Controller
             //         'reply' => $followUpResponse['content'] ?? ''
             //     ]);
             // }
+            // Handle "more products" request
+            $moreProductsResponse = $this->handleMoreProductsRequest($userMessage, $userId);
+            if ($moreProductsResponse) {
+                Log::info('Returning more products response', $moreProductsResponse);
+                return response()->json([
+                    'reply_data' => $moreProductsResponse,
+                    'reply' => $moreProductsResponse['content'] ?? $moreProductsResponse['message'] ?? ''
+                ]);
+            }
             // Get and process chat history
             $historyRaw = Redis::lrange($historyKey, 0, -1);
             $history = array_map('json_decode', $historyRaw);
@@ -123,7 +142,6 @@ class ChatBotApiController extends Controller
             if (count($history) >= $summarizeThreshold) {
                 $toSummarize = array_slice($history, 0, 40);
                 $summaryText = $this->summarizeHistory($toSummarize);
-
                 if ($summaryText) {
                     $history = array_slice($history, 40);
                     array_unshift($history, (object)[
@@ -152,7 +170,6 @@ class ChatBotApiController extends Controller
                 // 'temperature' => env('GEMMA_TEMPERATURE')
             ];
             $response = Http::timeout(60)->post(env('OLLAMA_API_URL'), $payload);
-
             if (!$response->successful()) {
                 throw new Exception('Failed to connect to OLLama: ' . $response->status());
             }
@@ -413,7 +430,7 @@ class ChatBotApiController extends Controller
         }
 
         if (preg_match('/^(phí vận chuyển|ship hàng|phí ship)( là bao nhiêu)?\??$/u', $message)) {
-            return ['type' => 'text', 'content' => "Hiện tại chúng tôi miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên. Đơn dưới 500.000đ phí ship là 25.000đ."];
+            return ['type' => 'text', 'content' => "Hiện tại chúng tôi miễn phí vận chuyển cho đơn hàng từ 500.000đ trở lên. Đơn dưới 500.000đ phí ship là 30.000đ."];
         }
 
         // Xử lý câu hỏi về sale
@@ -481,9 +498,17 @@ class ChatBotApiController extends Controller
             $targetProduct = json_decode(end($contextRaw));
         }
 
-        // Kiểm tra nếu hỏi cụ thể về size
-        $sizeInquiry = null;
-        if (preg_match('/size\s*(L|XL|M|S)/i', $message, $matches)) {
+        // Lấy danh sách size từ database
+        $availableSizes = Cache::remember('product_sizes', 3600, function () {
+            return ProductVariant::select('size')
+                ->distinct()
+                ->orderByRaw("FIELD(size, 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL')")
+                ->pluck('size')
+                ->toArray();
+        });
+
+        $sizePattern = implode('|', array_map('preg_quote', $availableSizes));
+        if (preg_match('/size\s*(' . $sizePattern . ')/i', $message, $matches)) {
             $sizeInquiry = strtoupper($matches[1]);
         }
 
@@ -547,26 +572,19 @@ class ChatBotApiController extends Controller
         return null;
     }
 
+
+
     protected function detectProductKeywords(string $message): array
     {
         $message = mb_strtolower(trim($message));
-        // Kiểm tra intent về giá
+
         $priceIntent = $this->detectPriceIntent($message);
         if ($priceIntent) {
             return $priceIntent;
         }
-        // Kiểm tra intent danh mục và sản phẩm
-        $productMap = [
-            'áo sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
-            'sơ mi' => ['category' => 'áo sơ mi', 'keywords' => ['sơ mi', 'shirt']],
-            'áo thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt', 'tshirt']],
-            'thun' => ['category' => 'áo thun', 'keywords' => ['thun', 't-shirt']],
-            'quần' => ['category' => 'quần', 'keywords' => ['pants', 'trousers']],
-            'áo' => ['category' => 'áo', 'keywords' => ['shirt', 'top']],
-            'quần jeans' => ['category' => 'quần jeans', 'keywords' => ['jeans']],
-            'áo hoodies' => ['category' => 'áo hoodies', 'keywords' => ['hoodies']],
-        ];
-        // Find exact match
+
+        $productMap = $this->getProductCategoriesWithKeywords();
+
         $sortedKeys = array_keys($productMap);
         usort($sortedKeys, function ($a, $b) {
             return strlen($b) - strlen($a);
@@ -581,17 +599,81 @@ class ChatBotApiController extends Controller
                 ];
             }
         }
+
         return [];
     }
 
+    protected function getProductCategoriesWithKeywords(): array
+    {
+        $cacheKey = 'product_categories_keywords_map';
+        $cacheDuration = now()->addHours(6); // Cache 6 tiếng
+
+        return Cache::remember($cacheKey, $cacheDuration, function () {
+            $productMap = [];
+
+            // Lấy tất cả danh mục
+            $categories = Category::with(['products' => function ($query) {
+                $query->select('id', 'category_id', 'tags')
+                    ->whereNotNull('tags');
+            }])->get();
+
+            foreach ($categories as $category) {
+                $categoryName = mb_strtolower($category->category_name);
+
+                // Tạo mảng keywords từ tags của các sản phẩm thuộc category
+                $keywords = $category->products->flatMap(function ($product) {
+                    return array_map('trim', explode(',', $product->tags));
+                })->filter()->unique()->values()->all();
+
+                // Thêm chính tên category vào keywords
+                $keywords = array_unique(array_merge([$categoryName], $keywords));
+
+                // Thêm vào productMap
+                $productMap[$categoryName] = [
+                    'category' => $category->category_name,
+                    'keywords' => $keywords
+                ];
+
+                // Thêm các biến thể ngắn của tên category (nếu cần)
+                if (str_contains($categoryName, 'áo')) {
+                    $shortName = str_replace('áo ', '', $categoryName);
+                    $productMap[$shortName] = $productMap[$categoryName];
+                }
+            }
+
+            // Thêm các từ khóa đặc biệt (nếu cần)
+            $productMap['thun'] = $productMap['áo thun'] ?? null;
+            $productMap['sơ mi'] = $productMap['áo sơ mi'] ?? null;
+
+            return array_filter($productMap);
+        });
+    }
+
+
+    protected function detectCategory(string $message): ?string
+    {
+        $productMap = $this->getProductCategoriesWithKeywords();
+
+        $sortedKeys = array_keys($productMap);
+        usort($sortedKeys, function ($a, $b) {
+            return strlen($b) - strlen($a);
+        });
+
+        foreach ($sortedKeys as $keyword) {
+            if (str_contains(mb_strtolower($message), $keyword)) {
+                return $productMap[$keyword]['category'] ?? null;
+            }
+        }
+
+        return null;
+    }
+
+
     protected function detectPriceIntent(string $message): ?array
     {
-        $category = null;
-        if (str_contains($message, 'áo thun')) $category = 'áo thun';
-        elseif (str_contains($message, 'áo sơ mi') || str_contains($message, 'sơ mi')) $category = 'áo sơ mi';
-        elseif (str_contains($message, 'quần')) $category = 'quần';
-        elseif (str_contains($message, 'áo')) $category = 'áo';
+        $category = $this->detectCategory($message);
 
+        Log::info('category: ' . $category);
         // 1. Cheapest
         if (str_contains($message, 'rẻ nhất') || str_contains($message, 'giá rẻ nhất') || str_contains($message, 'sản phẩm giá rẻ') || preg_match('/rẻ\s*(\d+[\d\.,]*)[k]?/u', $message)) {
             return [
@@ -823,21 +905,20 @@ class ChatBotApiController extends Controller
         ])->select('id', 'product_name', 'price', 'slug', 'image', 'discount_id', 'material', 'description', 'short_description', 'brand')
             ->where('status', 1);
 
-        // Filter by category/keywords
         if ($category) {
-            $query->where(function ($q) use ($category, $keywords) {
-                $q->whereHas('category', function ($subQ) use ($category) {
-                    $subQ->where('category_name', 'like', '%' . $category . '%');
-                });
-
-                if (!empty($keywords)) {
-                    $q->orWhere(function ($subQ) use ($keywords) {
-                        foreach ($keywords as $keyword) {
-                            $subQ->orWhere('product_name', 'like', '%' . $keyword . '%');
-                        }
-                    });
-                }
+            $query->whereHas('category', function ($q) use ($category) {
+                $q->where('category_name', 'like', '%' . $category . '%');
             });
+
+            // Thêm điều kiện tìm trong tags nếu có keywords
+            if (!empty($keywords)) {
+                $query->where(function ($q) use ($keywords) {
+                    foreach ($keywords as $keyword) {
+                        $q->orWhere('tags', 'like', '%' . $keyword . '%')
+                            ->orWhere('product_name', 'like', '%' . $keyword . '%');
+                    }
+                });
+            }
         } elseif (!empty($keywords)) {
             $query->where(function ($q) use ($keywords) {
                 foreach ($keywords as $keyword) {
