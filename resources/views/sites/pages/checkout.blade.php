@@ -17,7 +17,8 @@
         }
     }
 @endphp
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Thanh toán')
 @section('content')
     <section class="breadcrumb-option">

@@ -9,7 +9,9 @@
         </button>
     </div>
 @endif
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
+@section('title', 'Giỏ Hàng')
 @section('content')
     <!-- Breadcrumb Section Begin -->
     <section class="breadcrumb-option">
@@ -130,12 +132,21 @@
                     </div>
                 </div>
                 <div class="col-lg-4">
+
+
                     <div class="cart__discount">
                         <h6>Mã giảm giá</h6>
                         <form action="#">
-                            <input type="text" name="code_discount" placeholder="Mã code..." required>
+                            <input type="text" id="code_discount_input" name="code_discount" placeholder="Mã code..."
+                                required>
                             <button id="apply-code-discount" type="submit">Áp dụng</button>
                         </form>
+                        <button type="button" id="show-vouchers-btn " class="show-vouchers-btn" data-toggle="modal"
+                            data-target="#vouchersModal">
+                            <i class="fas fa-gift"></i>
+                            <span>Xem mã giảm giá của bạn</span>
+                            <i class="fas fa-arrow-right btn-arrow"></i>
+                        </button>
                         <span id="apply-code-discount-result"></span>
                     </div>
 
@@ -188,11 +199,195 @@
         </div>
     </section>
     <!-- Shopping Cart Section End -->
+
+    {{-- Cải thiện Modal hiển thị mã giảm giá --}}
+    <div class="modal fade enhanced-voucher-modal" id="vouchersModal" tabindex="-1" role="dialog"
+        aria-labelledby="vouchersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content modern-modal">
+                <div class="modal-header gradient-header">
+                    <div class="header-content">
+                        <i class="fas fa-tags header-icon"></i>
+                        <h5 class="modal-title" id="vouchersModalLabel">Mã giảm giá của bạn</h5>
+                    </div>
+                    <button type="button" class="close modern-close" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body modern-body">
+                    <ul class="nav nav-tabs modern-tabs" id="vouchersTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active modern-tab-link" id="available-tab" data-toggle="tab"
+                                href="#available" role="tab" aria-controls="available" aria-selected="true">
+                                <i class="fas fa-check-circle tab-icon"></i>
+                                Có thể sử dụng
+                                {{-- <span class="tab-badge" id="available-count">0</span> --}}
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link modern-tab-link" id="used-tab" data-toggle="tab" href="#used"
+                                role="tab" aria-controls="used" aria-selected="false">
+                                <i class="fas fa-history tab-icon"></i>
+                                Đã sử dụng
+                                {{-- <span class="tab-badge" id="used-count">0</span> --}}
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="tab-content modern-tab-content" id="vouchersTabContent">
+                        <div class="tab-pane fade show active" id="available" role="tabpanel"
+                            aria-labelledby="available-tab">
+                            <div class="vouchers-container" id="available-vouchers-container">
+                                <div class="loading-state">
+                                    <div class="modern-spinner">
+                                        <div class="spinner-ring"></div>
+                                        <div class="spinner-ring"></div>
+                                        <div class="spinner-ring"></div>
+                                    </div>
+                                    <p>Đang tải mã giảm giá...</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="used" role="tabpanel" aria-labelledby="used-tab">
+                            <div class="vouchers-container" id="used-vouchers-container">
+                                <div class="loading-state">
+                                    <div class="modern-spinner">
+                                        <div class="spinner-ring"></div>
+                                        <div class="spinner-ring"></div>
+                                        <div class="spinner-ring"></div>
+                                    </div>
+                                    <p>Đang tải lịch sử...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modern-footer">
+                    <button type="button" class="btn btn-secondary modern-close-btn" data-dismiss="modal">
+                        <i class="fas fa-times"></i>
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endsection
+
+@section('css')
+    <link rel="stylesheet" href="{{ asset('client/css/voucher-modal.css') }}">
 @endsection
 
 @section('js')
+
+    {{-- Xử lý load mã giảm giá --}}
     <script>
-        // Hàm xử lý Cập nhật tổng giá trị giỏ hàng
+        $(document).ready(function() {
+            // Khi modal được mở
+            $('#vouchersModal').on('show.bs.modal', function() {
+                if (!@json(Auth::guard('customer')->check())) {
+                    checkLoginForVoucher();
+                    $('#vouchersModal').modal('hide');
+                    return;
+                }
+
+                loadAvailableVouchers();
+                loadUsedVouchers();
+            });
+
+            // Hàm load voucher có thể sử dụng
+            function loadAvailableVouchers() {
+                $.ajax({
+                    url: '/api/customer/available-vouchers',
+                    type: 'GET',
+                    success: function(response) {
+                        let html = '';
+                        if (response.data && response.data.length > 0) {
+                            response.data.forEach(voucher => {
+                                html += `
+                        <div class="col-md-6">
+                            <div class="voucher-card" data-code="${voucher.vouchers_code}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="voucher-code">${voucher.vouchers_code}</span>
+                                        <span class="voucher-status available">Có thể sử dụng</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="voucher-discount">Giảm ${Math.round(voucher.vouchers_percent_discount)}%</span>
+                                    <span class="voucher-max-discount"> (Tối đa ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.vouchers_max_discount)})</span>
+                                </div>
+                                <div class="voucher-min-order mt-1">Đơn tối thiểu ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(voucher.vouchers_min_order_amount)}</div>
+                                <div class="voucher-expiry mt-1">HSD: ${new Date(voucher.vouchers_end_date).toLocaleDateString('vi-VN')}</div>
+                            </div>
+                        </div>`;
+                            });
+                        } else {
+                            html =
+                                '<div class="col-12 text-center"><p>Bạn không có mã giảm giá nào khả dụng</p></div>';
+                        }
+                        $('#available-vouchers-container').html(html);
+
+                        // Thêm sự kiện click cho voucher
+                        $('.voucher-card[data-code]').click(function() {
+                            const code = $(this).data('code');
+                            $('#code_discount_input').val(code);
+                            $('#apply-code-discount').click();
+                            $('#vouchersModal').modal('hide');
+                        });
+                    },
+                    error: function(error) {
+                        console.error('Error loading available vouchers:', error);
+                        $('#available-vouchers-container').html(
+                            '<div class="col-12 text-center"><p>Có lỗi xảy ra khi tải mã giảm giá</p></div>'
+                        );
+                    }
+                });
+            }
+
+            // Hàm load voucher đã sử dụng
+            function loadUsedVouchers() {
+                $.ajax({
+                    url: '/api/customer/used-vouchers',
+                    type: 'GET',
+                    success: function(response) {
+                        let html = '';
+                        if (response.data && response.data.length > 0) {
+                            response.data.forEach(usage => {
+                                const voucher = usage.voucher;
+                                html += `
+                        <div class="col-md-6">
+                            <div class="voucher-card used">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="voucher-code">${voucher.vouchers_code}</span>
+                                        <span class="voucher-status used">Đã sử dụng</span>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <span class="voucher-discount">Giảm ${Math.round(voucher.vouchers_percent_discount)}%</span>
+                                </div>
+                                <div class="voucher-min-order mt-1">Đã sử dụng ngày ${new Date(usage.used_at).toLocaleDateString('vi-VN')}</div>
+                            </div>
+                        </div>`;
+                            });
+                        } else {
+                            html =
+                                '<div class="col-12 text-center"><p>Bạn chưa sử dụng mã giảm giá nào</p></div>';
+                        }
+                        $('#used-vouchers-container').html(html);
+                    },
+                    error: function(error) {
+                        console.error('Error loading used vouchers:', error);
+                        $('#used-vouchers-container').html(
+                            '<div class="col-12 text-center"><p>Có lỗi xảy ra khi tải mã giảm giá đã sử dụng</p></div>'
+                        );
+                    }
+                });
+            }
+        });
+    </script>
+
+    {{-- // Hàm xử lý Cập nhật tổng giá trị giỏ hàng --}}
+    <script>
         function updateCartTotal(priceDiscount = 0) {
             let totalPriceCart = 0;
             let vat = 0.1;
@@ -378,6 +573,8 @@
                             const now = new Date();
                             const endDate = new Date(voucher.end_date);
 
+
+
                             // Check voucher validity
                             if (now > endDate) {
                                 showVoucherError('Mã khuyến mãi hết hạn sử dụng.');
@@ -471,13 +668,13 @@
             $('.percent-discount-hidden').val(percentDiscount);
 
             updateVoucherSession(voucher.id, percentDiscount)
-            .then(response => {
-                console.log('Voucher session saved successfully');
-            })
-            .catch(error => {
-                console.error('Failed to save voucher session:', error);
-                // Có thể hiển thị thông báo lỗi cho user
-            });
+                .then(response => {
+                    console.log('Voucher session saved successfully');
+                })
+                .catch(error => {
+                    console.error('Failed to save voucher session:', error);
+                    // Có thể hiển thị thông báo lỗi cho user
+                });
         }
 
         function updateVoucherSession(voucherId, percentDiscount) {
@@ -917,49 +1114,49 @@
             // });
 
             $("#checkout-form").click(function(e) {
-    e.preventDefault();
+                e.preventDefault();
 
-    if (!@json(Auth::guard('customer')->check())) {
-        checkLogin();
-        return;
-    }
+                if (!@json(Auth::guard('customer')->check())) {
+                    checkLogin();
+                    return;
+                }
 
-    let selectedItems = [];
-    $(".product-checkbox:checked").each(function() {
-        selectedItems.push($(this).val());
-    });
+                let selectedItems = [];
+                $(".product-checkbox:checked").each(function() {
+                    selectedItems.push($(this).val());
+                });
 
-    if (selectedItems.length === 0) {
-        alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
-        return;
-    }
+                if (selectedItems.length === 0) {
+                    alert("Vui lòng chọn ít nhất một sản phẩm để thanh toán.");
+                    return;
+                }
 
-    $(this).addClass("disabled").text("Đang kiểm tra...");
+                $(this).addClass("disabled").text("Đang kiểm tra...");
 
-    checkStockBeforeCheckout().then(result => {
-        if (result.success) {
-            // Chỉ cập nhật session nếu chưa có voucher_id trong session
-            let voucherId = @json(Session::get('voucher_id'));
-            if (!voucherId) {
-                let percentDiscount = $('.percent-discount-hidden').val();
-                return updatePercentDiscountSession(percentDiscount, null);
-            }
-            return Promise.resolve();
-        } else {
-            throw new Error(result.message);
-        }
-    }).then(() => {
-        // Proceed to checkout
-        window.location.href = $(this).attr("href");
-    }).catch(error => {
-        alert(error.message || error);
-        if (error.message) {
-            location.reload();
-        }
-    }).finally(() => {
-        $(this).removeClass("disabled").text("Thanh Toán");
-    });
-});
+                checkStockBeforeCheckout().then(result => {
+                    if (result.success) {
+                        // Chỉ cập nhật session nếu chưa có voucher_id trong session
+                        let voucherId = @json(Session::get('voucher_id'));
+                        if (!voucherId) {
+                            let percentDiscount = $('.percent-discount-hidden').val();
+                            return updatePercentDiscountSession(percentDiscount, null);
+                        }
+                        return Promise.resolve();
+                    } else {
+                        throw new Error(result.message);
+                    }
+                }).then(() => {
+                    // Proceed to checkout
+                    window.location.href = $(this).attr("href");
+                }).catch(error => {
+                    alert(error.message || error);
+                    if (error.message) {
+                        location.reload();
+                    }
+                }).finally(() => {
+                    $(this).removeClass("disabled").text("Thanh Toán");
+                });
+            });
         });
     </script>
 @endsection

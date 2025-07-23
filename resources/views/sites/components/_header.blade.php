@@ -26,20 +26,30 @@
 <!--************************* Offcanvas Menu Begin Menu ẩn nhé ***************-->
 <div class="offcanvas-menu-overlay"></div>
 <div class="offcanvas-menu-wrapper">
+    <!-- Thêm nút đóng X -->
+    <div class="offcanvas__close">
+        <span class="offcanvas__close__btn" onclick="closeOffcanvas()">
+            <i class="fa fa-times"></i>
+        </span>
+    </div>
+
     <div class="offcanvas__option">
         <div class="offcanvas__links">
             <a href="{{ route('user.login') }}">Đăng nhập</a>
         </div>
         <div class="offcanvas__top__hover">
-            <span>Ngôn ngữ<i class="arrow_carrot-down"></i></span>
+            <span>Hỗ trợ<i class="arrow_carrot-down"></i></span>
             <ul>
-                <li>VN</li>
-                <li>EN</li>
+                <li>
+                    <a class="text-dark" href="{{ route('sites.contact') }}">Liên Hệ
+                </li>
+                <li><a class="text-dark" href="{{ route('sites.aboutUs') }}">Chat</li>
             </ul>
         </div>
     </div>
     <div class="offcanvas__nav__option">
-        <a href="javascript:void(0);" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}" alt=""></a>
+        <a href="javascript:void(0);" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}"
+                alt=""></a>
         <a href="{{ route('sites.wishlist') }}" style="position: relative; display: inline-block;">
             <img src="{{ asset('client/img/icon/heart.png') }}" width="20" alt="">
             <span class="wishlist-quantity-header"
@@ -104,18 +114,22 @@
                                     <li><a class="text-dark" href="{{ route('sites.getHistoryOrder') }}">Lịch sử giao
                                             dịch</a>
                                     </li>
-                                    <li><a class="text-dark" href="{{ route('sites.coupon') }}">Mã giảm giá & Voucher</a></li>
+                                    <li><a class="text-dark" href="{{ route('sites.coupon') }}">Mã giảm giá &
+                                            Voucher</a></li>
                                     <li><a class="text-dark" href="{{ route('user.logout') }}">Đăng Xuất</a></li>
                                 </ul>
                             @else
-                                <span class=""><a class="text-dark" href="{{ route('user.login') }}">Đăng nhập</a></span>
+                                <span class=""><a class="text-dark" href="{{ route('user.login') }}">Đăng
+                                        nhập</a></span>
                             @endif
                         </div>
                         <div class="ms-3 header__top__hover">
-                            <span class="text-dark">Ngôn ngữ<i class="arrow_carrot-down"></i></span>
+                            <span class="text-dark">Hỗ trợ<i class="arrow_carrot-down"></i></span>
                             <ul>
-                                <li>VI</li>
-                                <li>EN</li>
+                                <li>
+                                    <a class="text-dark" href="{{ route('sites.contact') }}">Liên Hệ
+                                </li>
+                                <li><a class="text-dark" href="{{ route('sites.aboutUs') }}">Chat</li>
                             </ul>
                         </div>
                     </div>
@@ -130,7 +144,7 @@
                     <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
                         <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                             alt="Logo" width="35">
-                       TFashionShop
+                        TFashionShop
                     </a>
                 </div>
             </div>
@@ -199,9 +213,54 @@
                 opacity: 1;
             }
         }
+
+        .offcanvas__close {
+            position: absolute;
+            top: 20px;
+            right: -50px;
+            /* Đẩy ra ngoài cùng bên phải */
+            z-index: 9999;
+        }
+
+        .offcanvas__close__btn {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .offcanvas__close__btn:hover {
+            background: #666;
+            transform: rotate(90deg);
+        }
+
+        .offcanvas__close__btn i {
+            font-size: 14px;
+        }
     </style>
 @endsection
+
+
 <script>
+    // JavaScript để đóng offcanvas
+    function closeOffcanvas() {
+        // Ẩn offcanvas menu
+        document.querySelector('.offcanvas-menu-wrapper').classList.remove('active');
+        document.querySelector('.offcanvas-menu-overlay').classList.remove('active');
+        document.body.classList.remove('offcanvas-menu-open');
+    }
+
+    // Cũng có thể đóng khi click vào overlay
+    document.querySelector('.offcanvas-menu-overlay').addEventListener('click', function() {
+        closeOffcanvas();
+    });
+
     setTimeout(function() {
         var alert = document.querySelector('.login-success-notify');
         if (alert) {

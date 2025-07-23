@@ -1,4 +1,5 @@
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Chi tiết đơn hàng')
 
 @section('content')

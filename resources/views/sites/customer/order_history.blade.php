@@ -1,4 +1,5 @@
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Lịch sử đơn hàng')
 <!-- Breadcrumb Section Begin -->
 <section class="breadcrumb-option">

@@ -9,6 +9,7 @@ use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\VoucherController;
 use App\Models\Product;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
@@ -92,3 +93,5 @@ Route::get('/recommend-ibcf/user/{userId}', [RecommendationController::class, 'i
 Route::get('/recommendations/user-cosine/{userId}', [RecommendationController::class, 'userBasedCosine']);
 Route::get('/recommendations/item-cosine/{userId}', [RecommendationController::class, 'itemBasedCosine']);
 
+Route::get('/customer/available-vouchers', [VoucherController::class, 'getAvailableVouchers']);
+Route::get('/customer/used-vouchers', [VoucherController::class, 'getUsedVouchers']);

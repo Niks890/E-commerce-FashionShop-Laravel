@@ -1,4 +1,7 @@
 {{-- @include('sites.components._chatbox_and_search') --}}
+{{-- @php
+    dd($materials);
+@endphp --}}
 @extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Cửa Hàng')
 @section('content')
@@ -42,7 +45,7 @@
                 <div class="row align-items-center">
                     <div class="col-md-8">
                         <div class="active-filters">
-                            @if (request()->hasAny(['q', 'category', 'brand', 'price', 'tag', 'color', 'promotion', 'size']))
+                            @if (request()->hasAny(['q', 'category', 'brand', 'price', 'tag', 'color', 'promotion', 'size', 'material']))
                                 <span class="filter-title">Bộ lọc hiện tại:</span>
                                 @if (request('q'))
                                     <span class="filter-badge">
@@ -111,6 +114,15 @@
                                     <span class="filter-badge">
                                         Đang khuyến mãi
                                         <a href="{{ request()->fullUrlWithQuery(['promotion' => null, 'page' => 1]) }}"
+                                            class="remove-filter">
+                                            <i class="fas fa-times"></i>
+                                        </a>
+                                    </span>
+                                @endif
+                                @if (request('material'))
+                                    <span class="filter-badge">
+                                        Chất liệu: {{ request('material') }}
+                                        <a href="{{ request()->fullUrlWithQuery(['material' => null, 'page' => 1]) }}"
                                             class="remove-filter">
                                             <i class="fas fa-times"></i>
                                         </a>
@@ -254,6 +266,28 @@
                                                                 href="{{ request()->fullUrlWithQuery(['size' => $size, 'page' => 1]) }}"
                                                                 class="{{ request('size') == $size ? 'active' : '' }}">
                                                                 {{ $size }}
+                                                            </a>
+                                                        </li>
+                                                    @endforeach
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-heading">
+                                        <a data-toggle="collapse" data-target="#collapseMaterial">Chất liệu</a>
+                                    </div>
+                                    <div id="collapseMaterial" class="collapse show" data-parent="#accordionExample">
+                                        <div class="card-body">
+                                            <div class="shop__sidebar__materials">
+                                                <ul>
+                                                    @foreach ($materials as $material)
+                                                        <li>
+                                                            <a class="text-dark"
+                                                                href="{{ request()->fullUrlWithQuery(['material' => $material, 'page' => 1]) }}"
+                                                                class="{{ request('material') == $material ? 'active' : '' }}">
+                                                                {{ $material }}
                                                             </a>
                                                         </li>
                                                     @endforeach
@@ -500,303 +534,7 @@
 
 @section('css')
     <link rel="stylesheet" href="{{ asset('client/css/cart-add.css') }}">
-    <style>
-        /* Bộ lọc chính */
-        .filter-bar {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            margin-bottom: 30px;
-        }
-
-        /* Active filters */
-        .active-filters {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .filter-title {
-            font-weight: 600;
-            color: #495057;
-            margin-right: 8px;
-            font-size: 14px;
-        }
-
-        .filter-badge {
-            display: inline-flex;
-            align-items: center;
-            background-color: #e9ecef;
-            color: #495057;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .filter-badge:hover {
-            background-color: #dee2e6;
-        }
-
-        .remove-filter {
-            color: #6c757d;
-            margin-left: 6px;
-            font-size: 12px;
-            text-decoration: none;
-        }
-
-        .remove-filter:hover {
-            color: #dc3545;
-        }
-
-        .clear-all-filters {
-            display: inline-flex;
-            align-items: center;
-            color: #dc3545;
-            font-size: 13px;
-            margin-left: 10px;
-            text-decoration: none;
-        }
-
-        .clear-all-filters i {
-            margin-right: 5px;
-        }
-
-        .clear-all-filters:hover {
-            text-decoration: underline;
-        }
-
-        /* Sort options */
-        .sort-options .input-group {
-            max-width: 250px;
-            margin-left: auto;
-        }
-
-        .sort-options .input-group-text {
-            background-color: #f8f9fa;
-            border-right: none;
-        }
-
-        .sort-options .form-select {
-            border-left: none;
-            cursor: pointer;
-        }
-
-        /* Sidebar filter sections */
-        .shop__sidebar {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
-        }
-
-        .card {
-            border: none;
-            margin-bottom: 15px;
-            background: transparent;
-        }
-
-        .card-heading {
-            padding: 0;
-            background: transparent;
-        }
-
-        .card-heading a {
-            display: block;
-            padding: 10px 0;
-            font-size: 15px;
-            font-weight: 700;
-            color: #111;
-            text-decoration: none;
-            position: relative;
-        }
-
-        .card-heading a:after {
-            position: absolute;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            font-family: "FontAwesome";
-            content: "\f107";
-            font-size: 14px;
-        }
-
-        .card-heading a[aria-expanded="true"]:after {
-            content: "\f106";
-        }
-
-        .card-body {
-            padding: 5px 0 0 0;
-        }
-
-        /* Price filter */
-        .shop__sidebar__price ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .shop__sidebar__price li {
-            margin-bottom: 8px;
-        }
-
-        .price__item {
-            display: block;
-            padding: 8px 12px;
-            border-radius: 6px;
-            background-color: #f8f9fa;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: 1px solid #e0e0e0;
-            font-size: 13px;
-        }
-
-        .price__item:hover {
-            background-color: #e9ecef;
-            border-color: #d0d0d0;
-            color: #e53637;
-        }
-
-        /* Size filter */
-        .shop__sidebar__sizes ul {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .shop__sidebar__sizes li a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            border-radius: 6px;
-            background-color: #f8f9fa;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            border: 1px solid #e0e0e0;
-            font-weight: 500;
-            font-size: 13px;
-        }
-
-        .shop__sidebar__sizes li a:hover,
-        .shop__sidebar__sizes li a.active {
-            background-color: #e53637;
-            color: white;
-            border-color: #e53637;
-        }
-
-        /* Color filter */
-        .shop__sidebar__colors ul {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .shop__sidebar__colors li a {
-            display: block;
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 0 0 1px #e0e0e0;
-            transition: all 0.3s;
-            position: relative;
-        }
-
-        .shop__sidebar__colors li a:hover {
-            transform: scale(1.1);
-            box-shadow: 0 0 0 2px #e53637;
-        }
-
-        /* Promotion filter */
-        .shop__sidebar__promotion ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .shop__sidebar__promotion li a {
-            display: block;
-            padding: 6px 12px;
-            background-color: #f8f9fa;
-            color: #e53637;
-            text-decoration: none;
-            border-radius: 6px;
-            transition: all 0.3s;
-            font-weight: 600;
-            font-size: 13px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .shop__sidebar__promotion li a:hover {
-            background-color: #e53637;
-            color: white;
-        }
-
-        /* Tags filter */
-        .shop__sidebar__tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .tag-item {
-            display: inline-block;
-            padding: 4px 10px;
-            background-color: #f8f9fa;
-            color: #111;
-            text-decoration: none;
-            border-radius: 20px;
-            font-size: 12px;
-            transition: all 0.3s;
-            border: 1px solid #e0e0e0;
-        }
-
-        .tag-item:hover {
-            background-color: #e53637;
-            color: white;
-            border-color: #e53637;
-        }
-
-        /* Search box in sidebar */
-        .shop__sidebar__search {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        .shop__sidebar__search input {
-            width: 100%;
-            height: 40px;
-            padding: 0 15px;
-            border: 1px solid #e1e1e1;
-            border-radius: 4px;
-            font-size: 13px;
-            color: #111;
-        }
-
-        .shop__sidebar__search button {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 40px;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            color: #111;
-        }
-    </style>
+    <link rel="stylesheet" href="{{ asset('client/css/shop.css') }}">
 @endsection
 
 @section('js')

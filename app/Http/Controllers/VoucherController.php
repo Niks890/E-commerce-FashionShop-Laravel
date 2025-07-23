@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Voucher;
+use App\Models\VoucherUsage;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class VoucherController extends Controller
 {
@@ -196,5 +198,47 @@ class VoucherController extends Controller
         });
 
         return response()->json($transformedVouchers);
+    }
+
+
+    public function getAvailableVouchers()
+    {
+        $customerId = Auth::guard('customer')->id();
+
+        // Lấy ID các voucher đã sử dụng
+        $usedVoucherIds = VoucherUsage::where('customer_id', $customerId)
+            ->whereNotNull('used_at')
+            ->pluck('voucher_id')
+            ->toArray();
+
+        // Lấy danh sách voucher có thể sử dụng
+        $availableVouchers = Voucher::where('vouchers_start_date', '<=', now())
+            ->where('vouchers_end_date', '>=', now())
+            ->where('vouchers_usage_limit', '>', 0)
+            ->whereNotIn('id', $usedVoucherIds)
+            ->orderBy('vouchers_percent_discount', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $availableVouchers
+        ]);
+    }
+
+    public function getUsedVouchers()
+    {
+        $customerId = Auth::guard('customer')->id();
+
+        // Lấy danh sách voucher đã sử dụng
+        $usedVouchers = VoucherUsage::with('voucher')
+            ->where('customer_id', $customerId)
+            ->whereNotNull('used_at')
+            ->orderBy('used_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $usedVouchers
+        ]);
     }
 }

@@ -1,0 +1,412 @@
+/* Cải thiện nút xem voucher */
+.show-vouchers-btn {
+    width: 100%;
+    background: rgba(125, 216, 255, 0.95);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 15px;
+    padding: 15px 20px;
+    color: #667eea;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    backdrop-filter: blur(10px);
+    position: relative;
+    overflow: hidden;
+    margin-top: 3px;
+}
+
+.show-vouchers-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    transition: left 0.5s;
+}
+
+.show-vouchers-btn:hover::before {
+    left: 100%;
+}
+
+.show-vouchers-btn:hover {
+    background: white;
+    border-color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.show-vouchers-btn i:first-child {
+    font-size: 1.2rem;
+    margin-right: 10px;
+}
+
+.btn-arrow {
+    transition: transform 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.show-vouchers-btn:hover .btn-arrow {
+    transform: translateX(5px);
+}
+
+.discount-result {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+/* Cải thiện Modal */
+.enhanced-voucher-modal .modal-dialog {
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.modern-modal {
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.gradient-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    padding: 25px 30px;
+    position: relative;
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.header-icon {
+    font-size: 1.8rem;
+    margin-right: 15px;
+    animation: bounce 2s infinite;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    color: white;
+}
+
+.modern-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    opacity: 1;
+    transition: all 0.3s ease;
+}
+
+.modern-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+    color: white;
+}
+
+.modern-body {
+    padding: 0;
+    background: #f8f9fa;
+}
+
+.modern-tabs {
+    background: white;
+    border: none;
+    padding: 0 30px;
+    margin: 0;
+}
+
+.modern-tab-link {
+    border: none;
+    border-radius: 0;
+    padding: 20px 25px;
+    font-weight: 600;
+    color: #6c757d;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.modern-tab-link:hover {
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.modern-tab-link.active {
+    color: #667eea;
+    background: white;
+    border-bottom-color: #667eea;
+}
+
+.tab-icon {
+    font-size: 1.1rem;
+}
+
+.tab-badge {
+    background: #667eea;
+    color: white;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+}
+
+.modern-tab-content {
+    padding: 30px;
+}
+
+.vouchers-container {
+    min-height: 200px;
+}
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    color: #6c757d;
+}
+
+.modern-spinner {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin-bottom: 20px;
+}
+
+.spinner-ring {
+    position: absolute;
+    border: 3px solid transparent;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.spinner-ring:nth-child(1) {
+    width: 60px;
+    height: 60px;
+    animation-duration: 1s;
+}
+
+.spinner-ring:nth-child(2) {
+    width: 45px;
+    height: 45px;
+    top: 7.5px;
+    left: 7.5px;
+    animation-duration: 1.2s;
+    animation-direction: reverse;
+    border-top-color: #764ba2;
+}
+
+.spinner-ring:nth-child(3) {
+    width: 30px;
+    height: 30px;
+    top: 15px;
+    left: 15px;
+    animation-duration: 0.8s;
+    border-top-color: #28a745;
+}
+
+.modern-footer {
+    background: white;
+    border: none;
+    padding: 20px 30px;
+    justify-content: center;
+}
+
+.modern-close-btn {
+    background: #6c757d;
+    border: none;
+    border-radius: 25px;
+    padding: 12px 30px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.modern-close-btn:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.3);
+}
+
+/* Cải thiện voucher card */
+.voucher-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.voucher-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.voucher-card:hover::before {
+    left: 100%;
+}
+
+.voucher-card:hover {
+    border-color: #667eea;
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(102, 126, 234, 0.15);
+}
+
+.voucher-card.used {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+    border-color: #dee2e6;
+}
+
+.voucher-code {
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: #667eea;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.voucher-discount {
+    font-size: 1.6rem;
+    font-weight: bold;
+    color: #dc3545;
+    margin: 10px 0;
+}
+
+.voucher-min-order {
+    font-size: 0.9rem;
+    color: #6c757d;
+    margin: 5px 0;
+}
+
+.voucher-expiry {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+
+.voucher-status {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.voucher-status.available {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.3);
+}
+
+.voucher-status.used {
+    background: #6c757d;
+    color: white;
+}
+
+/* Animations */
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .enhanced-voucher-modal .modal-dialog {
+        margin: 15px;
+        max-width: none;
+    }
+
+    .discount-input-wrapper {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .apply-discount-btn {
+        border-radius: 15px;
+        justify-content: center;
+    }
+
+    .show-vouchers-btn {
+        padding: 12px 15px;
+        font-size: 0.9rem;
+    }
+}

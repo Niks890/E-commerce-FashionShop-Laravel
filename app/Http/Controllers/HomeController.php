@@ -121,6 +121,12 @@ class HomeController extends Controller
             });
         }
 
+        // Lọc theo material (chất liệu)
+        if ($request->has('material')) {
+            $material = $request->material;
+            $query->where('material', $material);
+        }
+
         // Lọc theo sản phẩm đang có khuyến mãi còn hạn
         if ($request->has('promotion')) {
             $currentDate = now()->format('Y-m-d');
@@ -178,7 +184,15 @@ class HomeController extends Controller
             ->filter()
             ->values();
 
-        return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors', 'sizes'));
+
+        $materials = Product::where('status', 1)
+            ->select('material')
+            ->distinct()
+            ->pluck('material')
+            ->filter()
+            ->values();
+
+        return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors', 'sizes', 'materials'));
     }
 
 

@@ -1,8 +1,6 @@
-@extends('sites.master')
+{{-- @extends('sites.master') --}}
+@extends('sites.master', ['hideChatbox' => true])
 @section('title', 'Hồ sơ cá nhân')
-
-
-
 <section class="breadcrumb-option">
     <div class="container">
         <div class="row">
