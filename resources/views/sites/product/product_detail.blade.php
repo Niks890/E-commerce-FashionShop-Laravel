@@ -48,7 +48,7 @@
             <div class="row g-5">
                 <!-- Product Images -->
                 <div class="col-lg-6">
-                    <div class="product-gallery">
+                    <div class="product-gallery mb-3">
                         {{-- Promotion Banner --}}
                         @if ($productDetail->discount_id && $productDetail->discount)
                             <div class="promotion-banner mb-4">
@@ -185,8 +185,8 @@
                                     <div class="sales-info d-flex">
                                         <i class="fas fa-check-circle"></i>
                                         <span>Đã bán {{ $totalSale }} sản phẩm</span>
-                                        <i class="fas fa-share text-dark" style="cursor: pointer; margin-left: 12px;" data-bs-toggle="modal"
-                                            data-bs-target="#shareModal">Chia sẻ ngay </i>
+                                        <i class="fas fa-share text-dark" style="cursor: pointer; margin-left: 12px;"
+                                            data-bs-toggle="modal" data-bs-target="#shareModal">Chia sẻ ngay </i>
                                     </div>
                                 </div>
                             </div>
@@ -333,6 +333,14 @@
                                     <div class="meta-item">
                                         <span class="meta-label">Tag:</span>
                                         <span class="meta-value">{{ str_replace(',', ', ', $productDetail->tags) }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Chiều dài:</span>
+                                        <span class="meta-value">{{ $productDetail->length ?? '' }}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <span class="meta-label">Chiều rộng:</span>
+                                        <span class="meta-value">{{ $productDetail->width ?? '' }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -801,7 +809,7 @@
         });
     </script>
 
-    {{-- xử lý thông báo và ảnh, stock --}}
+    {{-- xử lý thông báo và ảnh variant, stock --}}
     <script>
         // Hàm cập nhật trạng thái các size
         function updateSizeAvailability(availableSizes) {
@@ -894,35 +902,87 @@
 
 
 
-        // Hàm cập nhật ảnh sản phẩm theo màu được chọn
+        // Hàm cập nhật ảnh sản phẩm theo màu được chọn (cũ)
+        // function updateProductImages(selectedColor) {
+        //     // Chỉ xử lý các tab-pane liên quan đến ảnh sản phẩm, không ảnh hưởng đến description/reviews
+        //     const imagePanes = document.querySelectorAll('.product-gallery .tab-pane');
+        //     imagePanes.forEach(pane => {
+        //         pane.classList.remove('show', 'active');
+        //     });
+
+        //     // Ẩn tất cả thumbnails
+        //     const thumbnails = document.querySelectorAll('.thumbnail-item');
+        //     thumbnails.forEach(item => {
+        //         item.classList.add('d-none');
+        //     });
+
+        //     // Hiển thị thumbnails của màu được chọn
+        //     const colorThumbnails = document.querySelectorAll(`.thumbnail-${selectedColor}`);
+        //     colorThumbnails.forEach(item => {
+        //         item.classList.remove('d-none');
+        //     });
+
+        //     // Kích hoạt ảnh đầu tiên của màu được chọn
+        //     const firstThumbnailBtn = document.querySelector(`.thumbnail-${selectedColor} .thumbnail-btn`);
+        //     if (firstThumbnailBtn) {
+        //         const targetId = firstThumbnailBtn.getAttribute('data-bs-target');
+        //         const targetPane = document.querySelector(targetId);
+
+        //         if (targetPane) {
+        //             targetPane.classList.add('show', 'active');
+        //             firstThumbnailBtn.classList.add('active');
+        //         }
+        //     }
+        // }
+
+
+        // Hàm cập nhật ảnh sản phẩm theo màu được chọn (mới)
         function updateProductImages(selectedColor) {
-            // Chỉ xử lý các tab-pane liên quan đến ảnh sản phẩm, không ảnh hưởng đến description/reviews
+            // Chỉ xử lý các tab-pane liên quan đến ảnh sản phẩm
             const imagePanes = document.querySelectorAll('.product-gallery .tab-pane');
-            imagePanes.forEach(pane => {
-                pane.classList.remove('show', 'active');
-            });
-
-            // Ẩn tất cả thumbnails
             const thumbnails = document.querySelectorAll('.thumbnail-item');
-            thumbnails.forEach(item => {
-                item.classList.add('d-none');
-            });
+            const thumbnailBtns = document.querySelectorAll('.thumbnail-btn');
 
-            // Hiển thị thumbnails của màu được chọn
+            // Reset trạng thái active của tất cả ảnh và thumbnail
+            imagePanes.forEach(pane => pane.classList.remove('show', 'active'));
+            thumbnailBtns.forEach(btn => btn.classList.remove('active'));
+            thumbnails.forEach(item => item.classList.add('d-none'));
+
+            // Tìm thumbnail cho màu đã chọn
             const colorThumbnails = document.querySelectorAll(`.thumbnail-${selectedColor}`);
-            colorThumbnails.forEach(item => {
-                item.classList.remove('d-none');
-            });
 
-            // Kích hoạt ảnh đầu tiên của màu được chọn
-            const firstThumbnailBtn = document.querySelector(`.thumbnail-${selectedColor} .thumbnail-btn`);
-            if (firstThumbnailBtn) {
-                const targetId = firstThumbnailBtn.getAttribute('data-bs-target');
-                const targetPane = document.querySelector(targetId);
+            if (colorThumbnails.length > 0) {
+                // --- TRƯỜNG HỢP 1: MÀU CÓ ẢNH RIÊNG ---
+                // Hiển thị các thumbnail của màu này
+                colorThumbnails.forEach(item => item.classList.remove('d-none'));
 
-                if (targetPane) {
-                    targetPane.classList.add('show', 'active');
-                    firstThumbnailBtn.classList.add('active');
+                // Kích hoạt ảnh và thumbnail đầu tiên của màu
+                const firstThumbnailBtn = colorThumbnails[0].querySelector('.thumbnail-btn');
+                if (firstThumbnailBtn) {
+                    const targetId = firstThumbnailBtn.getAttribute('data-bs-target');
+                    const targetPane = document.querySelector(targetId);
+
+                    if (targetPane) {
+                        targetPane.classList.add('show', 'active');
+                        firstThumbnailBtn.classList.add('active');
+                    }
+                }
+            } else {
+                // --- TRƯỜNG HỢP 2: MÀU KHÔNG CÓ ẢNH RIÊNG (FALLBACK) ---
+                // Tìm và hiển thị các thumbnail mặc định
+                const defaultThumbnails = document.querySelectorAll('.thumbnail-default');
+                defaultThumbnails.forEach(item => item.classList.remove('d-none'));
+
+                // Kích hoạt ảnh và thumbnail mặc định đầu tiên
+                const firstDefaultImagePane = document.querySelector('.main-image-default');
+                const firstDefaultThumbnailBtn = defaultThumbnails.length > 0 ? defaultThumbnails[0].querySelector(
+                    '.thumbnail-btn') : null;
+
+                if (firstDefaultImagePane) {
+                    firstDefaultImagePane.classList.add('show', 'active');
+                }
+                if (firstDefaultThumbnailBtn) {
+                    firstDefaultThumbnailBtn.classList.add('active');
                 }
             }
         }

@@ -81,7 +81,7 @@
             <p>Đội ngũ của chúng tôi</p>
         </div>
         <div class="footer">
-            <p>&copy; {{ date('Y') }} Tên công ty của bạn. All rights reserved.</p>
+            <p>&copy; {{ date('Y') }} TFashionShop. All rights reserved.</p>
         </div>
     </div>
 </body>

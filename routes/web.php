@@ -88,7 +88,7 @@ Route::group(['prefix' => '/'], function () {
     Route::put('/cancel-order{id}', [CustomerController::class, 'cancelOrder'])->name('sites.cancelOrder')->middleware('customer');
 
     // Xuất hoá đơn PDF
-    Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice')->middleware('auth:customer');
+    Route::get('/order/{id}/invoice', [OrderController::class, 'exportInvoice'])->name('order.invoice')->middleware('auth');
     Route::get('/order-tracking/{id}', [OrderController::class, 'orderTracking'])->name('order.orderTracking')->middleware('customer');
     Route::get('/order/order-detail/{hash}', [OrderController::class, 'handleShareOrder'])->name('order.share')->middleware('customer');
     // Xử lý thanh toán
