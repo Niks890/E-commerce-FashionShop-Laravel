@@ -628,7 +628,14 @@ class InventoryController extends Controller
 
     public function getProductWithVariants($id)
     {
-        $product = Product::with(['category', 'productVariants'])->find($id);
+
+        $product = Product::with([
+        'category',
+        'productVariants' => function ($query) {
+            $query->where('active', 1);
+        }
+        ])->find($id);
+
 
         if (!$product) {
             return response()->json([
@@ -666,7 +673,7 @@ class InventoryController extends Controller
      */
     public function searchProducts(Request $request)
     {
-        $query = Product::query();
+        $query = Product::query()->whereIn('status', [0, 1]);
 
         if ($request->has('q')) {
             $query->where('product_name', 'like', '%' . $request->q . '%');
@@ -684,7 +691,12 @@ class InventoryController extends Controller
     // Thêm vào InventoryController
     public function getAllProductsWithVariants()
     {
-        $products = Product::with(['category', 'productVariants'])->get();
+         $products = Product::with([
+        'category',
+        'productVariants' => function ($query) {
+            $query->where('active', 1);
+        }
+        ])->get();
 
         $transformedProducts = $products->map(function ($product) {
             return [

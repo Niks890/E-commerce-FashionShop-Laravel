@@ -9,6 +9,7 @@ use App\Models\Blog;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Inventory;
+use App\Models\InventoryDetail;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductVariant;
@@ -21,7 +22,36 @@ use Illuminate\Support\Facades\DB;
 
 class ApiController extends Controller
 {
+ // Lấy giá nhập gần nhất của các variant thuộc product
+    public function lastPrices($productId)
+    {
+        // Lấy danh sách id các variant của sản phẩm này
+        $variantIds = ProductVariant::where('product_id', $productId)->where('active', 1)->pluck('id');
 
+        // Lấy các dòng nhập kho liên quan tới các variant này, mới nhất trước
+        $details = InventoryDetail::whereIn('product_variant_id', $variantIds)
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Duyệt để lấy giá nhập gần nhất cho từng variant (theo product_variant_id)
+        $variantPrices = [];
+        foreach ($details as $detail) {
+            $variantId = $detail->product_variant_id;
+            if (!isset($variantPrices[$variantId])) {
+                $variantPrices[$variantId] = [
+                    'product_variant_id' => $variantId,
+                    'color' => $detail->ProductVariant->color ?? null, // nếu có quan hệ variant
+                    'size'  => $detail->ProductVariant->size ?? null,
+                    'last_price' => $detail->price,
+                ];
+            }
+        }
+
+        return response()->json([
+            'status_code' => 200,
+            'variant_prices' => array_values($variantPrices),
+        ]);
+    }
 
     public function staff($id)
     {
@@ -196,12 +226,13 @@ class ApiController extends Controller
 
     public function inventory($id)
     {
-        $inventory = Inventory::with([
-            'Staff',
-            'Provider',
-            'InventoryDetails.Product.Category',
-            'InventoryDetails.Product.ProductVariants'
-        ])->find($id);
+            $inventory = Inventory::with([
+                'Staff',
+                'Provider',
+                'InventoryDetails.Product.Category',
+                'InventoryDetails.Product.activeVariants'
+
+            ])->find($id);
 
         if ($inventory) {
             $inventoryResource = new InventoryExtraResource($inventory);

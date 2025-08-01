@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class CategoryController extends Controller
 {
@@ -79,7 +80,9 @@ class CategoryController extends Controller
         ];
         $data = $request->validate($rule, $message);
         $categories = new Category();
-        $categories->category_name = $data['name']; //$_POST['']
+        $categories->category_name = $data['name'];
+        $categories->slug = Str::slug($data['name']);
+
         $categories->status = $data['status'];
         $categories->save();
         return redirect()->route('category.index')->with('success', 'Thêm danh mục mới thành công!');
@@ -112,6 +115,8 @@ class CategoryController extends Controller
             'name.required' => 'Trường này bắt buộc nhâp'
         ]);
         $category->category_name = $data['name'];
+        $category->slug = Str::slug($data['name']);
+
         $category->status = $data['status'];
         $category->save();
 

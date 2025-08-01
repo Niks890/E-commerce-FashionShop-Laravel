@@ -8,9 +8,9 @@
     </div>
 
     <!-- Chatbox Modal -->
-    <div class="modal fade" id="chatbox-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal fade " id="chatbox-modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-end">
-            <div class="modal-content">
+            <div class="modal-content rounded-2 shadow">
 
                 <div class="modal-header">
                     <h5 class="modal-title mb-0">

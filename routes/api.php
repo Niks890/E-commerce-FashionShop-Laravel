@@ -11,6 +11,7 @@ use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\VoucherController;
 use App\Models\Product;
+use GPBMetadata\Google\Protobuf\Api;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -54,6 +55,7 @@ Route::get('/products-with-variants', [InventoryController::class, 'getAllProduc
 Route::get('inventory', [ApiController::class, 'inventories'])->name('api.inventories');
 Route::get('inventory/{id}', [ApiController::class, 'inventory'])->name('api.inventory');
 Route::get('inventoryDetail/{id}', [ApiController::class, 'inventoryDetail'])->name('api.inventoryDetail');
+Route::get('products/{product}/last-prices', [ApiController::class, 'lastPrices']);
 // Route::get('/inventory/search', [InventoryController::class, 'apiSearch'])->name('api.inventory.search');
 
 Route::get('staff/{id}', [ApiController::class, 'staff'])->name('api.staff');

@@ -40,6 +40,12 @@ class Product extends Model
         return $this->hasMany(ProductVariant::class, 'product_id');
     }
 
+
+    public function activeVariants()
+    {
+        return $this->hasMany(ProductVariant::class)->where('active', 1);
+    }
+
     //1 SP co 1 KM
     public function Discount()
     {

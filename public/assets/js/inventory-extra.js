@@ -198,29 +198,23 @@ document.addEventListener("DOMContentLoaded", function () {
                                         <tr>
                                             <th>Màu</th>
                                             <th>Size</th>
-                                            <th>Kho</th>
-                                            <th>Đã nhập</th>
-                                            <th>Giá</th>
+                                            <th>Stock hiện tại</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        ${productItem.all_product_variants.map(variant => {
-                        const slipInfo = slipVariantsMap.get(`${variant.color}-${variant.size}`);
-                        const quantityInSlip = slipInfo ? slipInfo.quantity_in_slip : '---';
-                        const priceInSlip = slipInfo ? formatCurrency(slipInfo.price) : '---';
-                        return `
-                                                                                                                <tr>
-                                                                                                                    <td>${variant.color}</td>
-                                                                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                                                                                    <td>${variant.stock || 0}</td>
-                                                                                                                    <td>${quantityInSlip}</td>
-                                                                                                                    <td>${priceInSlip}</td>
-                                                                                                                </tr>
-                                                                                                            `;
-                    }).join('')}
+                                    ${productItem.all_product_variants.map(variant => `
+                                        <tr>
+                                            <td>${variant.color}</td>
+                                            <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                            <td>${variant.stock || 0}</td>
+                                        </tr>
+                                    `).join('')}
                                     </tbody>
                                 </table>
                             </div>
+                            <button type="button" class="btn btn-link p-0 mt-2 btn-last-prices" data-index="${index}">
+                                <i class="fas fa-search-dollar"></i> Xem giá nhập gần nhất
+                            </button>
                         </td>
                         <td>
                             <div class="compact-form">
@@ -232,7 +226,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                            placeholder="Giá nhập"
                                            min="0">
                                 </div>
-
                                 <div class="form-group mb-2">
                                     <label class="form-label fw-bold small">Màu mới:</label>
                                     <button type="button" class="btn btn-sm btn-outline-primary w-100 btn-select-colors"
@@ -244,7 +237,6 @@ document.addEventListener("DOMContentLoaded", function () {
                                            class="formatted-new-colors"
                                            data-index="${index}">
                                 </div>
-
                                 <div class="form-group">
                                     <label class="form-label fw-bold small">Size & SL:</label>
                                     <select class="form-select form-select-sm select-sizes"
@@ -263,6 +255,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         </td>
                     `;
                     productsTbody.appendChild(row);
+                });
+
+                // Gắn sự kiện cho nút xem giá nhập gần nhất
+                $('.btn-last-prices').off('click').on('click', function () {
+                    const idx = $(this).data('index');
+                    showLastPricesModal(productsData[idx]);
                 });
 
                 // Initialize select2 for sizes
@@ -835,7 +833,7 @@ document.addEventListener("DOMContentLoaded", function () {
             });
     });
 
-    // Hàm render lại bảng sản phẩm (đã fix)
+
     function renderProductsTable() {
         const productsTbody = document.getElementById('products-tbody');
         productsTbody.innerHTML = '';
@@ -844,88 +842,85 @@ document.addEventListener("DOMContentLoaded", function () {
             const row = document.createElement('tr');
             row.id = `product-row-${index}`;
             row.innerHTML = `
-                    <td class="text-center">
-                        <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
-                        <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
-                    </td>
-                    <td>
-                        <strong>${productItem.product_name}</strong>
-                    </td>
-                    <td>
-                        <img src="${productItem.product_image}" class="product-img" alt="${productItem.product_name}">
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column">
-                            <small><strong>Danh mục:</strong> ${productItem.category_name}</small>
-                            <small><strong>Thương hiệu:</strong> ${productItem.brand_name}</small>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
-                            <table class="variant-table table-sm">
-                                <thead>
+                <td class="text-center">
+                    <input type="checkbox" class="product-check form-check-input" data-index="${index}" checked>
+                    <input type="hidden" name="products[${index}][product_id]" value="${productItem.product_id}">
+                </td>
+                <td>
+                    <strong>${productItem.product_name}</strong>
+                </td>
+                <td>
+                    <img src="${productItem.product_image}" class="product-img" alt="${productItem.product_name}">
+                </td>
+                <td>
+                    <div class="d-flex flex-column">
+                        <small><strong>Danh mục:</strong> ${productItem.category_name}</small>
+                        <small><strong>Thương hiệu:</strong> ${productItem.brand_name}</small>
+                    </div>
+                </td>
+                <td>
+                    <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
+                        <table class="variant-table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Màu</th>
+                                    <th>Size</th>
+                                    <th>Stock hiện tại</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${productItem.all_product_variants.map(variant => `
                                     <tr>
-                                        <th>Màu</th>
-                                        <th>Size</th>
-                                        <th>Kho</th>
-                                        <th>Đã nhập</th>
-                                        <th>Giá</th>
+                                        <td>${variant.color}</td>
+                                        <td><span class="badge bg-secondary">${variant.size}</span></td>
+                                        <td>${variant.stock || 0}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    ${productItem.all_product_variants.map(variant => `
-                                                                <tr>
-                                                                    <td>${variant.color}</td>
-                                                                    <td><span class="badge bg-secondary">${variant.size}</span></td>
-                                                                    <td>${variant.stock || 0}</td>
-                                                                    <td>---</td>
-                                                                    <td>---</td>
-                                                                </tr>
-                                                            `).join('')}
-                                </tbody>
-                            </table>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                    <button type="button" class="btn btn-link p-0 mt-2 btn-last-prices" data-index="${index}">
+                        <i class="fas fa-search-dollar"></i> Xem giá nhập gần nhất
+                    </button>
+                </td>
+                <td>
+                    <div class="compact-form">
+                        <div class="form-group mb-2">
+                            <label class="form-label fw-bold small">Giá nhập:</label>
+                            <input type="number" name="products[${index}][new_price]"
+                                class="form-control form-control-sm new-price-input"
+                                data-index="${index}"
+                                placeholder="Giá nhập"
+                                min="0">
                         </div>
-                    </td>
-                    <td>
-                        <div class="compact-form">
-                            <div class="form-group mb-2">
-                                <label class="form-label fw-bold small">Giá nhập:</label>
-                                <input type="number" name="products[${index}][new_price]"
-                                    class="form-control form-control-sm new-price-input"
-                                    data-index="${index}"
-                                    placeholder="Giá nhập"
-                                    min="0">
-                            </div>
-
-                            <div class="form-group mb-2">
-                                <label class="form-label fw-bold small">Màu mới:</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary w-100 btn-select-colors"
-                                        data-index="${index}">
-                                    <i class="fas fa-palette me-1"></i> Chọn màu
-                                </button>
-                                <div class="selected-colors-display mt-1" data-index="${index}"></div>
-                                <input type="hidden" name="products[${index}][new_colors]"
-                                    class="formatted-new-colors"
+                        <div class="form-group mb-2">
+                            <label class="form-label fw-bold small">Màu mới:</label>
+                            <button type="button" class="btn btn-sm btn-outline-primary w-100 btn-select-colors"
                                     data-index="${index}">
-                            </div>
-
-                            <div class="form-group">
-                                <label class="form-label fw-bold small">Size & SL:</label>
-                                <select class="form-select form-select-sm select-sizes"
-                                        name="products[${index}][new_sizes][]"
-                                        multiple="multiple"
-                                        data-index="${index}">
-                                    ${['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size =>
+                                <i class="fas fa-palette me-1"></i> Chọn màu
+                            </button>
+                            <div class="selected-colors-display mt-1" data-index="${index}"></div>
+                            <input type="hidden" name="products[${index}][new_colors]"
+                                class="formatted-new-colors"
+                                data-index="${index}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-bold small">Size & SL:</label>
+                            <select class="form-select form-select-sm select-sizes"
+                                    name="products[${index}][new_sizes][]"
+                                    multiple="multiple"
+                                    data-index="${index}">
+                                ${['XS', 'S', 'M', 'L', 'XL', 'XXL'].map(size =>
                 `<option value="${size}">${size}</option>`
             ).join('')}
-                                </select>
-                                <input type="hidden" name="products[${index}][formatted_new_sizes]"
-                                    class="formatted-new-sizes"
-                                    data-index="${index}">
-                            </div>
+                            </select>
+                            <input type="hidden" name="products[${index}][formatted_new_sizes]"
+                                class="formatted-new-sizes"
+                                data-index="${index}">
                         </div>
-                    </td>
-                `;
+                    </div>
+                </td>
+            `;
             productsTbody.appendChild(row);
         });
 
@@ -942,6 +937,62 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Bind lại event handlers cho các sản phẩm mới
         bindProductEventHandlers();
+
+        // Gắn sự kiện cho nút xem giá nhập gần nhất
+        $('.btn-last-prices').off('click').on('click', function () {
+            const idx = $(this).data('index');
+            showLastPricesModal(productsData[idx]);
+        });
+    }
+
+
+
+    // --- Định nghĩa modal hiển thị giá nhập gần nhất ---
+    function showLastPricesModal(productItem) {
+        const variants = productItem.all_product_variants || [];
+
+        // Gọi API lấy giá nhập gần nhất cho từng variant
+        fetch(`/api/products/${productItem.product_id}/last-prices`)
+            .then(response => response.json())
+            .then(data => {
+                let variantPrices = {};
+                if (data.status_code === 200) {
+                    data.variant_prices.forEach(v => {
+                        // Nếu trả về theo product_variant_id thì có thể mapping theo color-size cũng được
+                        variantPrices[`${v.color}-${v.size}`] = v.last_price;
+                    });
+                }
+
+                let html = `
+                    <table class="table table-bordered align-middle">
+                        <thead>
+                            <tr>
+                                <th>Màu</th>
+                                <th>Size</th>
+                                <th>Giá nhập gần nhất</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${variants.map(variant => `
+                                <tr>
+                                    <td>${variant.color}</td>
+                                    <td>${variant.size}</td>
+                                    <td>${variantPrices[`${variant.color}-${variant.size}`] ? formatCurrency(variantPrices[`${variant.color}-${variant.size}`]) : '<span class="text-muted">---</span>'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+
+                $('#lastPricesModalLabel').text(`Giá nhập gần nhất: ${productItem.product_name}`);
+                $('#lastPricesModalBody').html(html);
+                $('#lastPricesModal').modal('show');
+            })
+            .catch(error => {
+                $('#lastPricesModalLabel').text('Lỗi');
+                $('#lastPricesModalBody').html('<div class="text-danger">Không thể tải dữ liệu giá nhập gần nhất.</div>');
+                $('#lastPricesModal').modal('show');
+            });
     }
 
     // Hàm bind event handlers cho sản phẩm mới
@@ -1006,27 +1057,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-
-    //       // Thêm vào phần JavaScript
-    // document.getElementById('loadAllProductsBtn').addEventListener('click', function() {
-    //     // Hiển thị modal
-    //     $('#allProductsModal').modal('show');
-
-    //     // Gọi API để lấy danh sách sản phẩm
-    //     fetch('/api/products-with-variants')
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             if (data.status_code === 200) {
-    //                 renderAllProductsTable(data.data);
-    //             } else {
-    //                 alert('Không thể tải danh sách sản phẩm');
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('Error:', error);
-    //             alert('Lỗi khi tải danh sách sản phẩm');
-    //         });
-    // });
 
     // Biến toàn cục
     let allProductsData = []; // Lưu trữ tất cả sản phẩm từ API
@@ -1285,54 +1315,6 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // function renderAllProductsTable(products) {
-    //     const tbody = document.getElementById('all-products-tbody');
-    //     tbody.innerHTML = '';
-
-    //     products.forEach((product, index) => {
-    //         const row = document.createElement('tr');
-    //         row.innerHTML = `
-    //         <td class="text-center">
-    //             <input type="checkbox" class="product-select-checkbox" data-product-id="${product.id}">
-    //         </td>
-    //         <td>
-    //             <strong>${product.name}</strong>
-    //         </td>
-    //         <td>
-    //             <img src="${product.image}" class="product-img" alt="${product.name}">
-    //         </td>
-    //         <td>
-    //             <div class="d-flex flex-column">
-    //                 <small><strong>Danh mục:</strong> ${product.category?.name || 'N/A'}</small>
-    //                 <small><strong>Thương hiệu:</strong> ${product.brand || 'N/A'}</small>
-    //             </div>
-    //         </td>
-    //         <td>
-    //             <div class="variant-scroll" style="max-height: 150px; overflow-y: auto;">
-    //                 <table class="variant-table table-sm">
-    //                     <thead>
-    //                         <tr>
-    //                             <th>Màu</th>
-    //                             <th>Size</th>
-    //                             <th>Kho</th>
-    //                         </tr>
-    //                     </thead>
-    //                     <tbody>
-    //                         ${product['product-variant']?.map(variant => `
-    //                                             <tr>
-    //                                                 <td>${variant.color}</td>
-    //                                                 <td><span class="badge bg-secondary">${variant.size}</span></td>
-    //                                                 <td>${variant.stock || 0}</td>
-    //                                             </tr>
-    //                                         `).join('') || '<tr><td colspan="3" class="text-center">Không có biến thể</td></tr>'}
-    //                     </tbody>
-    //                 </table>
-    //             </div>
-    //         </td>
-    //     `;
-    //         tbody.appendChild(row);
-    //     });
-    // }
 
     // Xử lý khi nhấn nút thêm sản phẩm đã chọn
     document.getElementById('addSelectedProductsBtn').addEventListener('click', function () {

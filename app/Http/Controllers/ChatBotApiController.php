@@ -434,7 +434,7 @@ class ChatBotApiController extends Controller
         }
 
         // Xử lý câu hỏi về sale
-        if (preg_match('/đang sale|đang giảm giá|khuyến mãi|discount/ui', $message)) {
+        if (preg_match('/đang sale|đang giảm giá|khuyến mãi|giảm giá|discount/ui', $message)) {
             $discountedProducts = $this->getDiscountedProducts(5);
 
             if (empty($discountedProducts)) {
@@ -451,11 +451,11 @@ class ChatBotApiController extends Controller
             return ['type' => 'text', 'content' => "Xin lỗi nếu sản phẩm chưa làm bạn hài lòng. Mình có thể giúp gì để cải thiện trải nghiệm mua sắm của bạn không ạ?"];
         }
 
-        if (preg_match('/^(hôm nay là ngày mấy|ngày hôm nay)\??$/u', $message)) {
+        if (preg_match('/^(hôm nay là ngày mấy|ngày hôm nay|hôm nay ngày mấy)\??$/u', $message)) {
             return ['type' => 'text', 'content' => "Hôm nay là ngày: " . date('d/m/Y')];
         }
 
-        if (preg_match('/^(mấy giờ rồi|giờ hôm nay)\??$/u', $message)) {
+        if (preg_match('/^(mấy giờ rồi|giờ hôm nay|bây giờ là mấy giờ)\??$/u', $message)) {
             return ['type' => 'text', 'content' => "Bây giờ là: " . date('H:i')];
         }
 

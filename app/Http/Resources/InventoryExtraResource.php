@@ -41,7 +41,7 @@ class InventoryExtraResource extends JsonResource
                             'id' => $detail->product->category->id,
                             'name' => $detail->product->category->category_name,
                         ],
-                        'product-variant' => $detail->product->productVariants->map(function ($variant) {
+                        'product-variant' => $detail->product->activeVariants->map(function ($variant) {
                             return [
                                 'id' => $variant->id,
                                 'color' => $variant->color,

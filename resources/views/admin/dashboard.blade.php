@@ -1,6 +1,6 @@
 @extends('admin.master')
 
-@section('title', 'Trang Quản trị')
+@section('title', 'Trang Quản Trị')
 
 @section('content')
     <div class="dashboard-container">
@@ -8,7 +8,7 @@
         <div class="welcome-section mb-4">
             <div class="welcome-card">
                 <div class="welcome-content">
-                    <h2 class="welcome-title">Chào mừng trở lại!</h2>
+                    <h2 class="welcome-title">Chào mừng trở lại {{ auth()->user()->name }} !</h2>
                     <p class="welcome-subtitle">Tổng quan hoạt động hệ thống hôm nay</p>
                 </div>
                 <div class="welcome-time">

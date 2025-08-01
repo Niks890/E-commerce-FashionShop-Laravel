@@ -1,6 +1,6 @@
 @can('warehouse workers')
     @extends('admin.master')
-    @section('title', 'Tạo phiếu nhập thêm sản phẩm đã có trong kho')
+    @section('title', 'Tạo phiếu nhập thêm')
 @section('back-page')
     <div class="d-flex align-items-center mb-3">
         <button class="btn btn-outline-primary rounded-pill px-3 py-2 shadow-sm" onclick="window.history.back()"
@@ -35,24 +35,8 @@
             </div>
         </div>
 
-        {{-- <div class="card shadow-lg mb-4 rounded-3">
-            <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Tìm kiếm sản phẩm</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label for="product_search" class="form-label fw-bold">Chọn sản phẩm:</label>
-                    <select id="product_search" class="form-select select2-product">
-                        <option value="">-- Chọn sản phẩm --</option>
-                        @foreach ($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div> --}}
 
-        <!-- Trong file blade, phần tìm kiếm sản phẩm -->
+        <!--phần tìm kiếm sản phẩm -->
         <div class="card shadow-lg mb-4 rounded-3">
             <div class="card-header bg-gradient-primary text-white py-3 rounded-top-3">
                 <h5 class="mb-0 fw-bold"><i class="fas fa-search me-2"></i>Tìm kiếm sản phẩm</h5>
@@ -255,6 +239,25 @@
             </div>
         </div>
     </div>
+
+
+        <!-- Modal for last prices -->
+    <div class="modal fade" id="lastPricesModal" tabindex="-1" aria-labelledby="lastPricesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content shadow-lg border-0 rounded-4">
+                <div class="modal-header bg-primary text-white text-center rounded-top-4">
+                    <h5 class="modal-title fw-bold" id="lastPricesModalLabel">Giá nhập gần nhất</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" id="lastPricesModalBody">
+                    <!-- Nội dung bảng giá nhập gần nhất sẽ được JS render ở đây -->
+                    <div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Đang tải...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @section('css')
