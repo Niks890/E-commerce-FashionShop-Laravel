@@ -316,7 +316,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="card">
+                                {{-- Layout sẽ xấu nếu để --}}
+                                {{-- <div class="card">
                                     <div class="card-heading">
                                         <a data-toggle="collapse" data-target="#collapseSeven">Tags</a>
                                     </div>
@@ -336,7 +337,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
+                                </div> --}}
                             </div>
                         </div>
                     </div>
@@ -590,7 +591,7 @@
                     const newUrl = '/shop?' + currentParams.toString();
 
                     listItem.innerHTML =
-                        `<a class="category__item text-dark" href="${newUrl}" data-category="${category.category_name}">${category.category_name} (${category.products_count})</a>`;
+                        `<a class="category__item text-dark" href="${newUrl}" data-category="${category.category_name}">${category.category_name} </a>`;
                     categoryList.appendChild(listItem);
                 });
             } catch (error) {

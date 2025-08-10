@@ -117,7 +117,7 @@ class InventoryController extends Controller
                 'products' => 'required|array|min:1',
                 'products.*.product_name' => 'required|min:3|max:150|distinct', // Sử dụng distinct để kiểm tra trong cùng request
                 'products.*.brand_name' => 'required|max:100',
-                'products.*.image' => 'required|image',
+                'products.*.image' => 'required',
                 'products.*.category_id' => 'required|exists:categories,id',
                 'products.*.price' => 'required|numeric|min:1',
                 'products.*.variants' => 'required|array|min:1',

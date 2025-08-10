@@ -184,123 +184,19 @@ class HomeController extends Controller
             ->filter()
             ->values();
 
-
         $materials = Product::where('status', 1)
             ->select('material')
             ->distinct()
             ->pluck('material')
             ->filter()
+            ->take(7)
             ->values();
+
+
+
 
         return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors', 'sizes', 'materials'));
     }
-
-
-    //    private function buildProductQuery(Request $request)
-    // {
-    //     $query = Product::with('category', 'Discount', 'ProductVariants', 'comments')->where('status', 1);
-
-    //     if ($request->has('q')) {
-    //         $search = $request->q;
-    //         $query->where('product_name', 'LIKE', "%$search%");
-    //     }
-    //     if ($request->has('category')) {
-    //         $categoryName = $request->category;
-    //         $query->whereHas('category', function ($q) use ($categoryName) {
-    //             $q->where('category_name', $categoryName);
-    //         });
-    //     }
-    //     if ($request->has('brand')) {
-    //         $brandName = $request->brand;
-    //         $query->where('brand', $brandName);
-    //     }
-    //     if ($request->has('price')) {
-    //         $price = $request->price;
-    //         if (strpos($price, '-') !== false) {
-    //             [$min, $max] = explode('-', $price);
-    //             $minPrice = str_replace('.', '', $min);
-    //             $maxPrice = str_replace('.', '', $max);
-    //             $query->whereBetween('price', [$minPrice, $maxPrice]);
-    //         } else {
-    //             $minPrice = str_replace('.', '', $price);
-    //             $query->where('price', '>=', $minPrice);
-    //         }
-    //     }
-    //     if ($request->has('tag')) {
-    //         $tag = str_replace('-', ' ', $request->tag);
-    //         $query->where('tags', 'like', "%$tag%");
-    //     }
-    //     if ($request->has('color')) {
-    //         $color = $request->color;
-    //         $query->whereHas('ProductVariants', function ($q) use ($color) {
-    //             $q->where('color', $color);
-    //         });
-    //     }
-    //     if ($request->has('size')) {
-    //         $size = $request->size;
-    //         $query->whereHas('ProductVariants', function ($q) use ($size) {
-    //             $q->where('size', $size);
-    //         });
-    //     }
-    //     if ($request->has('promotion')) {
-    //         $currentDate = now()->format('Y-m-d');
-    //         $query->whereHas('Discount', function ($q) use ($currentDate) {
-    //             $q->where('start_date', '<=', $currentDate)
-    //                 ->where('end_date', '>=', $currentDate);
-    //         });
-    //     }
-
-    //     $sortBy = $request->input('sort_by', 'newest');
-    //     switch ($sortBy) {
-    //         case 'price_asc':
-    //             $query->orderBy('price', 'asc');
-    //             break;
-    //         case 'price_desc':
-    //             $query->orderBy('price', 'desc');
-    //             break;
-    //         case 'best_selling':
-    //             $query->leftJoin('order_details as order_d', 'products.id', '=', 'order_d.product_id')
-    //                 ->select('products.*', DB::raw('SUM(order_d.quantity) as total_sold'))
-    //                 ->whereNotNull('order_d.product_id')
-    //                 ->groupBy('products.id')
-    //                 ->orderByDesc('total_sold');
-    //             break;
-    //         case 'newest':
-    //         default:
-    //             $query->orderBy('created_at', 'desc');
-    //             break;
-    //     }
-
-    //     return $query;
-    // }
-
-    // public function shop(Request $request)
-    // {
-    //     $query = $this->buildProductQuery($request);
-    //     $products = $query->paginate(12)->appends($request->query());
-    //     $categories = Category::all();
-    //     $brands = Product::where('status', 1)->distinct()->pluck('brand');
-    //     $priceRanges = [
-    //         '0-1000000' => 'Dưới 1 triệu',
-    //         '1000000-5000000' => '1 - 5 triệu',
-    //         '5000000-10000000' => '5 - 10 triệu',
-    //         '10000000' => 'Trên 10 triệu'
-    //     ];
-    //     $colors = ProductVariant::select('color')->distinct()->pluck('color');
-    //     $sizes = ProductVariant::select('size')->distinct()->pluck('size')->filter()->values();
-    //     $sortBy = $request->input('sort_by', 'newest');
-
-    //     return view("sites.shop.shop", compact('products', 'categories', 'brands', 'priceRanges', 'sortBy', 'colors', 'sizes'));
-    // }
-
-    // // AJAX filter - chỉ trả về partial sản phẩm
-    // public function filterAjax(Request $request)
-    // {
-    //     $query = $this->buildProductQuery($request);
-    //     $products = $query->paginate(12)->appends($request->query());
-    //     $sortBy = $request->input('sort_by', 'newest');
-    //     return view("sites.shop._product_list", compact('products', 'sortBy'))->render();
-    // }
 
     public function cart()
     {

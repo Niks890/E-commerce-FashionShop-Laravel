@@ -134,7 +134,7 @@
                                                         </span>
                                                         <input type="number" name="products[0][price]"
                                                             class="form-control price-input border-2" placeholder="0"
-                                                            min="0" step="10000" required>
+                                                            min="0" step="100000" required>
                                                         <span class="input-group-text bg-light border-2">VNĐ</span>
                                                     </div>
                                                 </div>

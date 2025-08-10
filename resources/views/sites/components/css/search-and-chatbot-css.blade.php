@@ -551,6 +551,16 @@
         font-size: 20px;
     }
 
+
+    #suggestion-list {
+        max-height: 650px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+
+
+
     #search-history li .text-primary {
         font-size: 16px;
         cursor: pointer;

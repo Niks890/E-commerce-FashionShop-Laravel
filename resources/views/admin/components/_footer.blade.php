@@ -3,7 +3,7 @@
         <nav class="pull-left">
             <ul class="nav">
                 <li class="nav-item ">
-                    <a class="nav-link text-dark fw-bold" href="{{ route('sites.home') }}">
+                    <a class="nav-link text-dark fw-bold" href="javascript:void(0);">
                         TFashionShop
                     </a>
                 </li>
@@ -17,7 +17,7 @@
         </nav>
         <div class="copyright">
             2025, made by
-            <a class="text-dark fw-bold" href="{{ route('sites.home') }}">TFashionShop</a>
+            <a class="text-dark fw-bold" href="javascript:void(0);">TFashionShop</a>
         </div>
     </div>
 </footer>

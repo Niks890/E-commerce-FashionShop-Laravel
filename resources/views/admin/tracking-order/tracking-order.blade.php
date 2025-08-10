@@ -151,7 +151,7 @@
                                     <td data-label="Tên khách hàng" class="fw-semibold">{{ $order->customer_name }}</td>
                                     <td data-label="Địa chỉ">{{ $order->address }}</td>
                                     <td data-label="Số điện thoại">{{ $order->phone }}</td>
-                                    <td data-label="Tổng tiền">{{ number_format($order->total, 0, ',', '.') }} đ</td>
+                                    <td class="text-nowrap" data-label="Tổng tiền">{{ number_format($order->total, 0, ',', '.') }} đ</td>
                                     <td data-label="Trạng thái">
                                         @php
                                             $badgeClass = '';

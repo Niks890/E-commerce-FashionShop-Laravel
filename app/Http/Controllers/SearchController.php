@@ -9,6 +9,42 @@ use Illuminate\Support\Facades\Session;
 class SearchController extends Controller
 {
     // API tìm kiếm sản phẩm và lưu lịch sử vào session
+    // public function search(Request $request)
+    // {
+    //     $query = $request->input('q');
+
+    //     if (!$query) {
+    //         return response()->json(['message' => 'Vui lòng nhập từ khóa!'], 400);
+    //     }
+
+    //     // Tìm kiếm sản phẩm
+    //     $results = Product::with('Discount')
+    //         ->where('product_name', 'LIKE', "%{$query}%")
+    //         ->orWhere('description', 'LIKE', "%{$query}%")
+    //         ->orWhere('tags', 'LIKE', "%{$query}%")
+    //         ->get()
+    //         ->where('status', 1)
+    //         ->take(10);
+
+    //     if ($results->isEmpty()) {
+    //         return response()->json(['message' => 'Không tìm thấy sản phẩm phù hợp!', 'results' => []]);
+    //     }
+
+    //     // Lưu lịch sử tìm kiếm vào session (giới hạn 10 mục)
+    //     $history = Session::get('search_history', []);
+    //     if (!in_array($query, $history)) {
+    //         array_push($history, $query); // Thêm vào cuối danh sách
+    //         $history = array_slice($history, 0, 100); // Giới hạn 50 mục
+    //         Session::put('search_history', $history);
+    //     }
+
+    //     return response()->json([
+    //         'results' => $results,
+    //         'history' => session()->get('search_history')
+    //     ]);
+    // }
+
+
     public function search(Request $request)
     {
         $query = $request->input('q');
@@ -17,24 +53,27 @@ class SearchController extends Controller
             return response()->json(['message' => 'Vui lòng nhập từ khóa!'], 400);
         }
 
-        // Tìm kiếm sản phẩm
+        // Tối ưu query
         $results = Product::with('Discount')
-            ->where('product_name', 'LIKE', "%{$query}%")
-            ->orWhere('description', 'LIKE', "%{$query}%")
-            ->orWhere('tags', 'LIKE', "%{$query}%")
-            ->get()
+            ->select(['id', 'product_name', 'slug', 'image', 'price', 'discount_id', 'status'])
             ->where('status', 1)
-            ->take(10);
+            ->where(function ($q) use ($query) {
+                $q->where('product_name', 'LIKE', "%{$query}%")
+                    ->orWhere('description', 'LIKE', "%{$query}%")
+                    ->orWhere('tags', 'LIKE', "%{$query}%");
+            })
+            ->limit(10)
+            ->get();
 
         if ($results->isEmpty()) {
             return response()->json(['message' => 'Không tìm thấy sản phẩm phù hợp!', 'results' => []]);
         }
 
-        // Lưu lịch sử tìm kiếm vào session (giới hạn 10 mục)
+        // Lưu lịch sử tìm kiếm vào session (giới hạn 50 mục)
         $history = Session::get('search_history', []);
         if (!in_array($query, $history)) {
-            array_push($history, $query); // Thêm vào cuối danh sách
-            $history = array_slice($history, 0, 100); // Giới hạn 50 mục
+            array_unshift($history, $query); // Thêm vào đầu danh sách
+            $history = array_slice($history, 0, 50); // Giới hạn 50 mục
             Session::put('search_history', $history);
         }
 

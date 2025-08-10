@@ -108,36 +108,36 @@
                 if (history.length === 0) {
                     // Welcome message + quick replies như mặc định
                     chatboxMessages.innerHTML = `
-            <div class="welcome-message fade-in">
-                <div class="bot-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h4>Chào mừng bạn đến với TFashionShop!</h4>
-                <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản phẩm...)!</p>
-                <strong style="color: red; font-weight: bold; font-size: 14px;">(*Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin chỉ mang tính chất tham khảo!*)</strong>
-            </div>
-            <div class="topic-guide">
-                <h5><i class="fas fa-compass"></i> Hãy chọn một chủ đề</h5>
-                <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
-            </div>
-            <div class="quick-replies">
-                <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun">
-                    <i class="fas fa-tshirt"></i> Áo thun
-                </button>
-                <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
-                    <i class="fas fa-user-tie"></i> Áo sơ mi
-                </button>
-                <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
-                    <i class="fas fa-tags"></i> Sản phẩm giá mềm
-                </button>
-                <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
-                    <i class="fas fa-tags"></i> Sản phẩm khuyến mãi
-                </button>
-                <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
-                    <i class="fas fa-ruler"></i> Hướng dẫn chọn size
-                </button>
-            </div>
-            `;
+                    <div class="welcome-message fade-in">
+                        <div class="bot-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h4>Chào mừng bạn đến với TFashionShop!</h4>
+                        <p>Tôi là trợ lý AI của bạn. Hãy hỏi tôi bất cứ điều gì bạn muốn biết (tư vấn phối đồ, gợi ý sản phẩm...)!</p>
+                        <strong style="color: red; font-weight: bold; font-size: 14px;">(*Chatbot có thể phản hồi thông tin chưa chính xác! Mọi thông tin chỉ mang tính chất tham khảo!*)</strong>
+                    </div>
+                    <div class="topic-guide">
+                        <h5><i class="fas fa-compass"></i> Hãy chọn một chủ đề</h5>
+                        <p>Chọn một trong các chủ đề dưới đây để bắt đầu cuộc trò chuyện</p>
+                    </div>
+                    <div class="quick-replies">
+                        <button class="quick-reply-btn" data-message="Tôi muốn xem áo thun nam">
+                            <i class="fas fa-tshirt"></i> Áo thun nam
+                        </button>
+                        <button class="quick-reply-btn" data-message="Có áo sơ mi có mẫu nào đẹp không?">
+                            <i class="fas fa-user-tie"></i> Áo sơ mi
+                        </button>
+                        <button class="quick-reply-btn" data-message="Sản phẩm nào rẻ nhất?">
+                            <i class="fas fa-tags"></i> Sản phẩm giá mềm
+                        </button>
+                        <button class="quick-reply-btn" data-message="Sản phẩm nào đang sale?">
+                            <i class="fas fa-tags"></i> Sản phẩm khuyến mãi
+                        </button>
+                        <button class="quick-reply-btn" data-message="Hướng dẫn chọn size?">
+                            <i class="fas fa-ruler"></i> Hướng dẫn chọn size
+                        </button>
+                    </div>
+                     `;
                     initQuickReplyButtons();
                     return;
                 }
@@ -495,11 +495,62 @@
         }
 
         // Tìm kiếm sản phẩm bằng AJAX
-        $("#search-box").on("input", function(e) {
-            let query = $("#search-box").val();
-            if (query.length > 1) {
+        // $("#search-box").on("input", function(e) {
+        //     let query = $("#search-box").val();
+        //     if (query.length > 1) {
+        //         $.ajax({
+        //             url: "http://127.0.0.1:8000/api/search",
+        //             type: "GET",
+        //             data: {
+        //                 q: query
+        //             },
+        //             success: function(data) {
+        //                 let results = $("#search-results");
+        //                 results.empty();
+        //                 if (data.results.length > 0) {
+        //                     data.results.forEach(function(item) {
+        //                         let price = Intl.NumberFormat('vi-VN').format(item.price);
+        //                         if (item.discount_id != null) {
+        //                             price = Intl.NumberFormat('vi-VN').format(item.price - (item
+        //                                 .price * item.discount.percent_discount));
+        //                         }
+        //                         results.append(`
+        //                             <li class="list-group-item d-flex align-items-center p-3 border-bottom"
+        //                                     style="cursor: pointer;"
+        //                                     onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
+        //                                     onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
+        //                                 <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
+        //                                 <img src="${item.image}" width="50" height="50" alt="">
+        //                                 ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+        //                                 </a>
+        //                             </li>
+        //                     `);
+        //                     });
+        //                 } else {
+        //                     results.append("<li>Không tìm thấy kết quả</li>");
+        //                 }
+        //             }
+        //         });
+        //     }
+        // });
+
+        let searchTimeout = null;
+        let lastQuery = '';
+
+        $("#search-box").on("input", function() {
+            let query = $("#search-box").val().trim();
+
+            // Không gọi API nếu query quá ngắn hoặc trùng lần trước
+            if (query.length < 2 || query === lastQuery) {
+                if (query.length < 2) $("#search-results").empty();
+                return;
+            }
+
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                lastQuery = query;
                 $.ajax({
-                    url: "http://127.0.0.1:8000/api/search",
+                    url: "/api/search",
                     type: "GET",
                     data: {
                         q: query
@@ -509,46 +560,83 @@
                         results.empty();
                         if (data.results.length > 0) {
                             data.results.forEach(function(item) {
-                                let price = Intl.NumberFormat('vi-VN').format(item.price);
-                                if (item.discount_id != null) {
-                                    price = Intl.NumberFormat('vi-VN').format(item.price - (item
-                                        .price * item.discount.percent_discount));
+                                let price = Intl.NumberFormat('vi-VN').format(item
+                                    .price);
+                                if (item.discount_id != null && item.discount) {
+                                    price = Intl.NumberFormat('vi-VN').format(item
+                                        .price - (item.price * item.discount
+                                            .percent_discount));
                                 }
                                 results.append(`
-                                    <li class="list-group-item d-flex align-items-center p-3 border-bottom"
-                                            style="cursor: pointer;"
-                                            onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
-                                            onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
-                                        <a class="fw-medium text-decoration-none text-dark" href="{{ url('product') }}/${item.slug}">
-                                        <img src="${item.image}" width="50" height="50" alt="">
-                                        ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
-                                        </a>
-                                    </li>
-                            `);
+                            <li class="list-group-item d-flex align-items-center p-3 border-bottom"
+                                    style="cursor: pointer;"
+                                    onmouseover="this.style.backgroundColor='#ccc'; this.style.textDecoration='underline';"
+                                    onmouseout="this.style.backgroundColor='#fff'; this.style.textDecoration='none';">
+                                <a class="fw-medium text-decoration-none text-dark" href="/product/${item.slug}">
+                                <img src="${item.image}" width="50" height="50" alt="">
+                                ${item.product_name} | <p class="d-inline">Giá:</p> ${price} đ
+                                </a>
+                            </li>
+                        `);
                             });
                         } else {
                             results.append("<li>Không tìm thấy kết quả</li>");
                         }
+                    },
+                    error: function(xhr) {
+                        if (xhr.status == 429) {
+                            alert("Bạn thao tác quá nhanh, vui lòng chờ một chút rồi thử lại!");
+                        }
                     }
                 });
-            }
+            }, 400); // 400ms debounce
         });
 
         // Gợi ý sản phẩm
-        $.get("http://127.0.0.1:8000/api/suggest-content-based", function(data) {
+        // $.get("http://127.0.0.1:8000/api/suggest-content-based", function(data) {
+        //     let suggestions = $("#suggestion-list");
+        //     suggestions.empty();
+        //     if (data.length > 0) {
+        //         data.forEach(function(item) {
+        //             let price = Intl.NumberFormat('vi-VN').format(item.price);
+        //             if (item.discount_id != null) {
+        //                 price = item.price - (item.price * item.discount.percent_discount);
+        //             }
+        //             let listItem = `
+        //             <li class="list-group-item d-flex align-items-center p-3 border-bottom">
+        //                 <a href="/product/${item.slug}" class="fw-medium text-decoration-none text-dark">
+        //                     <img src="${item.image}" width="50" height="50" alt="">
+        //                     ${item.product_name} | <p class="d-inline">Giá:</p> ${Intl.NumberFormat('vi-VN').format(price)} đ
+        //                 </a>
+        //             </li>
+        //         `;
+        //             suggestions.append(listItem);
+        //         });
+        //     } else {
+        //         suggestions.append('<li class="list-group-item text-muted p-3">Không có gợi ý nào</li>');
+        //     }
+        // });
+
+        $.get("/api/suggest-content-based", function(data) {
             let suggestions = $("#suggestion-list");
             suggestions.empty();
             if (data.length > 0) {
                 data.forEach(function(item) {
-                    let price = Intl.NumberFormat('vi-VN').format(item.price);
-                    if (item.discount_id != null) {
+                    let price = item.price;
+                    // Kiểm tra discount tồn tại và hợp lệ
+                    if (item.discount_id != null && item.discount && typeof item.discount
+                        .percent_discount === "number") {
                         price = item.price - (item.price * item.discount.percent_discount);
                     }
+                    // Chuyển về số nguyên nếu cần
+                    price = Math.round(price);
+                    let formattedPrice = Intl.NumberFormat('vi-VN').format(price);
+
                     let listItem = `
                     <li class="list-group-item d-flex align-items-center p-3 border-bottom">
                         <a href="/product/${item.slug}" class="fw-medium text-decoration-none text-dark">
                             <img src="${item.image}" width="50" height="50" alt="">
-                            ${item.product_name} | <p class="d-inline">Giá:</p> ${Intl.NumberFormat('vi-VN').format(price)} đ
+                            ${item.product_name} | <p class="d-inline">Giá:</p> ${formattedPrice} đ
                         </a>
                     </li>
                 `;
