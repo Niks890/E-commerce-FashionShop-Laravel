@@ -2,7 +2,8 @@
 
 ## 📌 Project Overview
 This project is a **Laravel-based E-Commerce System** designed for selling fashion products. The system includes features such as product management, order processing, cart processing, customer authentication, provider tracking, and promotional discounts. The database schema is structured for efficiency and scalability.
-
+## CDM
+<img width="2347" height="1337" alt="image" src="https://github.com/user-attachments/assets/7f8b5b4c-fc11-4e1a-be12-73e6d2e128b3" />
 ## 📂 Database Structure
 ### **1. Product Management**
 | Table | Description |
