@@ -39,16 +39,16 @@
         </div>
         <div class="offcanvas__top__hover">
             <span>Hỗ trợ<i class="arrow_carrot-down"></i></span>
-            <ul>
+            <ul class="bg-white">
                 <li>
                     <a class="text-dark" href="{{ route('sites.contact') }}">Liên Hệ
                 </li>
-                <li><a class="text-dark" href="{{ route('sites.aboutUs') }}">Chat</li>
+                <li><a class="text-dark" href="javascript:void(0);">Chat</li>
             </ul>
         </div>
     </div>
     <div class="offcanvas__nav__option">
-        <a href="javascript:void(0);" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}"
+        <a href="{{ route('sites.shop') }}" class="search-switch"><img src="{{ asset('client/img/icon/search.png') }}"
                 alt=""></a>
         <a href="{{ route('sites.wishlist') }}" style="position: relative; display: inline-block;">
             <img src="{{ asset('client/img/icon/heart.png') }}" width="20" alt="">
@@ -65,7 +65,7 @@
     </div>
     <div id="mobile-menu-wrap"></div>
     <div class="offcanvas__text">
-        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 7 ngày</p>
+        <p>Miễn phí vận chuyển cho đơn 500k, hỗ trợ đổi trả trong vòng 7 ngày</p>
     </div>
 </div>
 <!-- Offcanvas Menu End -->
@@ -79,7 +79,7 @@
             <div class="row">
                 <div class="col-lg-6 col-md-7">
                     <div class="header__top__left">
-                        <p>Miễn phí vận chuyển, hỗ trợ đổi trả trong vòng 7 ngày</p>
+                        <p>Miễn phí vận chuyển cho đơn 500k, hỗ trợ đổi trả trong vòng 7 ngày</p>
                     </div>
                 </div>
                 <div class="col-lg-6 col-md-5">
@@ -114,6 +114,7 @@
                                     <li><a class="text-dark" href="{{ route('sites.getHistoryOrder') }}">Lịch sử giao
                                             dịch</a>
                                     </li>
+                                    <li><a class="text-dark" href="{{ route('sites.wishlist') }}">Quản lý địa chỉ</a></li>
                                     <li><a class="text-dark" href="{{ route('sites.coupon') }}">Mã giảm giá &
                                             Voucher</a></li>
                                     <li><a class="text-dark" href="{{ route('user.logout') }}">Đăng Xuất</a></li>
@@ -129,7 +130,7 @@
                                 <li>
                                     <a class="text-dark" href="{{ route('sites.contact') }}">Liên Hệ
                                 </li>
-                                <li><a class="text-dark" href="{{ route('sites.aboutUs') }}">Chat</li>
+                                <li><a class="text-dark" href="javascript:void(0);">Chat</li>
                             </ul>
                         </div>
                     </div>
@@ -141,7 +142,7 @@
         <div class="row">
             <div class="col-lg-3 col-md-3">
                 <div class="header__logo">
-                    <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold text-uppercase">
+                    <a href="{{ route('sites.home') }}" class="text-dark font-weight-bold">
                         <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                             alt="Logo" width="35">
                         TFashionShop

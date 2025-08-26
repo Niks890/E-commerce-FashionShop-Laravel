@@ -30,7 +30,7 @@ class HomeController extends Controller
         $productRecentInfo = [];
         if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
             foreach (Session::get('product_recent') as $item) {
-                $product = Product::with('ProductVariants', 'Discount', 'comments')->find($item->id_recent);
+                $product = Product::with('ProductVariants', 'Discount', 'comments')->where('status', 1)->find($item->id_recent);
                 if ($product) {
                     $productRecentInfo[] = $product;
                 }
@@ -44,6 +44,7 @@ class HomeController extends Controller
                 ->where('end_date', '>=', now());
         })
             ->with('discount')
+            ->where('status', 1)
             ->get()
             ->sortByDesc(function ($product) {
                 return $product->discount->percent_discount;
@@ -257,6 +258,7 @@ class HomeController extends Controller
                 },
                 'ProductVariants.ImageVariants'
             ])
+            ->where('status', 1)
             ->firstOrFail();
 
         $hashids = new Hashids(env('HASHIDS_SALT'), env('HASHIDS_LENGTH'));
@@ -276,7 +278,7 @@ class HomeController extends Controller
         $productRecentInfo = [];
         if (Session::has('product_recent') && count(Session::get('product_recent')) > 0) {
             foreach (Session::get('product_recent') as $item) {
-                $product = Product::with('ProductVariants', 'Discount')->find($item->id_recent);
+                $product = Product::with('ProductVariants', 'Discount')->where('status', 1)->find($item->id_recent);
                 if ($product) {
                     $productRecentInfo[] = $product;
                 }

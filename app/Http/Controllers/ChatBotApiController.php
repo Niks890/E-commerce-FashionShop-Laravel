@@ -16,7 +16,7 @@ class ChatBotApiController extends Controller
 {
     // Default system prompt
     protected $defaultPrompt = "
-        Bạn là một trợ lý chatbot thông minh cho TFashion Shop - cửa hàng bán quần áo thời trang online tại Việt Nam.
+        Bạn là một trợ lý chatbot thông minh cho TFashion Shop - cửa hàng chuyên bán quần áo thời trang online tại Việt Nam.
         Hãy luôn thân thiện, chuyên nghiệp và hữu ích.
         ### QUY TẮC TUYỆT ĐỐI - KHÔNG ĐƯỢC VI PHẠM:
             1. **KHÔNG BAO GIỜ ĐƯỢC BỊA THÔNG TIN SẢN PHẨM**
@@ -37,7 +37,7 @@ class ChatBotApiController extends Controller
         - Hoàn tiền: Liên hệ hotline để được tư vấn rõ.
         - Phí ship: Mua trên 500k free ship, dưới 500k phí 30k
         - Phương thức thanh toán: COD (được kiểm hàng trước khi thanh toán), VNPay, Momo, ZaloPay
-        - Size áo/quần gồm: XS, S, M, L, XL, XXL.
+        - Size áo/quần theo dạng: XS, S, M, L, XL, XXL.
         - Không hỗ trợ Gift Card,
         - Voucher (mã giảm giá) sẽ được tặng qua email cá nhân cho khách hàng thân thiết.
         ### CHÍNH SÁCH & DỊCH VỤ:
@@ -89,6 +89,7 @@ class ChatBotApiController extends Controller
             ### LƯU Ý QUAN TRỌNG:
             - Luôn kiểm tra product_context trước khi đưa thông tin sản phẩm
             - Thành thật thừa nhận khi không có thông tin thay vì bịa
+            - Mọi thông tin tư vấn chỉ là tham khảo.
             - Hướng khách đến nguồn thông tin chính thức (Shop, Contact)
             - Chỉ trả lời về chính sách, dịch vụ cửa hàng khi không có dữ liệu sản phẩm
             - Từ chối trả lời câu hỏi liên quan về chính trị, tôn giáo, y tế";
@@ -182,7 +183,7 @@ class ChatBotApiController extends Controller
             $replyRaw = $data['response'] ?? '[Không có phản hồi từ AI]';
             $reply = preg_replace('/^ASSISTANT:\s*/i', '', $replyRaw);
             Log::info('Chatbot response received', ['reply' => $reply]);
-            $reply = $this->processContentWithImages($reply);
+            // $reply = $this->processContentWithImages($reply);
             // Save to history
             Redis::rpush($historyKey, json_encode(['role' => 'user', 'message' => $userMessage]));
             Redis::rpush($historyKey, json_encode(['role' => 'assistant', 'message' => $reply]));
@@ -292,8 +293,7 @@ class ChatBotApiController extends Controller
             . "  + Nếu hết hàng, đề nghị xem sản phẩm tương tự\n"
             . "  + Khi hỏi cụ thể về size, chỉ trả lời thông tin của size đó"
             . "- Khi khách hỏi về phối đồ:\n"
-            . "  + Đưa ra 3-4 gợi ý phối đồ phù hợp\n"
-            . "  + Kèm hình ảnh minh họa nếu có";
+            . "  + Đưa ra 3-4 gợi ý phối đồ phù hợp\n";
 
         return $fullSystemPrompt;
     }
@@ -511,6 +511,7 @@ class ChatBotApiController extends Controller
                 ->pluck('size')
                 ->toArray();
         });
+        Log::info('Available sizes', $availableSizes);
 
         $sizePattern = implode('|', array_map('preg_quote', $availableSizes));
         if (preg_match('/size\s*(' . $sizePattern . ')/i', $message, $matches)) {
@@ -1140,22 +1141,22 @@ class ChatBotApiController extends Controller
         return number_format($price, 0, ',', '.') . 'đ';
     }
 
-    protected function processContentWithImages(string $content): string
-    {
-        // Xử lý các URL ảnh đã bị mã hóa HTML
-        $content = html_entity_decode($content);
+    // protected function processContentWithImages(string $content): string
+    // {
+    //     // Xử lý các URL ảnh đã bị mã hóa HTML
+    //     $content = html_entity_decode($content);
 
-        // Pattern để tìm URL ảnh
-        $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|avif))/i';
+    //     // Pattern để tìm URL ảnh
+    //     $imagePattern = '/(https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|avif))/i';
 
-        // Thay thế URL ảnh bằng thẻ img
-        $processedContent = preg_replace_callback($imagePattern, function ($matches) {
-            $imageUrl = htmlspecialchars($matches[0], ENT_QUOTES);
-            return "<img src='{$imageUrl}' alt='Hình ảnh sản phẩm' style='max-width: 300px; height: auto; border-radius: 8px; margin: 10px 0; display: block;'>";
-        }, $content);
+    //     // Thay thế URL ảnh bằng thẻ img
+    //     $processedContent = preg_replace_callback($imagePattern, function ($matches) {
+    //         $imageUrl = htmlspecialchars($matches[0], ENT_QUOTES);
+    //         return "<img src='{$imageUrl}' alt='Hình ảnh sản phẩm' style='max-width: 300px; height: auto; border-radius: 8px; margin: 10px 0; display: block;'>";
+    //     }, $content);
 
-        return $processedContent;
-    }
+    //     return $processedContent;
+    // }
 
 
     public function clearHistory(Request $request)

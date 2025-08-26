@@ -27,7 +27,7 @@
         <div class="content">
             <p>Xin chào <strong>{{ $order->receiver_name }}</strong>,</p>
 
-            <p>Cảm ơn bạn đã mua sắm tại {{ config('app.name') }}. Đơn hàng của bạn đã được giao thành công.</p>
+            <p>Cảm ơn bạn đã mua sắm tại TFashionShop. Đơn hàng của bạn đã được giao thành công.</p>
 
             <div class="order-summary">
                 <h3 style="margin-top:0;">Thông tin đơn hàng</h3>

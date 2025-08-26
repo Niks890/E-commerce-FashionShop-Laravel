@@ -455,6 +455,7 @@
                     success: function(response) {
                         if (response.status_code === 200) {
                             const p = response.data;
+                            console.log(p);
                             $("#product-id").text(p.id);
                             $("#product-sku").text(p.sku);
                             $("#product-name").text(p.name);

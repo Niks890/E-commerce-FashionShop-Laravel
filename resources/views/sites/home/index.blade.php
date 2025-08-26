@@ -26,7 +26,7 @@
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
                                 <h6>Bộ sưu tập mùa hè</h6>
-                                <h2 class="text-white">Fall - Winter Collections 2025</h2>
+                                <h2 class="text-white">Bộ sưu tập Thu Đông 2025</h2>
                                 <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
                                     Được chế tác một
                                     cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
@@ -50,7 +50,7 @@
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
                                 <h6>Bộ sưu tập Thu Đông</h6>
-                                <h2 class="text-white">Fall - Winter Collections 2025</h2>
+                                <h2 class="text-white">Thu Đông Collections 2025</h2>
                                 <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
                                     Được chế tác một
                                     cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
@@ -74,7 +74,7 @@
                         <div class="col-xl-5 col-lg-7 col-md-8">
                             <div class="hero__text">
                                 <h6 class="text-white">Bộ sưu tập Xuân Hè</h6>
-                                <h2 class="text-white">Spring - Summer Collections 2025</h2>
+                                <h2 class="text-white">Xuân - Hè Collections 2025</h2>
                                 <p class="text-white">Một thương hiệu chuyên biệt tạo ra các sản phẩm thiết yếu sang trọng.
                                     Được chế tác một
                                     cách có đạo đức với cam kết không lay chuyển đối với chất lượng vượt trội.</p>
@@ -310,7 +310,7 @@
 
 
     <!-- Product RecommendationProduct For UserBase Content Filtering Section Begin -->
-    @if ($userId != 0)
+    {{-- @if ($userId != 0)
         <section class="product spad">
             <div class="container">
                 <div class="row">
@@ -446,7 +446,7 @@
             </div>
         </section>
         <hr class="w-50">
-    @endif
+    @endif --}}
     <!-- RecommendationProduct For UserBase Content Filtering Section End -->
 
 
@@ -597,9 +597,9 @@
             <div class="row">
                 <div class="col-lg-12">
                     <ul class="filter__controls">
-                        <li class="active" data-filter="*">Sản Phẩm Bán Chạy</li>
-                        <li data-filter=".new-arrivals">Mới ra mắt</li>
-                        <li data-filter=".hot-sales">Hot Sales</li>
+                        <li class="active" data-filter="*">Tất cả sản phẩm</li>
+                        {{-- <li data-filter=".new-arrivals">Mới ra mắt</li> --}}
+                        <li data-filter=".hot-sales">Mới ra mắt</li>
                     </ul>
                 </div>
             </div>

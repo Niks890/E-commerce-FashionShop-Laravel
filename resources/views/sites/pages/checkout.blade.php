@@ -51,7 +51,7 @@
                                 <div class="col-lg-12">
                                     <div class="checkout__input">
                                         <p>Tên người nhận<span>*</span></p>
-                                        <input type="text" name="receiver_name" required>
+                                        <input type="text" class="text-dark" name="receiver_name" required>
                                         @error('receiver_name')
                                             <small class="text-danger">{{ $message }}</small>
                                         @enderror
@@ -88,7 +88,7 @@
                                 <div class="col-lg-12">
                                     <div class="checkout__input">
                                         <p>Số nhà, Tên đường<span>*</span></p>
-                                        <input type="text" placeholder="Ví dụ: 123 Đường 3/2"
+                                        <input type="text" class="text-dark" placeholder="Ví dụ: 123 Đường 3/2"
                                             class="checkout__input__add" name="street_address" required>
                                     </div>
                                 </div>
@@ -99,19 +99,20 @@
                                 <div class="col-lg-6">
                                     <div class="checkout__input">
                                         <p>Số điện thoại<span>*</span></p>
-                                        <input type="text" name="phone" required>
+                                        <input class="text-dark" type="text" name="phone" required>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="checkout__input">
                                         <p>Email<span>*</span></p>
-                                        <input type="text" name="email" required>
+                                        <input type="text" class="text-dark" name="email" required>
                                     </div>
                                 </div>
                             </div>
                             <div class="checkout__input">
                                 <p>Ghi chú<span></span></p>
-                                <input type="text" placeholder="Ghi chú cho đơn hàng (nếu có)" name="note">
+                                <input type="text" class="text-dark" placeholder="Ghi chú cho đơn hàng (nếu có)"
+                                    name="note">
                                 {{-- Changed required to optional for notes --}}
                             </div>
                             <div class="checkout__input__checkbox">
@@ -131,9 +132,9 @@
                                     <div class="alert alert-success mb-3">
                                         <strong>Mã giảm giá đã áp dụng:</strong> {{ $discountInfo['code'] }}
                                         <br>
-                                        <strong>Giảm:</strong> {{ $discountInfo['percent'] }}%
+                                        <strong>Đã giảm:</strong> -{{ $discountInfo['percent'] }}% giá trị đơn hàng
                                         @if ($discountInfo['max_discount'])
-                                            (tối đa {{ number_format($discountInfo['max_discount'], 0, ',', '.') }} đ)
+                                            {{-- (tối đa {{ number_format($discountInfo['max_discount'], 0, ',', '.') }} đ) --}}
                                         @endif
                                     </div>
                                 @endif
@@ -188,8 +189,8 @@
                                         @endif
                                     @endforeach
                                 @endif
-                              <ul class="checkout__total__all">
-                                    @if($discountAmount > 0)
+                                <ul class="checkout__total__all">
+                                    @if ($discountAmount > 0)
                                         <li>Giảm giá:<span>-{{ number_format($discountAmount, 0, ',', '.') }} đ</span></li>
                                     @endif
                                     <li>Tạm tính:<span>{{ number_format($totalPriceCart, 0, ',', '.') }} đ</span></li>

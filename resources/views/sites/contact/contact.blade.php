@@ -45,9 +45,9 @@
                     <img class="rounded-circle" src="{{ asset('assets/img/TSTShop/LogoTSTFashionShop.webp') }}"
                         alt="TST Fashion Shop" width="75">
                     <h3 style="color: #2584d8;">Thông tin địa điểm</h3>
-                    <p><strong>Tên địa điểm:</strong> TST Fashion Shop</p>
+                    <p><strong>Tên địa điểm:</strong> TFashionShop</p>
                     <p><strong>Vị trí:</strong> 3/2, Xuân Khánh, Cần Thơ</p>
-                    <p><strong>Chi tiết:</strong> Cửa hàng thời trang TST Fashion</p>
+                    <p><strong>Chi tiết:</strong> Cửa hàng thời trang TFashionShop</p>
                 </div>`;
 
             // Gán popup vào marker

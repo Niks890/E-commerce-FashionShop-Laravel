@@ -154,7 +154,7 @@
                                 {{ Str::words($item->address, 5, '...') }}
                             </td>
                             <td>{{ $item->phone }}</td>
-                            <td>{{ number_format($item->total, 0, ',', '.') }} đ</td>
+                            <td class="text-nowrap">{{ number_format($item->total, 0, ',', '.') }} đ</td>
                             <td>
                                 <span id="status{{ $item->id }}"
                                     class="badge
@@ -166,28 +166,32 @@
                                     {{ $item->status }}
                                 </span>
                             </td>
-                            <td>{{ date('d/m/Y H:i', strtotime($item->created_at)) }}</td>
+                            <td class="text-nowrap">{{ date('d/m/Y H:i', strtotime($item->created_at)) }}</td>
 
                             <td class="text-center" id="action{{ $item->id }}">
-                                <div class="d-flex justify-content-center action-buttons">
+                                <div class="action-buttons">
                                     <a href="{{ route('sites.showOrderDetailOfCustomer', $item->id) }}"
-                                        class="btn btn-sm btn-secondary">
-                                        <i class="fa fa-eye"></i> Xem
+                                        class="btn-action btn-view" title="Xem chi tiết đơn hàng">
+                                        <i class="fa fa-eye"></i>
+                                        {{-- <span class="btn-text">Xem</span> --}}
                                     </a>
 
-                                    <a href="{{ route('order.orderTracking', $item->id) }}"
-                                        class="btn btn-sm btn-info ms-2">
+                                    <a href="{{ route('order.orderTracking', $item->id) }}" class="btn-action btn-track"
+                                        title="Theo dõi đơn hàng">
                                         <i class="fa fa-truck"></i>
                                     </a>
+
                                     @if ($item->status === 'Chờ xử lý')
-                                        <button type="button" class="btn btn-sm btn-danger ms-2"
-                                            onclick="openCancelModal({{ $item->id }})">
-                                            <i class="fa fa-times"></i> Hủy
+                                        <button type="button" class="btn-action btn-cancel"
+                                            onclick="openCancelModal({{ $item->id }})" title="Hủy đơn hàng">
+                                            <i class="fa fa-times"></i>
+                                            {{-- <span class="btn-text">Hủy</span> --}}
                                         </button>
                                     @elseif ($item->status === 'Đã thanh toán' || $item->status === 'Giao hàng thành công')
-                                        <button type="button" class="btn btn-sm btn-success ms-2"
-                                            onclick="openSidebar({{ $item->id }})">
+                                        <button type="button" class="btn-action btn-review"
+                                            onclick="openSidebar({{ $item->id }})" title="Đánh giá sản phẩm">
                                             <i class="fa fa-comments"></i>
+                                            {{-- <span class="btn-text">Đánh giá</span> --}}
                                         </button>
                                     @endif
                                 </div>
@@ -255,6 +259,287 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="{{ asset('client/css/order-history.css') }}">
     <style>
+
+        /* Container cho các nút hành động */
+        .action-buttons {
+            display: flex !important;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            flex-wrap: nowrap !important; /* Không cho xuống dòng */
+            min-width: 140px; /* Tăng chiều rộng tối thiểu */
+            white-space: nowrap; /* Không cho text xuống dòng */
+        }
+
+        /* Base button style - Thiết kế hiện đại với gradient nhẹ */
+        .btn-action {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            font-size: 0.825rem;
+            font-weight: 500;
+            border: 2px solid transparent;
+            text-decoration: none;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            min-height: 36px;
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+
+        /* Hover effect animation */
+        .btn-action::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-action:hover::before {
+            left: 100%;
+        }
+
+        /* Xem chi tiết - Màu xanh dương nhẹ nhàng */
+        .btn-view {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-view:hover {
+            background: linear-gradient(135deg, #5a6268 0%, #495057 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        /* Theo dõi đơn hàng - Màu xanh thông tin */
+        .btn-track {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        .btn-track:hover {
+            background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        /* Hủy đơn hàng - Màu đỏ cảnh báo */
+        .btn-cancel {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+        }
+
+        .btn-cancel:hover {
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+        }
+
+        /* Đánh giá - Màu xanh lá thành công */
+        .btn-review {
+            background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-review:hover {
+            background: linear-gradient(135deg, #218838 0%, #1e7e34 100%);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        /* Loading animation cho button */
+        .btn-action.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .btn-action.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            margin: auto;
+            border: 2px solid transparent;
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: button-loading-spinner 1s ease infinite;
+        }
+
+        @keyframes button-loading-spinner {
+            from {
+                transform: rotate(0turn);
+            }
+
+            to {
+                transform: rotate(1turn);
+            }
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .action-buttons {
+                gap: 0.3rem;
+            }
+
+            .btn-action {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+                min-height: 32px;
+            }
+
+            .btn-text {
+                display: none;
+            }
+
+            .btn-action {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                padding: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .action-buttons {
+                gap: 0.25rem;
+            }
+
+            .btn-action {
+                width: 32px;
+                height: 32px;
+                font-size: 0.7rem;
+            }
+        }
+
+        /* Badge improvements */
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Table improvements */
+        .table-hover tbody tr:hover {
+            background-color: rgba(0, 123, 255, 0.05);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        /* Các style cũ được giữ lại */
+        .card-header .btn-link {
+            text-decoration: none;
+            color: #495057;
+        }
+
+        .badge {
+            font-size: 0.75em;
+        }
+
+        .alert-info {
+            border-left: 4px solid #17a2b8;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .card-header {
+            padding: 0.75rem 1.25rem;
+        }
+
+        .btn-outline-secondary {
+            border-color: #dee2e6;
+        }
+
+        /* Improved address column styling */
+        .text-truncate {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        /* Responsive table adjustments */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
+        /* Hover effect for address to show full text */
+        td.text-truncate:hover {
+            position: relative;
+            z-index: 1;
+            white-space: normal;
+            word-break: break-word;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: none;
+        }
+
+        .action-buttons {
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .btn-icon {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            border-radius: 50px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.85rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hover nhẹ nhàng */
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Mobile: chỉ giữ icon */
+        @media (max-width: 576px) {
+            .btn-text {
+                display: none;
+            }
+
+            .btn-icon {
+                padding: 0.4rem 0.5rem;
+                border-radius: 50%;
+                width: 38px;
+                height: 38px;
+                justify-content: center;
+            }
+        }
+
         .card-header .btn-link {
             text-decoration: none;
             color: #495057;

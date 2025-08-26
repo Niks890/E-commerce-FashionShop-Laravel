@@ -4,7 +4,7 @@
   Author: Colorib
   Author URI: https://www.colorib.com/
   Version: 1.0
-  Created: Colorib 
+  Created: Colorib
 ******************************************************************/
 /*------------------------------------------------------------------
 [Table of contents]
@@ -1789,7 +1789,7 @@ ol {
   margin-bottom: 35px;
 }
 .about__pic img {
-  min-width: 100%;
+  min-width: 70%;
 }
 
 .about__item {

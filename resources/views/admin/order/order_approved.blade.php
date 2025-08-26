@@ -237,8 +237,7 @@
                         <div class="alert alert-warning mt-3 d-flex align-items-center">
                             <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
                             <div>
-                                <strong>Lưu ý:</strong> Sau khi xác nhận, đơn hàng sẽ được chuyển trạng thái sang "Đang
-                                giao"
+                                <strong>Lưu ý:</strong> Sau khi xác nhận, đơn hàng sẽ được chuyển trạng thái sang "Đã gửi cho đơn vị vận chuyển"
                             </div>
                         </div>
                     </div>

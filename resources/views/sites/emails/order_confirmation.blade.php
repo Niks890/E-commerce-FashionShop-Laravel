@@ -199,7 +199,7 @@
         </div>
         <div class="content">
             <p>Xin chào **{{ $order->receiver_name }}**,</p>
-            <p>Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi. Đơn hàng của bạn đã được xác nhận và sẽ sớm được xử lý. Dưới đây là thông tin chi tiết đơn hàng của bạn:</p>
+            <p>Cảm ơn bạn đã đặt hàng tại TFashionShop. Đơn hàng của bạn đã được xác nhận và sẽ sớm được xử lý. Dưới đây là thông tin chi tiết đơn hàng của bạn:</p>
 
             <h3>Thông tin đơn hàng</h3>
             <p>
