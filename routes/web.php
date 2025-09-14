@@ -27,6 +27,7 @@ use App\Http\Controllers\RevenueInventoryController;
 use App\Http\Controllers\RevenueProductController;
 use App\Http\Controllers\VoucherController;
 use App\Http\Controllers\WishListProductController;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Route;
 
 
@@ -69,8 +70,7 @@ Route::group(['prefix' => '/'], function () {
     Route::get('/blog', [HomeController::class, 'blog'])->name('sites.blog');
     Route::get('/product/{slug}', [HomeController::class, 'productDetail'])->name('sites.productDetail');
     Route::get('/share/{hash}', [HomeController::class, 'handleShareLink'])->name('product.share.redirect');
-
-
+    Route::get('/address-management', [CustomerController::class, 'viewAddress'])->name('sites.viewAddress')->middleware('auth:customer');
     // Xử lý danh sách yêu thích
     Route::get('/wishlist', [WishListProductController::class, 'index'])->name('sites.wishlist');
     Route::get('/add-to-wishlist/{product}', [WishListProductController::class, 'addToWishList'])->name('sites.addToWishList');

@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Route;
 // });
 
 // Route::middleware('auth:sanctum')->group(function () {
-// });
+
 Route::get('discount', [ApiController::class, 'discounts'])->name('api.discounts');
 Route::get('discount/{id}', [ApiController::class, 'discount'])->name('api.discount');
 // Route::get('discount-code/{code}', [ApiController::class, 'getDiscountByCode'])->name('api.getDiscountByCode');
@@ -97,3 +97,4 @@ Route::get('/recommendations/item-cosine/{userId}', [RecommendationController::c
 
 Route::get('/customer/available-vouchers', [VoucherController::class, 'getAvailableVouchers']);
 Route::get('/customer/used-vouchers', [VoucherController::class, 'getUsedVouchers']);
+// });

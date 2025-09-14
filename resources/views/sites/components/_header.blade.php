@@ -114,7 +114,7 @@
                                     <li><a class="text-dark" href="{{ route('sites.getHistoryOrder') }}">Lịch sử giao
                                             dịch</a>
                                     </li>
-                                    <li><a class="text-dark" href="{{ route('sites.wishlist') }}">Quản lý địa chỉ</a></li>
+                                    <li><a class="text-dark" href="{{ route('sites.viewAddress') }}">Quản lý địa chỉ</a></li>
                                     <li><a class="text-dark" href="{{ route('sites.coupon') }}">Mã giảm giá &
                                             Voucher</a></li>
                                     <li><a class="text-dark" href="{{ route('user.logout') }}">Đăng Xuất</a></li>

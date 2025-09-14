@@ -23,7 +23,8 @@
     <link rel="stylesheet" href="{{ asset('client/css/font-awesome.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('client/css/elegant-icons.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('client/css/magnific-popup.css') }}" type="text/css">
-    <link rel="stylesheet" href="{{ asset('client/css/nice-select.css') }}" type="text/css">
+    {{-- bỏ do trùng thư viện choices select --}}
+    {{-- <link rel="stylesheet" href="{{ asset('client/css/nice-select.css') }}" type="text/css"> --}}
     <link rel="stylesheet" href="{{ asset('client/css/owl.carousel.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('client/css/slicknav.min.css') }}" type="text/css">
     <link rel="stylesheet" href="{{ asset('client/css/style.css') }}" type="text/css">
@@ -45,7 +46,8 @@
 
     <!-- Js Plugins -->
     <script src="{{ asset('client/js/jquery-3.7.1.min.js') }}"></script>
-    <script src="{{ asset('client/js/jquery.nice-select.min.js') }}"></script>
+    {{-- bỏ do trùng thư viện choices select --}}
+    {{-- <script src="{{ asset('client/js/jquery.nice-select.min.js') }}"></script> --}}
     <script src="{{ asset('client/js/jquery.nicescroll.min.js') }}"></script>
     <script src="{{ asset('client/js/jquery.magnific-popup.min.js') }}"></script>
     <script src="{{ asset('client/js/jquery.countdown.min.js') }}"></script>

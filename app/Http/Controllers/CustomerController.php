@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\OrderCancellationMail;
 use App\Mail\VoucherMail;
+use App\Models\Address;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
@@ -240,7 +241,6 @@ class CustomerController extends Controller
     }
 
 
-
     public function cancelOrder(Request $request, $id)
     {
         try {
@@ -283,6 +283,13 @@ class CustomerController extends Controller
             Log::error('Lỗi khi hủy đơn hàng ID: ' . $id . '. Lỗi: ' . $e->getMessage());
             return response()->json(['message' => 'Có lỗi xảy ra, vui lòng thử lại!'], 500);
         }
+    }
+
+
+    public function viewAddress()
+    {
+        $addresses = Address::where('customer_id', auth()->guard('customer')->user()->id)->get();
+        return view('sites.customer.address', compact('addresses'));
     }
 
 
